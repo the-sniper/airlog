@@ -1,10 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Mic, LayoutGrid, Users2 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AdminSidebar() {
+  const pathname = usePathname();
+  
+  // Check if a nav item is active
+  const isActive = (href: string) => {
+    if (href === "/admin") {
+      // Sessions is active for /admin and /admin/sessions/*
+      return pathname === "/admin" || pathname.startsWith("/admin/sessions");
+    }
+    return pathname.startsWith(href);
+  };
+
   return (
     <aside className="fixed inset-y-0 left-0 w-64 border-r border-border/50 bg-card/30 hidden md:block">
       <div className="flex flex-col h-full">
@@ -19,14 +31,22 @@ export function AdminSidebar() {
         <nav className="flex-1 p-4 space-y-1">
           <Link 
             href="/admin" 
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/admin") 
+                ? "bg-primary/10 text-primary" 
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
           >
             <LayoutGrid className="w-4 h-4" strokeWidth={1.75} />
             Sessions
           </Link>
           <Link 
             href="/admin/teams" 
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/admin/teams") 
+                ? "bg-primary/10 text-primary" 
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
           >
             <Users2 className="w-4 h-4" strokeWidth={1.75} />
             Teams
