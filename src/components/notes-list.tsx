@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { FileText, Edit2, Check, X, Play, Pause, SlidersHorizontal } from "lucide-react";
+import { FileText, Edit2, Check, X, Play, Pause, SlidersHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatDate, getCategoryLabel } from "@/lib/utils";
 import type { Note, NoteWithDetails, NoteCategory, Scene, Tester } from "@/types";
 
-interface Props { notes: (Note | NoteWithDetails)[]; sessionId: string; scenes?: Scene[]; testers?: Tester[]; onNoteUpdated: (note: Note) => void; }
+interface Props { notes: (Note | NoteWithDetails)[]; sessionId: string; scenes?: Scene[]; testers?: Tester[]; onNoteUpdated: (note: Note) => void; onNoteDeleted?: (noteId: string) => void; }
 
 const CATEGORIES: { value: NoteCategory; label: string }[] = [
   { value: "bug", label: "Bug" },
@@ -19,12 +19,13 @@ const CATEGORIES: { value: NoteCategory; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-export function NotesList({ notes, sessionId, scenes, testers, onNoteUpdated }: Props) {
+export function NotesList({ notes, sessionId, scenes, testers, onNoteUpdated, onNoteDeleted }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingSceneId, setEditingSceneId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   // Filter state
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -66,6 +67,14 @@ export function NotesList({ notes, sessionId, scenes, testers, onNoteUpdated }: 
       if (res.ok) { onNoteUpdated(await res.json()); } 
     } catch {} 
     finally { setEditingSceneId(null); }
+  }
+  async function deleteNote(noteId: string) {
+    setDeletingId(noteId);
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/notes/${noteId}`, { method: "DELETE" });
+      if (res.ok && onNoteDeleted) { onNoteDeleted(noteId); }
+    } catch {}
+    finally { setDeletingId(null); }
   }
   function getSceneName(note: Note | NoteWithDetails): string {
     if ("scene" in note && note.scene) return note.scene.name;
@@ -185,7 +194,7 @@ export function NotesList({ notes, sessionId, scenes, testers, onNoteUpdated }: 
                 ) : (
                   "scene" in note && note.scene && <span className="text-xs text-muted-foreground">{note.scene.name}</span>
                 )}<span className="text-xs text-muted-foreground">•</span><span className="text-xs text-muted-foreground">{getTesterName(note)}</span></div><span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(note.created_at)}</span></div>
-            {editingId === note.id ? <div className="space-y-2"><Textarea value={editText} onChange={(e) => setEditText(e.target.value)} className="min-h-[100px]" /><div className="flex justify-end gap-2"><Button variant="ghost" size="sm" onClick={cancelEditing}><X className="w-4 h-4" />Cancel</Button><Button size="sm" onClick={() => saveEdit(note.id)}><Check className="w-4 h-4" />Save</Button></div></div> : <div className="group relative"><p className="text-sm pr-8">{note.edited_transcript || note.raw_transcript || <span className="text-muted-foreground italic">No transcript</span>}</p>{(note.edited_transcript || note.raw_transcript) && <Button variant="ghost" size="icon" className="absolute top-0 right-0 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => startEditing(note)}><Edit2 className="w-3 h-3" /></Button>}</div>}
+            {editingId === note.id ? <div className="space-y-2"><Textarea value={editText} onChange={(e) => setEditText(e.target.value)} className="min-h-[100px]" /><div className="flex justify-end gap-2"><Button variant="ghost" size="sm" onClick={cancelEditing}><X className="w-4 h-4" />Cancel</Button><Button size="sm" onClick={() => saveEdit(note.id)}><Check className="w-4 h-4" />Save</Button></div></div> : <div className="group relative"><p className="text-sm pr-16">{note.edited_transcript || note.raw_transcript || <span className="text-muted-foreground italic">No transcript</span>}</p><div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100">{(note.edited_transcript || note.raw_transcript) && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => startEditing(note)}><Edit2 className="w-3 h-3" /></Button>}{onNoteDeleted && <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => deleteNote(note.id)} disabled={deletingId === note.id}><Trash2 className="w-3 h-3" /></Button>}</div></div>}
             {note.edited_transcript && note.raw_transcript && note.edited_transcript !== note.raw_transcript && <details className="text-xs"><summary className="text-muted-foreground cursor-pointer hover:text-foreground">Show original</summary><p className="mt-2 p-2 bg-secondary/30 rounded text-muted-foreground">{note.raw_transcript}</p></details>}
             {note.audio_url && <div className="flex items-center gap-2"><Button variant="ghost" size="sm" className="h-8" onClick={() => toggleAudio(note.id)}>{playingId === note.id ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}{playingId === note.id ? "Pause" : "Play"}</Button><audio id={`audio-${note.id}`} src={note.audio_url} className="hidden" /></div>}
           </div>

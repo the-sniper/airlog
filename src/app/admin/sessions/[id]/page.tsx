@@ -613,30 +613,31 @@ export default function SessionDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/admin">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">{session.name}</h1>
-              <Badge
-                variant={session.status as "draft" | "active" | "completed"}
-              >
-                {getStatusLabel(session.status)}
-              </Badge>
+      <div className="space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            {/* <Link href="/admin">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+            </Link> */}
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold">{session.name}</h1>
+                <Badge
+                  variant={session.status as "draft" | "active" | "completed"}
+                >
+                  {getStatusLabel(session.status)}
+                </Badge>
+              </div>
+              {session.build_version && (
+                <p className="text-sm text-muted-foreground font-mono">
+                  {session.build_version}
+                </p>
+              )}
             </div>
-            {session.build_version && (
-              <p className="text-sm text-muted-foreground font-mono">
-                {session.build_version}
-              </p>
-            )}
           </div>
-        </div>
-        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
           {session.status === "draft" && (
             <Button onClick={handleStartSession}>
               <Play className="w-4 h-4" />
@@ -668,6 +669,12 @@ export default function SessionDetailPage({
           )}
         </div>
       </div>
+      {session.description && (
+        <p className="text-sm pt-3 text-muted-foreground">
+          {session.description}
+        </p>
+      )}
+    </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">

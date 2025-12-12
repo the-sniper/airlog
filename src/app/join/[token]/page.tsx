@@ -120,6 +120,7 @@ export default function TesterSessionPage({ params }: { params: { token: string 
   async function fetchNotes(sessionId: string, testerId: string) { try { const res = await fetch(`/api/sessions/${sessionId}/notes?testerId=${testerId}`); if (res.ok) setNotes(await res.json()); } catch {} }
   function handleNoteCreated(note: Note) { setNotes((prev) => [...prev, note]); }
   function handleNoteUpdated(updatedNote: Note) { setNotes((prev) => prev.map((n) => (n.id === updatedNote.id ? updatedNote : n))); }
+  function handleNoteDeleted(noteId: string) { setNotes((prev) => prev.filter((n) => n.id !== noteId)); }
 
   if (loading) return <div className="min-h-screen gradient-mesh flex items-center justify-center"><div className="text-center"><div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4"><Mic className="w-8 h-8 text-primary" /></div><p className="text-muted-foreground">Loading...</p></div></div>;
   if (error) return <div className="min-h-screen gradient-mesh flex items-center justify-center p-4"><Card className="max-w-md w-full"><CardContent className="pt-6 text-center">{error.type === "ended" ? <><CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" /><h2 className="text-xl font-semibold mb-2">Session Completed</h2><p className="text-muted-foreground mb-4">Thank you for your feedback!</p></> : error.type === "not_started" ? <><Clock className="w-16 h-16 text-yellow-500 mx-auto mb-4" /><h2 className="text-xl font-semibold mb-2">Session Not Started</h2><p className="text-muted-foreground mb-4">Please wait for the admin.</p></> : <><AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" /><h2 className="text-xl font-semibold mb-2">Unable to Join</h2><p className="text-muted-foreground mb-4">{error.message}</p></>}<Link href="/join"><Button variant="outline">Try Another Code</Button></Link></CardContent></Card></div>;
@@ -204,7 +205,7 @@ export default function TesterSessionPage({ params }: { params: { token: string 
             </CardContent>
           </Card>
         )}
-        <NotesList notes={notes} sessionId={session.id} scenes={session.scenes} onNoteUpdated={handleNoteUpdated} />
+        <NotesList notes={notes} sessionId={session.id} scenes={session.scenes} onNoteUpdated={handleNoteUpdated} onNoteDeleted={handleNoteDeleted} />
       </main>
     </div>
   );
