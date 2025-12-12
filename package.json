@@ -15,6 +15,7 @@
     "@radix-ui/react-select": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.1",
+    "@radix-ui/react-toast": "^1.2.15",
     "@react-pdf/renderer": "^3.4.4",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
@@ -25,7 +26,9 @@
     "next": "14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "resend": "^6.4.2",
     "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.3"
   },
   "devDependencies": {

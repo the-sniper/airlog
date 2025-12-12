@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -20,11 +20,15 @@ import {
   ChevronDown,
   CheckSquare,
   Square as SquareIcon,
+  Clock,
+  Mail,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Card,
   CardContent,
@@ -57,12 +61,58 @@ interface TeamWithCount extends Team {
   members: { count: number }[];
 }
 
+function FormattedDescription({ text }: { text: string }) {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let currentList: string[] = [];
+  
+  const flushList = () => {
+    if (currentList.length > 0) {
+      elements.push(
+        <ul key={`list-${elements.length}`} className="space-y-1.5 ml-1">
+          {currentList.map((item, i) => (
+            <li key={i} className="flex gap-2">
+              <span className="text-primary">•</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      );
+      currentList = [];
+    }
+  };
+  
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    // Match bullet points: •, -, *, >, or numbered lists like "1." "2)"
+    const bulletMatch = trimmed.match(/^(?:[•\-\*\>]|\d+[\.\)])\s*(.*)$/);
+    
+    if (bulletMatch) {
+      currentList.push(bulletMatch[1] || trimmed.slice(1).trim());
+    } else if (trimmed === '') {
+      flushList();
+      // Add spacing for empty lines between sections
+      if (elements.length > 0 && index < lines.length - 1) {
+        elements.push(<div key={`space-${index}`} className="h-2" />);
+      }
+    } else {
+      flushList();
+      elements.push(<p key={`text-${index}`} className="text-sm">{trimmed}</p>);
+    }
+  });
+  
+  flushList();
+  
+  return <div className="text-sm text-muted-foreground space-y-2">{elements}</div>;
+}
+
 export default function SessionDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
   const { id } = params;
+  const { toast } = useToast();
   const [session, setSession] = useState<SessionWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [addTesterDialog, setAddTesterDialog] = useState(false);
@@ -94,6 +144,55 @@ export default function SessionDetailPage({
   const [savingScene, setSavingScene] = useState(false);
   const [restartDialog, setRestartDialog] = useState(false);
   const [restarting, setRestarting] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Tester selection for email invites
+  const [selectedTesterIds, setSelectedTesterIds] = useState<Set<string>>(new Set());
+  const [sendingInvites, setSendingInvites] = useState(false);
+  const [skipEmailDialog, setSkipEmailDialog] = useState(false);
+  const [testersWithoutEmail, setTestersWithoutEmail] = useState<Tester[]>([]);
+  const [testersWithEmail, setTestersWithEmail] = useState<Tester[]>([]);
+
+  // Edit tester state
+  const [editTesterDialog, setEditTesterDialog] = useState(false);
+  const [editingTester, setEditingTester] = useState<Tester | null>(null);
+  const [editTesterFirstName, setEditTesterFirstName] = useState("");
+  const [editTesterLastName, setEditTesterLastName] = useState("");
+  const [editTesterEmail, setEditTesterEmail] = useState("");
+  const [savingTester, setSavingTester] = useState(false);
+
+  // Calculate elapsed time for active sessions
+  useEffect(() => {
+    if (session?.status !== "active" || !session?.started_at) {
+      return;
+    }
+
+    const startTime = new Date(session.started_at).getTime();
+    
+    const updateElapsed = () => {
+      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+    };
+    
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 1000);
+    
+    return () => clearInterval(interval);
+  }, [session?.status, session?.started_at]);
+
+  // Format elapsed time as "Xh Ym Zs"
+  const formattedElapsedTime = useMemo(() => {
+    const hours = Math.floor(elapsedTime / 3600);
+    const minutes = Math.floor((elapsedTime % 3600) / 60);
+    const seconds = elapsedTime % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  }, [elapsedTime]);
 
   useEffect(() => {
     fetchSession();
@@ -301,6 +400,35 @@ export default function SessionDetailPage({
     });
     fetchSession();
   }
+
+  function openEditTesterDialog(tester: Tester) {
+    setEditingTester(tester);
+    setEditTesterFirstName(tester.first_name);
+    setEditTesterLastName(tester.last_name);
+    setEditTesterEmail(tester.email || "");
+    setEditTesterDialog(true);
+  }
+
+  async function handleSaveTester() {
+    if (!editingTester || !editTesterFirstName.trim() || !editTesterLastName.trim()) return;
+    setSavingTester(true);
+    try {
+      await fetch(`/api/sessions/${id}/testers/${editingTester.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: editTesterFirstName.trim(),
+          last_name: editTesterLastName.trim(),
+          email: editTesterEmail.trim() || null,
+        }),
+      });
+      setEditTesterDialog(false);
+      setEditingTester(null);
+      fetchSession();
+    } finally {
+      setSavingTester(false);
+    }
+  }
   async function handleAddScene() {
     if (!newSceneName.trim()) return;
     setAddingScene(true);
@@ -350,6 +478,93 @@ export default function SessionDetailPage({
     navigator.clipboard.writeText(`${window.location.origin}/join/${token}`);
     setCopiedToken(token);
     setTimeout(() => setCopiedToken(null), 2000);
+  }
+
+  // Toggle individual tester selection
+  function toggleTesterSelection(testerId: string) {
+    setSelectedTesterIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(testerId)) {
+        next.delete(testerId);
+      } else {
+        next.add(testerId);
+      }
+      return next;
+    });
+  }
+
+  // Toggle all testers selection
+  function toggleAllTesters() {
+    if (!session?.testers) return;
+    if (selectedTesterIds.size === session.testers.length) {
+      setSelectedTesterIds(new Set());
+    } else {
+      setSelectedTesterIds(new Set(session.testers.map((t) => t.id)));
+    }
+  }
+
+  // Initiate email invite process
+  function handleSendEmailInvites() {
+    if (!session?.testers || selectedTesterIds.size === 0) return;
+    
+    const selectedTesters = session.testers.filter((t) => selectedTesterIds.has(t.id));
+    const withEmail = selectedTesters.filter((t) => t.email);
+    const withoutEmail = selectedTesters.filter((t) => !t.email);
+    
+    if (withoutEmail.length > 0) {
+      setTestersWithEmail(withEmail);
+      setTestersWithoutEmail(withoutEmail);
+      setSkipEmailDialog(true);
+    } else {
+      sendEmailInvites(withEmail);
+    }
+  }
+
+  // Send email invites to testers
+  async function sendEmailInvites(testers: Tester[]) {
+    if (testers.length === 0) return;
+    
+    setSendingInvites(true);
+    try {
+      const res = await fetch(`/api/sessions/${id}/invite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          testers, 
+          sessionName: session?.name 
+        }),
+      });
+      
+      if (res.ok) {
+        const result = await res.json();
+        // Clear selection after successful send
+        setSelectedTesterIds(new Set());
+        toast({
+          title: "Invites sent!",
+          description: `Successfully sent ${result.sent} invite${result.sent !== 1 ? 's' : ''}.`,
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Failed to send invites",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error sending invites:", error);
+      toast({
+        title: "Failed to send invites",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingInvites(true);
+      setSkipEmailDialog(false);
+      setTestersWithEmail([]);
+      setTestersWithoutEmail([]);
+      setSendingInvites(false);
+    }
   }
 
   if (loading)
@@ -402,10 +617,16 @@ export default function SessionDetailPage({
             </Button>
           )}
           {session.status === "active" && (
-            <Button variant="destructive" onClick={handleEndSession}>
-              <Square className="w-4 h-4" />
-              End Session
-            </Button>
+            <>
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-md">
+                <Clock className="w-4 h-4" />
+                <span className="font-mono">{formattedElapsedTime}</span>
+              </div>
+              <Button variant="destructive" onClick={handleEndSession}>
+                <Square className="w-4 h-4" />
+                End Session
+              </Button>
+            </>
           )}
           {session.status === "completed" && (
             <>
@@ -510,7 +731,9 @@ export default function SessionDetailPage({
                           <div className="flex-1 min-w-0">
                             <p className="font-medium">{s.name}</p>
                             {s.description ? (
-                              <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{s.description}</p>
+                              <div className="mt-1">
+                                <FormattedDescription text={s.description} />
+                              </div>
                             ) : session.status !== "completed" && (
                               <p className="text-sm text-muted-foreground/50 mt-1 italic">No testing instructions</p>
                             )}
@@ -558,12 +781,28 @@ export default function SessionDetailPage({
                       : "Manage testers and invite links"}
                   </CardDescription>
                 </div>
-                {session.status !== "completed" && (
-                  <Button onClick={() => setAddTesterDialog(true)}>
-                    <Plus className="w-4 h-4" />
-                    Add Tester
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  {session.status !== "completed" && selectedTesterIds.size > 0 && (
+                    <Button 
+                      variant="outline" 
+                      onClick={handleSendEmailInvites}
+                      disabled={sendingInvites}
+                    >
+                      {sendingInvites ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Mail className="w-4 h-4" />
+                      )}
+                      Send Email Invite ({selectedTesterIds.size})
+                    </Button>
+                  )}
+                  {session.status !== "completed" && (
+                    <Button onClick={() => setAddTesterDialog(true)}>
+                      <Plus className="w-4 h-4" />
+                      Add Tester
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -574,21 +813,57 @@ export default function SessionDetailPage({
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {/* Select all checkbox */}
+                  {session.status !== "completed" && session.testers && session.testers.length > 0 && (
+                    <div className="flex items-center gap-3 pb-2 border-b border-border">
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={toggleAllTesters}
+                      >
+                        {selectedTesterIds.size === session.testers.length ? (
+                          <CheckSquare className="w-4 h-4 text-primary" />
+                        ) : selectedTesterIds.size > 0 ? (
+                          <div className="w-4 h-4 border-2 border-primary rounded-sm flex items-center justify-center">
+                            <div className="w-2 h-0.5 bg-primary" />
+                          </div>
+                        ) : (
+                          <SquareIcon className="w-4 h-4" />
+                        )}
+                        {selectedTesterIds.size === session.testers.length ? "Deselect all" : "Select all"}
+                      </button>
+                    </div>
+                  )}
                   {session.testers?.map((t: Tester) => (
                     <div
                       key={t.id}
                       className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 group"
                     >
-                      <div>
-                        <p className="font-medium">{t.first_name} {t.last_name}</p>
-                        {t.email && (
-                          <p className="text-xs text-muted-foreground">{t.email}</p>
-                        )}
+                      <div className="flex items-center gap-3">
                         {session.status !== "completed" && (
-                          <p className="text-sm text-muted-foreground font-mono">
-                            /join/{t.invite_token}
-                          </p>
+                          <button
+                            type="button"
+                            className="flex-shrink-0"
+                            onClick={() => toggleTesterSelection(t.id)}
+                          >
+                            {selectedTesterIds.has(t.id) ? (
+                              <CheckSquare className="w-5 h-5 text-primary" />
+                            ) : (
+                              <SquareIcon className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />
+                            )}
+                          </button>
                         )}
+                        <div>
+                          <p className="font-medium">{t.first_name} {t.last_name}</p>
+                          {t.email && (
+                            <p className="text-xs text-muted-foreground">{t.email}</p>
+                          )}
+                          {session.status !== "completed" && (
+                            <p className="text-sm text-muted-foreground font-mono">
+                              /join/{t.invite_token}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       {session.status !== "completed" && (
                         <div className="flex items-center gap-2">
@@ -603,6 +878,14 @@ export default function SessionDetailPage({
                               <Copy className="w-4 h-4" />
                             )}
                             Copy
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100"
+                            onClick={() => openEditTesterDialog(t)}
+                          >
+                            <Edit2 className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -1036,6 +1319,114 @@ export default function SessionDetailPage({
             <Button onClick={handleRestartSession} disabled={restarting}>
               {restarting && <Loader2 className="w-4 h-4 animate-spin" />}
               Restart Session
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Tester Dialog */}
+      <Dialog open={editTesterDialog} onOpenChange={setEditTesterDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Tester</DialogTitle>
+            <DialogDescription>
+              Update tester details
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="editTesterFirstName">First Name *</Label>
+                <Input
+                  id="editTesterFirstName"
+                  value={editTesterFirstName}
+                  onChange={(e) => setEditTesterFirstName(e.target.value)}
+                  placeholder="John"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editTesterLastName">Last Name *</Label>
+                <Input
+                  id="editTesterLastName"
+                  value={editTesterLastName}
+                  onChange={(e) => setEditTesterLastName(e.target.value)}
+                  placeholder="Doe"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editTesterEmail">
+                Email <span className="text-muted-foreground font-normal">(optional)</span>
+              </Label>
+              <Input
+                id="editTesterEmail"
+                type="email"
+                value={editTesterEmail}
+                onChange={(e) => setEditTesterEmail(e.target.value)}
+                placeholder="john.doe@example.com"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditTesterDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveTester}
+              disabled={savingTester || !editTesterFirstName.trim() || !editTesterLastName.trim()}
+            >
+              {savingTester && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Skip email dialog for testers without email */}
+      <Dialog open={skipEmailDialog} onOpenChange={setSkipEmailDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Some testers don&apos;t have email
+            </DialogTitle>
+            <DialogDescription>
+              The following testers will be skipped because they don&apos;t have an email address:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <div className="rounded-lg bg-secondary/50 p-3 max-h-40 overflow-y-auto">
+              <ul className="space-y-1">
+                {testersWithoutEmail.map((t) => (
+                  <li key={t.id} className="text-sm text-muted-foreground flex items-center gap-2">
+                    <span className="text-yellow-500">•</span>
+                    {t.first_name} {t.last_name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {testersWithEmail.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {testersWithEmail.length} tester{testersWithEmail.length !== 1 ? 's' : ''} will receive an email invite.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setSkipEmailDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => sendEmailInvites(testersWithEmail)}
+              disabled={sendingInvites || testersWithEmail.length === 0}
+            >
+              {sendingInvites ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Mail className="w-4 h-4" />
+              )}
+              {testersWithEmail.length > 0 
+                ? `Send to ${testersWithEmail.length} tester${testersWithEmail.length !== 1 ? 's' : ''}` 
+                : 'No emails to send'}
             </Button>
           </DialogFooter>
         </DialogContent>
