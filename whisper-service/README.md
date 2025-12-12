@@ -33,7 +33,7 @@ docker-compose down
 docker build -t whisper-service .
 
 # Run the container
-docker run -d -p 5000:5000 --name whisper whisper-service
+docker run -d -p 9000:9000 --name whisper whisper-service
 ```
 
 ## Environment Variables
@@ -41,7 +41,7 @@ docker run -d -p 5000:5000 --name whisper whisper-service
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `WHISPER_MODEL` | `base` | Whisper model size (tiny, base, small, medium, large) |
-| `PORT` | `5000` | Port to run the service on |
+| `PORT` | `9000` | Port to run the service on |
 
 ### Model Sizes
 
@@ -79,25 +79,28 @@ GET /health
 ### Transcribe Audio
 
 ```
-POST /transcribe
+POST /asr
 Content-Type: multipart/form-data
 ```
 
 **Parameters:**
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `file` | File | Yes | Audio file (wav, mp3, m4a, webm, etc.) |
+| `audio_file` | File | Yes | Audio file (wav, mp3, m4a, webm, etc.) |
 
 **Example Request:**
 ```bash
-curl -X POST http://localhost:5000/transcribe \
-  -F "file=@recording.wav"
+curl -X POST http://localhost:9000/asr \
+  -F "audio_file=@recording.wav"
 ```
 
 **Success Response (200):**
 ```json
 {
-  "text": "This is the transcribed text from the audio file."
+  "text": "This is the transcribed text from the audio file.",
+  "language": "en",
+  "confidence": 0.95,
+  "words": [{"word": "This", "start": 0.0, "end": 0.5, "confidence": 0.98}]
 }
 ```
 
@@ -130,7 +133,7 @@ curl -X POST http://localhost:5000/transcribe \
 The Next.js app connects to this service via the `NEXT_PUBLIC_WHISPER_URL` environment variable. Make sure to set it in your `.env.local`:
 
 ```bash
-NEXT_PUBLIC_WHISPER_URL=http://localhost:5000
+NEXT_PUBLIC_WHISPER_URL=http://localhost:9000
 ```
 
 The `/api/transcribe` route in the Next.js app forwards audio files to this service.
@@ -169,7 +172,7 @@ The `/api/transcribe` route in the Next.js app forwards audio files to this serv
 
 ### Service won't start
 - Check Docker logs: `docker-compose logs`
-- Ensure port 5000 is not in use: `lsof -i :5000`
+- Ensure port 9000 is not in use: `lsof -i :9000`
 
 ### Transcription is slow
 - Consider using a smaller model (`tiny` or `base`)
