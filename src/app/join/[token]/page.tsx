@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Mic, AlertCircle, Clock, CheckCircle, Keyboard } from "lucide-react";
+import { Mic, AlertCircle, Clock, CheckCircle, Keyboard, Info, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,51 @@ import type { SessionWithScenes, Tester, Scene, Note } from "@/types";
 
 interface JoinData { tester: Tester; session: SessionWithScenes; }
 
+function FormattedDescription({ text }: { text: string }) {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let currentList: string[] = [];
+  
+  const flushList = () => {
+    if (currentList.length > 0) {
+      elements.push(
+        <ul key={`list-${elements.length}`} className="space-y-1.5 ml-1">
+          {currentList.map((item, i) => (
+            <li key={i} className="flex gap-2">
+              <span className="text-primary">•</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      );
+      currentList = [];
+    }
+  };
+  
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    // Match bullet points: •, -, *, >, or numbered lists like "1." "2)"
+    const bulletMatch = trimmed.match(/^(?:[•\-\*\>]|\d+[\.\)])\s*(.*)$/);
+    
+    if (bulletMatch) {
+      currentList.push(bulletMatch[1] || trimmed.slice(1).trim());
+    } else if (trimmed === '') {
+      flushList();
+      // Add spacing for empty lines between sections
+      if (elements.length > 0 && index < lines.length - 1) {
+        elements.push(<div key={`space-${index}`} className="h-2" />);
+      }
+    } else {
+      flushList();
+      elements.push(<p key={`text-${index}`} className="text-sm">{trimmed}</p>);
+    }
+  });
+  
+  flushList();
+  
+  return <div className="text-sm text-muted-foreground space-y-2">{elements}</div>;
+}
+
 export default function TesterSessionPage({ params }: { params: { token: string } }) {
   const { token } = params;
   const [data, setData] = useState<JoinData | null>(null);
@@ -21,7 +66,9 @@ export default function TesterSessionPage({ params }: { params: { token: string 
   const [selectedScene, setSelectedScene] = useState<string>("");
   const [notes, setNotes] = useState<Note[]>([]);
   const [hasLeft, setHasLeft] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const sceneInitializedRef = useRef(false);
 
   useEffect(() => { fetchSession(); return () => { if (pollIntervalRef.current) clearInterval(pollIntervalRef.current); }; /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [token]);
 
@@ -57,7 +104,11 @@ export default function TesterSessionPage({ params }: { params: { token: string 
       }
       setError(null);
       setData(result);
-      if (result.session.scenes?.length > 0 && !selectedScene) setSelectedScene(result.session.scenes[0].id);
+      // Only set default scene on first load, not on subsequent polls
+      if (result.session.scenes?.length > 0 && !sceneInitializedRef.current) {
+        setSelectedScene(result.session.scenes[0].id);
+        sceneInitializedRef.current = true;
+      }
       fetchNotes(result.session.id, result.tester.id);
     } catch { 
       setError({ message: "Failed to load session", type: "error" }); 
@@ -97,7 +148,40 @@ export default function TesterSessionPage({ params }: { params: { token: string 
     <div className="min-h-screen gradient-mesh">
       <header className="border-b border-border bg-card/80 glass sticky top-0 z-50"><div className="container mx-auto px-4 h-16 flex items-center justify-between"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"><Mic className="w-4 h-4 text-primary-foreground" /></div><div><h1 className="font-semibold">{session.name}</h1><p className="text-xs text-muted-foreground">Testing as {tester.name}</p></div></div><div className="flex items-center gap-3"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /><span className="text-sm text-muted-foreground">Live</span></div><Button variant="outline" size="sm" onClick={() => setHasLeft(true)}>End Session</Button></div></div></header>
       <main className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
-        <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground mb-2">Current Scene</p><Select value={selectedScene} onValueChange={setSelectedScene}><SelectTrigger className="w-full"><SelectValue placeholder="Select a scene" /></SelectTrigger><SelectContent className="w-[var(--radix-select-trigger-width)]">{session.scenes?.map((s: Scene) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select></CardContent></Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground mb-2">Current Scene</p>
+            <Select value={selectedScene} onValueChange={setSelectedScene}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Select a scene" /></SelectTrigger>
+              <SelectContent className="w-[var(--radix-select-trigger-width)]">{session.scenes?.map((s: Scene) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+            </Select>
+            {currentScene && (
+              <div className="mt-4 rounded-lg bg-primary/5 border border-primary/10 overflow-hidden">
+                <button 
+                  onClick={() => setDescriptionExpanded(!descriptionExpanded)}
+                  className="w-full p-3 flex items-center gap-2 hover:bg-primary/10 transition-colors text-left"
+                >
+                  <Info className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span className="text-sm font-medium text-primary flex-1">What to test</span>
+                  {descriptionExpanded ? (
+                    <ChevronDown className="w-4 h-4 text-primary flex-shrink-0" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-primary flex-shrink-0" />
+                  )}
+                </button>
+                {descriptionExpanded && (
+                  <div className="px-3 pb-3 pl-9">
+                    {currentScene.description ? (
+                      <FormattedDescription text={currentScene.description} />
+                    ) : (
+                      <p className="text-sm text-muted-foreground/60 italic">No testing instructions added yet</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
         {currentScene && (
           <Card>
             <CardHeader className="pb-3">

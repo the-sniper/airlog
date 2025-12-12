@@ -13,10 +13,12 @@ import {
   Trash2,
   Loader2,
   Layout,
+  Edit2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -56,7 +58,13 @@ export default function SessionDetailPage({
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [addSceneDialog, setAddSceneDialog] = useState(false);
   const [newSceneName, setNewSceneName] = useState("");
+  const [newSceneDescription, setNewSceneDescription] = useState("");
   const [addingScene, setAddingScene] = useState(false);
+  const [editSceneDialog, setEditSceneDialog] = useState(false);
+  const [editingScene, setEditingScene] = useState<Scene | null>(null);
+  const [editSceneName, setEditSceneName] = useState("");
+  const [editSceneDescription, setEditSceneDescription] = useState("");
+  const [savingScene, setSavingScene] = useState(false);
 
   useEffect(() => {
     fetchSession(); /* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -115,13 +123,36 @@ export default function SessionDetailPage({
       await fetch(`/api/sessions/${id}/scenes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newSceneName.trim() }),
+        body: JSON.stringify({ name: newSceneName.trim(), description: newSceneDescription.trim() || null }),
       });
       setNewSceneName("");
+      setNewSceneDescription("");
       setAddSceneDialog(false);
       fetchSession();
     } finally {
       setAddingScene(false);
+    }
+  }
+  function openEditSceneDialog(scene: Scene) {
+    setEditingScene(scene);
+    setEditSceneName(scene.name);
+    setEditSceneDescription(scene.description || "");
+    setEditSceneDialog(true);
+  }
+  async function handleSaveScene() {
+    if (!editingScene || !editSceneName.trim()) return;
+    setSavingScene(true);
+    try {
+      await fetch(`/api/sessions/${id}/scenes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sceneId: editingScene.id, name: editSceneName.trim(), description: editSceneDescription.trim() || null }),
+      });
+      setEditSceneDialog(false);
+      setEditingScene(null);
+      fetchSession();
+    } finally {
+      setSavingScene(false);
     }
   }
   async function handleDeleteScene(sceneId: string) {
@@ -278,26 +309,45 @@ export default function SessionDetailPage({
                   {session.scenes?.map((s: Scene, index: number) => (
                     <div
                       key={s.id}
-                      className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 group"
+                      className="p-4 rounded-lg bg-secondary/30 group"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground font-mono w-6">
-                          {index + 1}
-                        </span>
-                        <p className="font-medium">{s.name}</p>
-                      </div>
-                      {session.status !== "completed" &&
-                        session.scenes &&
-                        session.scenes.length > 1 && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100"
-                            onClick={() => handleDeleteScene(s.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <span className="text-sm text-muted-foreground font-mono w-6 pt-0.5">
+                            {index + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium">{s.name}</p>
+                            {s.description ? (
+                              <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{s.description}</p>
+                            ) : session.status !== "completed" && (
+                              <p className="text-sm text-muted-foreground/50 mt-1 italic">No testing instructions</p>
+                            )}
+                          </div>
+                        </div>
+                        {session.status !== "completed" && (
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-foreground"
+                              onClick={() => openEditSceneDialog(s)}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            {session.scenes && session.scenes.length > 1 && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-destructive"
+                                onClick={() => handleDeleteScene(s.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
                         )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -502,13 +552,18 @@ export default function SessionDetailPage({
                 value={newSceneName}
                 onChange={(e) => setNewSceneName(e.target.value)}
                 placeholder="e.g., Login Flow"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddScene();
-                  }
-                }}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sceneDescription">What to Test <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Textarea
+                id="sceneDescription"
+                value={newSceneDescription}
+                onChange={(e) => setNewSceneDescription(e.target.value)}
+                placeholder={"Use bullet points for clarity:\n• Check login with valid credentials\n• Try invalid password\n• Test forgot password flow"}
+                className="min-h-[120px] resize-none"
+              />
+              <p className="text-xs text-muted-foreground">Tip: Use • or - for bullet points</p>
             </div>
           </div>
           <DialogFooter>
@@ -519,8 +574,50 @@ export default function SessionDetailPage({
               onClick={handleAddScene}
               disabled={addingScene || !newSceneName.trim()}
             >
-              {addingScene && <Loader2 className="w-4 h-4 animate-spin" />}Add
-              Scene
+              {addingScene && <Loader2 className="w-4 h-4 animate-spin" />}Add Scene
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={editSceneDialog} onOpenChange={setEditSceneDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Scene</DialogTitle>
+            <DialogDescription>
+              Update scene details and testing instructions
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="editSceneName">Scene Name</Label>
+              <Input
+                id="editSceneName"
+                value={editSceneName}
+                onChange={(e) => setEditSceneName(e.target.value)}
+                placeholder="e.g., Login Flow"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editSceneDescription">What to Test <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Textarea
+                id="editSceneDescription"
+                value={editSceneDescription}
+                onChange={(e) => setEditSceneDescription(e.target.value)}
+                placeholder={"Use bullet points for clarity:\n• Check login with valid credentials\n• Try invalid password\n• Test forgot password flow"}
+                className="min-h-[120px] resize-none"
+              />
+              <p className="text-xs text-muted-foreground">Tip: Use • or - for bullet points</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditSceneDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveScene}
+              disabled={savingScene || !editSceneName.trim()}
+            >
+              {savingScene && <Loader2 className="w-4 h-4 animate-spin" />}Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>

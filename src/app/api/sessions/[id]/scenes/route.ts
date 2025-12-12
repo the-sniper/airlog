@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const { id } = params;
   const body = await req.json();
-  const { name } = body;
+  const { name, description } = body;
   if (!name) return NextResponse.json({ error: "Scene name required" }, { status: 400 });
   
   const supabase = createAdminClient();
@@ -21,12 +21,35 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   
   const { data, error } = await supabase
     .from("scenes")
-    .insert({ session_id: id, name, order_index: nextOrderIndex })
+    .insert({ session_id: id, name, description: description || null, order_index: nextOrderIndex })
     .select()
     .single();
   
   if (error) return NextResponse.json({ error: "Failed to add scene" }, { status: 500 });
   return NextResponse.json(data, { status: 201 });
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const body = await req.json();
+  const { sceneId, name, description } = body;
+  if (!sceneId) return NextResponse.json({ error: "Scene ID required" }, { status: 400 });
+  
+  const supabase = createAdminClient();
+  const updateData: { name?: string; description?: string | null } = {};
+  if (name !== undefined) updateData.name = name;
+  if (description !== undefined) updateData.description = description || null;
+  
+  const { data, error } = await supabase
+    .from("scenes")
+    .update(updateData)
+    .eq("id", sceneId)
+    .eq("session_id", id)
+    .select()
+    .single();
+  
+  if (error) return NextResponse.json({ error: "Failed to update scene" }, { status: 500 });
+  return NextResponse.json(data);
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
