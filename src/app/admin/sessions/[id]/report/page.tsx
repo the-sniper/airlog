@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Download, Loader2, FileText, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
 import type { SessionWithDetails, NoteWithDetails, NoteCategory } from "@/types";
 
-export default function ReportPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ReportPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const [session, setSession] = useState<SessionWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);

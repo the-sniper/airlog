@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { generateInviteToken } from "@/lib/utils";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   const supabase = createAdminClient();
   const { data } = await supabase.from("testers").select("*").eq("session_id", id).order("created_at", { ascending: true });
   return NextResponse.json(data);
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   const { name } = await req.json();
   if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
   const supabase = createAdminClient();

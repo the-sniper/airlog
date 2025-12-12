@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Mic, AlertCircle, Clock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,25 +11,54 @@ import type { SessionWithScenes, Tester, Scene, Note } from "@/types";
 
 interface JoinData { tester: Tester; session: SessionWithScenes; }
 
-export default function TesterSessionPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = use(params);
+export default function TesterSessionPage({ params }: { params: { token: string } }) {
+  const { token } = params;
   const [data, setData] = useState<JoinData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ message: string; type: string } | null>(null);
   const [selectedScene, setSelectedScene] = useState<string>("");
   const [notes, setNotes] = useState<Note[]>([]);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => { fetchSession(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [token]);
+  useEffect(() => { fetchSession(); return () => { if (pollIntervalRef.current) clearInterval(pollIntervalRef.current); }; /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [token]);
 
   async function fetchSession() {
     try {
-      const res = await fetch(`/api/join/${token}`);
+      // Add cache-busting to prevent browser caching
+      const res = await fetch(`/api/join/${token}?t=${Date.now()}`, { cache: 'no-store' });
       const result = await res.json();
-      if (!res.ok) { let type = "error"; if (res.status === 410) type = "ended"; if (res.status === 425) type = "not_started"; setError({ message: result.error, type }); return; }
+      if (!res.ok) {
+        let type = "error";
+        if (res.status === 410) {
+          type = "ended";
+          // Session ended - stop polling
+          if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+          }
+        }
+        if (res.status === 425) {
+          type = "not_started";
+          // Start polling if session not started yet
+          if (!pollIntervalRef.current) {
+            pollIntervalRef.current = setInterval(fetchSession, 3000);
+          }
+        }
+        setError({ message: result.error, type });
+        setLoading(false);
+        return;
+      }
+      // Session is active - start/continue polling to detect when it ends
+      if (!pollIntervalRef.current) {
+        pollIntervalRef.current = setInterval(fetchSession, 5000); // Poll every 5 seconds while active
+      }
+      setError(null);
       setData(result);
-      if (result.session.scenes?.length > 0) setSelectedScene(result.session.scenes[0].id);
+      if (result.session.scenes?.length > 0 && !selectedScene) setSelectedScene(result.session.scenes[0].id);
       fetchNotes(result.session.id, result.tester.id);
-    } catch { setError({ message: "Failed to load session", type: "error" }); }
+    } catch { 
+      setError({ message: "Failed to load session", type: "error" }); 
+    }
     finally { setLoading(false); }
   }
 
