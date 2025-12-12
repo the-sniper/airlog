@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { FileText, Edit2, Check, X, Play, Pause, Filter } from "lucide-react";
+import { FileText, Edit2, Check, X, Play, Pause, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +79,16 @@ export function NotesList({ notes, sessionId, scenes, testers, onNoteUpdated }: 
     return "Unknown";
   }
 
-  if (notes.length === 0) return <Card><CardContent className="py-12 text-center"><FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" /><p className="text-muted-foreground">No notes yet</p></CardContent></Card>;
+  if (notes.length === 0) return (
+    <Card>
+      <CardContent className="py-16 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-secondary/50 flex items-center justify-center mx-auto mb-5">
+          <FileText className="w-7 h-7 text-muted-foreground/50" strokeWidth={1.5} />
+        </div>
+        <p className="text-muted-foreground">No notes yet</p>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <Card>
@@ -94,7 +103,7 @@ export function NotesList({ notes, sessionId, scenes, testers, onNoteUpdated }: 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-muted-foreground" />
+            <SlidersHorizontal className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
             <span className="text-sm text-muted-foreground">Filter by:</span>
           </div>
           

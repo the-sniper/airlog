@@ -2,18 +2,213 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --background: 0 0% 3%; --foreground: 0 0% 95%; --card: 0 0% 6%; --card-foreground: 0 0% 95%; --popover: 0 0% 6%; --popover-foreground: 0 0% 95%; --primary: 142 76% 46%; --primary-foreground: 0 0% 100%; --secondary: 0 0% 12%; --secondary-foreground: 0 0% 95%; --muted: 0 0% 12%; --muted-foreground: 0 0% 60%; --accent: 142 76% 46%; --accent-foreground: 0 0% 100%; --destructive: 0 84% 60%; --destructive-foreground: 0 0% 100%; --border: 0 0% 15%; --input: 0 0% 15%; --ring: 142 76% 46%; --radius: 0.625rem; }
-* { box-sizing: border-box; padding: 0; margin: 0; }
-body { color: hsl(var(--foreground)); background: hsl(var(--background)); -webkit-font-smoothing: antialiased; }
-.gradient-mesh { background: radial-gradient(at 40% 20%, hsla(142, 76%, 36%, 0.15) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(142, 76%, 36%, 0.1) 0px, transparent 50%); }
-.glass { background: hsla(0, 0%, 6%, 0.8); backdrop-filter: blur(12px); border: 1px solid hsla(0, 0%, 100%, 0.1); }
-.recording-indicator { animation: pulse 1.5s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } }
-.waveform-bar { animation: waveform 0.8s ease-in-out infinite; }
-@keyframes waveform { 0%, 100% { height: 4px; } 50% { height: 20px; } }
+/* Light Mode - Alpine Echo inspired */
+:root {
+  --background: 220 30% 97%;
+  --foreground: 224 50% 18%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 50% 18%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 50% 18%;
+  
+  /* Primary: #5271C0 - Alpine Blue */
+  --primary: 224 50% 54%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary - Light mode */
+  --secondary: 220 30% 92%;
+  --secondary-foreground: 224 50% 25%;
+  
+  /* Muted - Light mode */
+  --muted: 220 30% 92%;
+  --muted-foreground: 220 20% 45%;
+  
+  /* Accent: #95B2F8 - Light blue */
+  --accent: 222 89% 78%;
+  --accent-foreground: 224 50% 18%;
+  
+  --destructive: 0 72% 50%;
+  --destructive-foreground: 0 0% 100%;
+  
+  /* Borders - Light mode */
+  --border: 220 20% 88%;
+  --input: 220 20% 88%;
+  --ring: 224 50% 54%;
+  --radius: 0.75rem;
+  
+  /* Additional semantic colors */
+  --success: 152 60% 40%;
+  --warning: 38 92% 50%;
+  --info: 222 70% 55%;
+}
+
+/* Dark Mode - Alpine Echo */
+.dark {
+  --background: 244 35% 7%;
+  --foreground: 224 60% 93%;
+  --card: 244 35% 10%;
+  --card-foreground: 224 60% 93%;
+  --popover: 244 35% 10%;
+  --popover-foreground: 224 60% 93%;
+  
+  /* Primary: #5271C0 - Alpine Blue */
+  --primary: 224 50% 54%;
+  --primary-foreground: 224 60% 98%;
+  
+  /* Secondary based on #283B60 */
+  --secondary: 220 42% 16%;
+  --secondary-foreground: 224 60% 90%;
+  
+  /* Muted based on #506695 */
+  --muted: 220 42% 16%;
+  --muted-foreground: 220 30% 55%;
+  
+  /* Accent: #95B2F8 - Light blue */
+  --accent: 222 89% 78%;
+  --accent-foreground: 244 35% 10%;
+  
+  --destructive: 0 72% 55%;
+  --destructive-foreground: 210 40% 98%;
+  
+  /* Borders based on #506695 */
+  --border: 220 30% 20%;
+  --input: 220 30% 20%;
+  --ring: 224 50% 54%;
+  
+  /* Additional semantic colors */
+  --success: 152 60% 45%;
+  --warning: 38 92% 50%;
+  --info: 222 89% 78%;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Gradient mesh - Light mode */
+.gradient-mesh {
+  background: 
+    radial-gradient(at 27% 37%, hsla(224, 50%, 54%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(222, 89%, 78%, 0.06) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(220, 42%, 70%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(244, 35%, 70%, 0.06) 0px, transparent 50%);
+}
+
+/* Gradient mesh - Dark mode */
+.dark .gradient-mesh {
+  background: 
+    radial-gradient(at 27% 37%, hsla(224, 50%, 54%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(222, 89%, 78%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(220, 42%, 27%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(244, 35%, 23%, 0.1) 0px, transparent 50%);
+}
+
+/* Glassmorphism - Light mode */
+.glass {
+  background: hsla(0, 0%, 100%, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid hsla(220, 20%, 80%, 0.5);
+}
+
+/* Glassmorphism - Dark mode */
+.dark .glass {
+  background: hsla(244, 35%, 10%, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid hsla(220, 30%, 40%, 0.15);
+}
+
+/* Recording indicator */
+.recording-indicator {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.85; }
+}
+
+/* Waveform animation */
+.waveform-bar {
+  animation: waveform 0.8s ease-in-out infinite;
+}
+
+@keyframes waveform {
+  0%, 100% { height: 4px; }
+  50% { height: 24px; }
+}
+
+.waveform-bar:nth-child(1) { animation-delay: 0s; }
 .waveform-bar:nth-child(2) { animation-delay: 0.1s; }
 .waveform-bar:nth-child(3) { animation-delay: 0.2s; }
 .waveform-bar:nth-child(4) { animation-delay: 0.3s; }
 .waveform-bar:nth-child(5) { animation-delay: 0.4s; }
-.animate-fade-in { animation: fade-in 0.3s ease-out; }
-@keyframes fade-in { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+
+/* Fade in animation */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Smooth scrollbar - Light mode */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(220 30% 95%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(220 20% 80%);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(220 20% 70%);
+}
+
+/* Smooth scrollbar - Dark mode */
+.dark ::-webkit-scrollbar-track {
+  background: hsl(244 35% 8%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(220 30% 22%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(220 30% 28%);
+}
+
+/* Icon styling utility */
+.icon-soft {
+  stroke-width: 1.75;
+}
+
+/* Subtle text gradient for headings */
+.text-gradient {
+  background: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(220 30% 70%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Primary gradient for special elements - Alpine Echo gradient */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, hsl(224 50% 54%) 0%, hsl(222 89% 78%) 100%);
+}

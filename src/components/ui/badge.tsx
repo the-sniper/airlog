@@ -2,8 +2,25 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const badgeVariants = cva("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold", {
-  variants: { variant: { default: "border-transparent bg-primary text-primary-foreground", secondary: "border-transparent bg-secondary text-secondary-foreground", destructive: "border-transparent bg-destructive text-destructive-foreground", outline: "text-foreground", bug: "border-red-200 bg-red-100 text-red-800", feature: "border-blue-200 bg-blue-100 text-blue-800", ux: "border-purple-200 bg-purple-100 text-purple-800", performance: "border-orange-200 bg-orange-100 text-orange-800", draft: "border-gray-200 bg-gray-100 text-gray-800", active: "border-green-200 bg-green-100 text-green-800", completed: "border-blue-200 bg-blue-100 text-blue-800" } },
+const badgeVariants = cva("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors", {
+  variants: { 
+    variant: { 
+      default: "border-transparent bg-primary/15 text-primary", 
+      secondary: "border-transparent bg-secondary text-secondary-foreground", 
+      destructive: "border-transparent bg-red-100 text-red-700 dark:bg-destructive/15 dark:text-red-400", 
+      outline: "border-border text-muted-foreground",
+      // Category badges - Light/Dark optimized
+      bug: "border-rose-300 bg-rose-100 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-400", 
+      feature: "border-sky-300 bg-sky-100 text-sky-700 dark:border-sky-400/30 dark:bg-sky-400/15 dark:text-sky-400", 
+      ux: "border-indigo-300 bg-indigo-100 text-indigo-700 dark:border-indigo-400/30 dark:bg-indigo-400/15 dark:text-indigo-400", 
+      performance: "border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/15 dark:text-amber-400",
+      other: "border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-400/30 dark:bg-slate-400/15 dark:text-slate-400",
+      // Status badges
+      draft: "border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-400/30 dark:bg-slate-400/15 dark:text-slate-400", 
+      active: "border-emerald-300 bg-emerald-100 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/15 dark:text-emerald-400", 
+      completed: "border-sky-300 bg-sky-100 text-sky-700 dark:border-sky-400/30 dark:bg-sky-400/15 dark:text-sky-400" 
+    } 
+  },
   defaultVariants: { variant: "default" },
 });
 

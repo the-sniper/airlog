@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Mic, AlertCircle, Clock, CheckCircle, Keyboard, Info, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VoiceRecorder } from "@/components/voice-recorder";
@@ -146,7 +147,7 @@ export default function TesterSessionPage({ params }: { params: { token: string 
 
   return (
     <div className="min-h-screen gradient-mesh">
-      <header className="border-b border-border bg-card/80 glass sticky top-0 z-50"><div className="container mx-auto px-4 h-16 flex items-center justify-between"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"><Mic className="w-4 h-4 text-primary-foreground" /></div><div><h1 className="font-semibold">{session.name}</h1><p className="text-xs text-muted-foreground">Testing as {tester.first_name} {tester.last_name}</p></div></div><div className="flex items-center gap-3"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /><span className="text-sm text-muted-foreground">Live</span></div><Button variant="outline" size="sm" onClick={() => setHasLeft(true)}>End Session</Button></div></div></header>
+      <header className="border-b border-border bg-card/80 glass sticky top-0 z-50"><div className="container mx-auto px-4 h-16 flex items-center justify-between"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"><Mic className="w-4 h-4 text-primary-foreground" /></div><div><h1 className="font-semibold">{session.name}</h1><p className="text-xs text-muted-foreground">Testing as {tester.first_name} {tester.last_name}</p></div></div><div className="flex items-center gap-3"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /><span className="text-sm text-muted-foreground">Live</span></div><ThemeToggle /><Button variant="outline" size="sm" onClick={() => setHasLeft(true)}>End Session</Button></div></div></header>
       <main className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
         <Card>
           <CardContent className="pt-6">
