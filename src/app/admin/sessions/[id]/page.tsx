@@ -1377,7 +1377,7 @@ export default function SessionDetailPage({
                 id="sceneDescription"
                 value={newSceneDescription}
                 onChange={(e) => setNewSceneDescription(e.target.value)}
-                placeholder={"Use bullet points for clarity:\n• Check login with valid credentials\n• Try invalid password\n• Test forgot password flow"}
+                placeholder={"Use bullet points for clarity:\n• Test player movement and controls\n• Check collision detection\n• Verify UI interactions work correctly"}
                 className="min-h-[120px] resize-none"
               />
               <p className="text-xs text-muted-foreground">Tip: Use • or - for bullet points</p>
@@ -1420,7 +1420,7 @@ export default function SessionDetailPage({
                 id="editSceneDescription"
                 value={editSceneDescription}
                 onChange={(e) => setEditSceneDescription(e.target.value)}
-                placeholder={"Use bullet points for clarity:\n• Check login with valid credentials\n• Try invalid password\n• Test forgot password flow"}
+                placeholder={"Use bullet points for clarity:\n• Test player movement and controls\n• Check collision detection\n• Verify UI interactions work correctly"}
                 className="min-h-[120px] resize-none"
               />
               <p className="text-xs text-muted-foreground">Tip: Use • or - for bullet points</p>

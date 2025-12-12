@@ -88,7 +88,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           <div className="space-y-3">
             {Object.entries(stats?.categoryBreakdown || {}).map(([category, count]) => (
               <div key={category} className="flex items-center gap-3">
-                <Badge variant={category as "bug" | "feature" | "ux" | "performance" | "secondary"} className="w-24">{getCategoryLabel(category)}</Badge>
+                <Badge variant={category as "bug" | "feature" | "ux" | "performance" | "secondary"} className="w-32 justify-center">{getCategoryLabel(category)}</Badge>
                 <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${stats?.total ? (count / stats.total) * 100 : 0}%` }} /></div>
                 <span className="text-sm font-mono w-8 text-right">{count}</span>
               </div>
