@@ -110,60 +110,62 @@ export function NotesList({ notes, sessionId, scenes, testers, onNoteUpdated, on
         </CardTitle>
         
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
             <span className="text-sm text-muted-foreground">Filter by:</span>
           </div>
           
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="h-8 w-[140px] text-xs">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {CATEGORIES.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {scenes && scenes.length > 0 && (
-            <Select value={sceneFilter} onValueChange={setSceneFilter}>
-              <SelectTrigger className="h-8 w-[130px] text-xs">
-                <SelectValue placeholder="Scene" />
+          <div className="flex flex-wrap items-center gap-2 flex-1">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="h-8 flex-1 sm:flex-none sm:w-[140px] text-xs">
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Scenes</SelectItem>
-                {scenes.map((scene) => (
-                  <SelectItem key={scene.id} value={scene.id}>{scene.name}</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          )}
+            
+            {scenes && scenes.length > 0 && (
+              <Select value={sceneFilter} onValueChange={setSceneFilter}>
+                <SelectTrigger className="h-8 flex-1 sm:flex-none sm:w-[130px] text-xs">
+                  <SelectValue placeholder="Scene" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Scenes</SelectItem>
+                  {scenes.map((scene) => (
+                    <SelectItem key={scene.id} value={scene.id}>{scene.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            
+            {testers && testers.length > 0 && (
+              <Select value={testerFilter} onValueChange={setTesterFilter}>
+                <SelectTrigger className="h-8 w-[120px] sm:w-[150px] text-xs">
+                  <SelectValue placeholder="Tester" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Testers</SelectItem>
+                  {testers.map((tester) => (
+                    <SelectItem key={tester.id} value={tester.id}>
+                      {tester.first_name} {tester.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           
-          {testers && testers.length > 0 && (
-            <Select value={testerFilter} onValueChange={setTesterFilter}>
-              <SelectTrigger className="h-8 w-[150px] text-xs">
-                <SelectValue placeholder="Tester" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Testers</SelectItem>
-                {testers.map((tester) => (
-                  <SelectItem key={tester.id} value={tester.id}>
-                    {tester.first_name} {tester.last_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearFilters}>
-              <X className="w-3 h-3 mr-1" />
-              Clear
-            </Button>
-          )}
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearFilters}>
+                <X className="w-3 h-3 mr-1" />
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       
@@ -194,7 +196,7 @@ export function NotesList({ notes, sessionId, scenes, testers, onNoteUpdated, on
                 ) : (
                   "scene" in note && note.scene && <span className="text-xs text-muted-foreground">{note.scene.name}</span>
                 )}<span className="text-xs text-muted-foreground">•</span><span className="text-xs text-muted-foreground">{getTesterName(note)}</span></div><span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(note.created_at)}</span></div>
-            {editingId === note.id ? <div className="space-y-2"><Textarea value={editText} onChange={(e) => setEditText(e.target.value)} className="min-h-[100px]" /><div className="flex justify-end gap-2"><Button variant="ghost" size="sm" onClick={cancelEditing}><X className="w-4 h-4" />Cancel</Button><Button size="sm" onClick={() => saveEdit(note.id)}><Check className="w-4 h-4" />Save</Button></div></div> : <div className="group relative"><p className="text-sm pr-16">{note.edited_transcript || note.raw_transcript || <span className="text-muted-foreground italic">No transcript</span>}</p><div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100">{(note.edited_transcript || note.raw_transcript) && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => startEditing(note)}><Edit2 className="w-3 h-3" /></Button>}{onNoteDeleted && <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => deleteNote(note.id)} disabled={deletingId === note.id}><Trash2 className="w-3 h-3" /></Button>}</div></div>}
+            {editingId === note.id ? <div className="space-y-2"><Textarea value={editText} onChange={(e) => setEditText(e.target.value)} className="min-h-[100px]" /><div className="flex justify-end gap-2"><Button variant="ghost" size="sm" onClick={cancelEditing}><X className="w-4 h-4" />Cancel</Button><Button size="sm" onClick={() => saveEdit(note.id)}><Check className="w-4 h-4" />Save</Button></div></div> : <div className="group relative"><p className="text-sm">{note.edited_transcript || note.raw_transcript || <span className="text-muted-foreground italic">No transcript</span>}</p><div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 bg-card/80 rounded">{(note.edited_transcript || note.raw_transcript) && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => startEditing(note)}><Edit2 className="w-3 h-3" /></Button>}{onNoteDeleted && <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => deleteNote(note.id)} disabled={deletingId === note.id}><Trash2 className="w-3 h-3" /></Button>}</div></div>}
             {note.edited_transcript && note.raw_transcript && note.edited_transcript !== note.raw_transcript && <details className="text-xs"><summary className="text-muted-foreground cursor-pointer hover:text-foreground">Show original</summary><p className="mt-2 p-2 bg-secondary/30 rounded text-muted-foreground">{note.raw_transcript}</p></details>}
             {note.audio_url && <div className="flex items-center gap-2"><Button variant="ghost" size="sm" className="h-8" onClick={() => toggleAudio(note.id)}>{playingId === note.id ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}{playingId === note.id ? "Pause" : "Play"}</Button><audio id={`audio-${note.id}`} src={note.audio_url} className="hidden" /></div>}
           </div>

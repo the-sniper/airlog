@@ -72,11 +72,11 @@ function FormattedDescription({ text }: { text: string }) {
   const flushList = () => {
     if (currentList.length > 0) {
       elements.push(
-        <ul key={`list-${elements.length}`} className="space-y-1.5 ml-1">
+        <ul key={`list-${elements.length}`} className="space-y-1.5 w-full">
           {currentList.map((item, i) => (
             <li key={i} className="flex gap-2">
-              <span className="text-primary">•</span>
-              <span>{item}</span>
+              <span className="text-primary shrink-0">•</span>
+              <span className="flex-1">{item}</span>
             </li>
           ))}
         </ul>
@@ -614,16 +614,11 @@ export default function SessionDetailPage({
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-4">
-            {/* <Link href="/admin">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link> */}
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold">{session.name}</h1>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <h1 className="text-xl sm:text-2xl font-bold">{session.name}</h1>
                 <Badge
                   variant={session.status as "draft" | "active" | "completed"}
                 >
@@ -637,9 +632,9 @@ export default function SessionDetailPage({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
           {session.status === "draft" && (
-            <Button onClick={handleStartSession}>
+            <Button onClick={handleStartSession} className="w-full sm:w-auto">
               <Play className="w-4 h-4" />
               Start Session
             </Button>
@@ -650,7 +645,7 @@ export default function SessionDetailPage({
                 <Clock className="w-4 h-4" />
                 <span className="font-mono">{formattedElapsedTime}</span>
               </div>
-              <Button variant="destructive" onClick={handleEndSession}>
+              <Button variant="destructive" onClick={handleEndSession} className="flex-1 sm:flex-none">
                 <Square className="w-4 h-4" />
                 End Session
               </Button>
@@ -658,12 +653,13 @@ export default function SessionDetailPage({
           )}
           {session.status === "completed" && (
             <>
-              <Button variant="outline" onClick={() => setRestartDialog(true)}>
+              <Button variant="outline" onClick={() => setRestartDialog(true)} className="flex-1 sm:flex-none">
                 <RotateCcw className="w-4 h-4" />
-                Restart Session
+                <span className="hidden sm:inline">Restart Session</span>
+                <span className="sm:hidden">Restart</span>
               </Button>
-              <Link href={`/admin/sessions/${id}/report`}>
-                <Button>View Report</Button>
+              <Link href={`/admin/sessions/${id}/report`} className="flex-1 sm:flex-none">
+                <Button className="w-full">View Report</Button>
               </Link>
             </>
           )}
@@ -710,24 +706,24 @@ export default function SessionDetailPage({
         </Card>
       </div>
       <Tabs defaultValue="scenes">
-        <TabsList>
-          <TabsTrigger value="scenes" className="gap-2">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="scenes" className="gap-1.5 sm:gap-2 flex-1 sm:flex-none">
             <Layout className="w-4 h-4" />
-            Scenes
+            <span>Scenes</span>
           </TabsTrigger>
-          <TabsTrigger value="testers" className="gap-2">
+          <TabsTrigger value="testers" className="gap-1.5 sm:gap-2 flex-1 sm:flex-none">
             <Users className="w-4 h-4" />
-            Testers
+            <span>Testers</span>
           </TabsTrigger>
-          <TabsTrigger value="notes" className="gap-2">
+          <TabsTrigger value="notes" className="gap-1.5 sm:gap-2 flex-1 sm:flex-none">
             <FileText className="w-4 h-4" />
-            Notes
+            <span>Notes</span>
           </TabsTrigger>
         </TabsList>
         <TabsContent value="scenes" className="mt-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle>Scenes</CardTitle>
                   <CardDescription>
@@ -737,7 +733,7 @@ export default function SessionDetailPage({
                   </CardDescription>
                 </div>
                 {session.status !== "completed" && (
-                  <Button onClick={() => setAddSceneDialog(true)}>
+                  <Button onClick={() => setAddSceneDialog(true)} size="sm" className="w-full sm:w-auto">
                     <Plus className="w-4 h-4" />
                     Add Scene
                   </Button>
@@ -757,24 +753,15 @@ export default function SessionDetailPage({
                       key={s.id}
                       className="p-4 rounded-lg bg-secondary/30 group"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <span className="text-sm text-muted-foreground font-mono w-6 pt-0.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <span className="text-sm text-muted-foreground font-mono w-6 pt-0.5 shrink-0">
                             {index + 1}
                           </span>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium">{s.name}</p>
-                            {s.description ? (
-                              <div className="mt-1">
-                                <FormattedDescription text={s.description} />
-                              </div>
-                            ) : session.status !== "completed" && (
-                              <p className="text-sm text-muted-foreground/50 mt-1 italic">No testing instructions</p>
-                            )}
-                          </div>
+                          <p className="font-medium">{s.name}</p>
                         </div>
                         {session.status !== "completed" && (
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                          <div className="flex items-center gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -796,6 +783,13 @@ export default function SessionDetailPage({
                           </div>
                         )}
                       </div>
+                      {s.description ? (
+                        <div className="mt-2">
+                          <FormattedDescription text={s.description} />
+                        </div>
+                      ) : session.status !== "completed" && (
+                        <p className="text-sm text-muted-foreground/50 mt-2 italic">No testing instructions</p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -806,7 +800,7 @@ export default function SessionDetailPage({
         <TabsContent value="testers" className="mt-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle>Testers</CardTitle>
                   <CardDescription>
@@ -815,25 +809,30 @@ export default function SessionDetailPage({
                       : "Manage testers and invite links"}
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {session.status !== "completed" && selectedTesterIds.size > 0 && (
                     <Button 
                       variant="outline" 
                       onClick={handleSendEmailInvites}
                       disabled={sendingInvites}
+                      size="sm"
+                      className="flex-1 sm:flex-none"
                     >
                       {sendingInvites ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <Mail className="w-4 h-4" />
                       )}
-                      Send Email Invite ({selectedTesterIds.size})
+                      <span className="hidden sm:inline">Send Email Invite</span>
+                      <span className="sm:hidden">Email</span>
+                      <span>({selectedTesterIds.size})</span>
                     </Button>
                   )}
                   {session.status !== "completed" && (
-                    <Button onClick={() => setAddTesterDialog(true)}>
+                    <Button onClick={() => setAddTesterDialog(true)} size="sm" className="flex-1 sm:flex-none">
                       <Plus className="w-4 h-4" />
-                      Add Tester
+                      <span className="hidden sm:inline">Add Tester</span>
+                      <span className="sm:hidden">Add</span>
                     </Button>
                   )}
                 </div>
@@ -871,13 +870,13 @@ export default function SessionDetailPage({
                   {session.testers?.map((t: Tester) => (
                     <div
                       key={t.id}
-                      className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 group"
+                      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg bg-secondary/30 group"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start sm:items-center gap-3 min-w-0">
                         {session.status !== "completed" && (
                           <button
                             type="button"
-                            className="flex-shrink-0"
+                            className="flex-shrink-0 mt-0.5 sm:mt-0"
                             onClick={() => toggleTesterSelection(t.id)}
                           >
                             {selectedTesterIds.has(t.id) ? (
@@ -887,20 +886,20 @@ export default function SessionDetailPage({
                             )}
                           </button>
                         )}
-                        <div>
+                        <div className="min-w-0">
                           <p className="font-medium">{t.first_name} {t.last_name}</p>
                           {t.email && (
-                            <p className="text-xs text-muted-foreground">{t.email}</p>
+                            <p className="text-xs text-muted-foreground truncate">{t.email}</p>
                           )}
                           {session.status !== "completed" && (
-                            <p className="text-sm text-muted-foreground font-mono">
+                            <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate">
                               /join/{t.invite_token}
                             </p>
                           )}
                         </div>
                       </div>
                       {session.status !== "completed" && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 pl-8 sm:pl-0">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -916,7 +915,7 @@ export default function SessionDetailPage({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100"
+                            className="text-muted-foreground hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100"
                             onClick={() => openEditTesterDialog(t)}
                           >
                             <Edit2 className="w-4 h-4" />
@@ -924,7 +923,7 @@ export default function SessionDetailPage({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100"
+                            className="text-muted-foreground hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
                             onClick={() => handleDeleteTester(t.id)}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -956,62 +955,64 @@ export default function SessionDetailPage({
               
               {/* Filters - only show when completed and has notes */}
               {session.status === "completed" && session.notes && session.notes.length > 0 && (
-                <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 pt-2 border-t border-border">
                   <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">Filter by:</span>
                   </div>
                   
-                  <Select value={noteCategoryFilter} onValueChange={setNoteCategoryFilter}>
-                    <SelectTrigger className="h-8 w-[140px] text-xs">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="bug">Bug</SelectItem>
-                      <SelectItem value="feature">Feature</SelectItem>
-                      <SelectItem value="ux">UX Feedback</SelectItem>
-                      <SelectItem value="performance">Performance</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  {session.scenes && session.scenes.length > 0 && (
-                    <Select value={noteSceneFilter} onValueChange={setNoteSceneFilter}>
-                      <SelectTrigger className="h-8 w-[130px] text-xs">
-                        <SelectValue placeholder="Scene" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Select value={noteCategoryFilter} onValueChange={setNoteCategoryFilter}>
+                      <SelectTrigger className="h-8 w-[120px] sm:w-[140px] text-xs">
+                        <SelectValue placeholder="Category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Scenes</SelectItem>
-                        {session.scenes.map((scene) => (
-                          <SelectItem key={scene.id} value={scene.id}>{scene.name}</SelectItem>
-                        ))}
+                        <SelectItem value="all">All Categories</SelectItem>
+                        <SelectItem value="bug">Bug</SelectItem>
+                        <SelectItem value="feature">Feature</SelectItem>
+                        <SelectItem value="ux">UX Feedback</SelectItem>
+                        <SelectItem value="performance">Performance</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
-                  )}
-                  
-                  {session.testers && session.testers.length > 0 && (
-                    <Select value={noteTesterFilter} onValueChange={setNoteTesterFilter}>
-                      <SelectTrigger className="h-8 w-[150px] text-xs">
-                        <SelectValue placeholder="Tester" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Testers</SelectItem>
-                        {session.testers.map((tester) => (
-                          <SelectItem key={tester.id} value={tester.id}>
-                            {tester.first_name} {tester.last_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                  
-                  {hasActiveNoteFilters && (
-                    <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearNoteFilters}>
-                      <X className="w-3 h-3 mr-1" />
-                      Clear
-                    </Button>
-                  )}
+                    
+                    {session.scenes && session.scenes.length > 0 && (
+                      <Select value={noteSceneFilter} onValueChange={setNoteSceneFilter}>
+                        <SelectTrigger className="h-8 w-[110px] sm:w-[130px] text-xs">
+                          <SelectValue placeholder="Scene" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Scenes</SelectItem>
+                          {session.scenes.map((scene) => (
+                            <SelectItem key={scene.id} value={scene.id}>{scene.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    
+                    {session.testers && session.testers.length > 0 && (
+                      <Select value={noteTesterFilter} onValueChange={setNoteTesterFilter}>
+                        <SelectTrigger className="h-8 w-[120px] sm:w-[150px] text-xs">
+                          <SelectValue placeholder="Tester" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Testers</SelectItem>
+                          {session.testers.map((tester) => (
+                            <SelectItem key={tester.id} value={tester.id}>
+                              {tester.first_name} {tester.last_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    
+                    {hasActiveNoteFilters && (
+                      <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearNoteFilters}>
+                        <X className="w-3 h-3 mr-1" />
+                        Clear
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </CardHeader>
@@ -1036,10 +1037,10 @@ export default function SessionDetailPage({
                   {filteredNotes.map((n: NoteWithDetails) => (
                     <div
                       key={n.id}
-                      className="p-4 rounded-lg border border-border"
+                      className="p-3 sm:p-4 rounded-lg border border-border"
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between mb-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <Badge
                             variant={
                               n.category as
@@ -1095,19 +1096,21 @@ export default function SessionDetailPage({
               variant={testerTab === "team" ? "default" : "ghost"}
               size="sm"
               onClick={() => setTesterTab("team")}
-              className="gap-2"
+              className="gap-1.5 sm:gap-2 flex-1 sm:flex-none"
             >
               <UsersRound className="w-4 h-4" />
-              From Team
+              <span className="hidden sm:inline">From Team</span>
+              <span className="sm:hidden">Team</span>
             </Button>
             <Button
               variant={testerTab === "adhoc" ? "default" : "ghost"}
               size="sm"
               onClick={() => setTesterTab("adhoc")}
-              className="gap-2"
+              className="gap-1.5 sm:gap-2 flex-1 sm:flex-none"
             >
               <UserPlus className="w-4 h-4" />
-              Individual Tester
+              <span className="hidden sm:inline">Individual Tester</span>
+              <span className="sm:hidden">Individual</span>
             </Button>
           </div>
 

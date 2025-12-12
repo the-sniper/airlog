@@ -10,6 +10,7 @@ import {
   Info,
   ChevronDown,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -265,28 +266,40 @@ export default function TesterSessionPage({
   return (
     <div className="min-h-screen gradient-mesh">
       <header className="border-b border-border bg-card/80 glass sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+        <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
               <Mic className="w-4 h-4 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="font-semibold">{session.name}</h1>
-              <p className="text-xs text-muted-foreground">
+            <div className="min-w-0">
+              <h1 className="font-semibold truncate text-sm sm:text-base">{session.name}</h1>
+              <p className="text-xs text-muted-foreground truncate">
                 Testing as {tester.first_name} {tester.last_name}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1.5 mr-1 sm:mr-2">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-sm text-muted-foreground">Live</span>
+              <span className="text-xs sm:text-sm text-muted-foreground">Live</span>
             </div>
             <ThemeToggle />
+            {/* Mobile: Icon button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setHasLeft(true)}
+              className="sm:hidden text-destructive hover:text-destructive hover:bg-destructive/10"
+              title="End Session"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
+            {/* Desktop: Text button */}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setHasLeft(true)}
+              className="hidden sm:flex border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               End Session
             </Button>
