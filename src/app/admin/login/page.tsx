@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { Shield, Loader2, Eye, EyeOff, Lock, Mail, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,12 +112,10 @@ function LoginForm() {
       </div>
 
       <div className="w-full max-w-md relative">
-        {/* Floating badge */}
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary">
-            <Sparkles className="w-4 h-4" />
-            <span>Echo Test Admin</span>
-          </div>
+        {/* Logo */}
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
+          <Image src="/logo.svg" alt="AirLog" width={150} height={40} className="dark:hidden" />
+          <Image src="/logo-dark.svg" alt="AirLog" width={150} height={40} className="hidden dark:block" />
         </div>
 
         <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
@@ -247,7 +246,7 @@ function LoginForm() {
 
         {/* Subtle footer */}
         <p className="text-center text-xs text-muted-foreground/60 mt-6">
-          Protected by Echo Test Authentication
+          Protected by AirLog Authentication
         </p>
       </div>
     </div>

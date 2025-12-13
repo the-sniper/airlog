@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mic, ArrowRight, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,12 +50,8 @@ export default function JoinPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-3">
-            {/* <div className="w-11 h-11 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Mic className="w-5 h-5 text-white" strokeWidth={2} />
-            </div> */}
-            <span className="font-semibold text-xl tracking-tight">
-              Echo Test
-            </span>
+            <Image src="/logo.svg" alt="AirLog" width={150} height={40} className="dark:hidden" />
+            <Image src="/logo-dark.svg" alt="AirLog" width={150} height={40} className="hidden dark:block" />
           </Link>
         </div>
 

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
+import Image from "next/image";
 
 export default function Home() {
   const router = useRouter();
@@ -36,7 +37,8 @@ export default function Home() {
       </div>
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <span className="font-semibold text-xl tracking-tight">Echo Test</span>
+          <Image src="/logo.svg" alt="AirLog" width={150} height={40} className="mx-auto dark:hidden" />
+          <Image src="/logo-dark.svg" alt="AirLog" width={150} height={40} className="mx-auto hidden dark:block" />
         </div>
         
         <Card>

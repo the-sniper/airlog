@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutGrid, Users2, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -40,7 +41,8 @@ export function AdminSidebar() {
       <div className="flex flex-col h-full">
         <div className="h-16 flex items-center gap-3 px-6 border-b border-border/50">
           <Link href="/" className="flex items-center gap-3">
-            <span className="font-semibold tracking-tight">Echo Test</span>
+            <Image src="/logo.svg" alt="AirLog" width={120} height={32} className="dark:hidden" />
+            <Image src="/logo-dark.svg" alt="AirLog" width={120} height={32} className="hidden dark:block" />
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -130,7 +132,8 @@ export function AdminMobileHeader() {
       <header className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50">
         <div className="flex items-center justify-between h-full px-4">
           <Link href="/" className="flex items-center gap-3">
-            <span className="font-semibold tracking-tight">Echo Test</span>
+            <Image src="/logo.svg" alt="AirLog" width={120} height={32} className="dark:hidden" />
+            <Image src="/logo-dark.svg" alt="AirLog" width={120} height={32} className="hidden dark:block" />
           </Link>
           <div className="flex items-center gap-1">
             <ThemeToggle />

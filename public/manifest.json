@@ -1,6 +1,6 @@
 {
-  "name": "Echo Test - Voice-Based Testing Notes",
-  "short_name": "Echo Test",
+  "name": "AirLog - Voice-Based Testing Notes",
+  "short_name": "AirLog",
   "description": "Capture unbiased tester feedback with voice notes and automatic transcription.",
   "start_url": "/",
   "display": "standalone",

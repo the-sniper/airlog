@@ -20,7 +20,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = { 
-  title: "Echo Test - Voice-Based Testing Notes", 
+  title: "AirLog - Voice-Based Testing Notes", 
   description: "Capture unbiased tester feedback with voice notes and automatic transcription.",
   manifest: "/manifest.json",
   icons: {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Echo Test",
+    title: "AirLog",
   },
   formatDetection: {
     telephone: false,
@@ -65,11 +65,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Splash screens for iOS */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Echo Test" />
+        <meta name="apple-mobile-web-app-title" content="AirLog" />
         
         {/* Android/Chrome meta tags */}
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="application-name" content="Echo Test" />
+        <meta name="application-name" content="AirLog" />
         
         {/* Microsoft Tiles */}
         <meta name="msapplication-TileColor" content="#0a0a0a" />

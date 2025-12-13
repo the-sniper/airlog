@@ -20,12 +20,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         const inviteUrl = `${baseUrl}/join/${tester.invite_token}`;
         
         const { error } = await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || "Echo Test <onboarding@resend.dev>",
+          from: process.env.RESEND_FROM_EMAIL || "AirLog <onboarding@resend.dev>",
           to: tester.email,
           subject: `You're invited to test: ${sessionName || "Testing Session"}`,
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h1 style="color: #10b981; font-size: 24px; margin-bottom: 24px;">Echo Test Invitation</h1>
+              <h1 style="color: #10b981; font-size: 24px; margin-bottom: 24px;">AirLog Invitation</h1>
               
               <p style="color: #374151; font-size: 16px; line-height: 1.6;">
                 Hi ${tester.first_name},
