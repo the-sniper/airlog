@@ -114,8 +114,8 @@ function LoginForm() {
       <div className="w-full max-w-md relative">
         {/* Logo */}
         <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-          <Image src="/logo.svg" alt="AirLog" width={150} height={40} className="dark:hidden" />
-          <Image src="/logo-dark.svg" alt="AirLog" width={150} height={40} className="hidden dark:block" />
+          <Image src="/logo.svg" alt="AirLog" width={90} height={24} className="dark:hidden md:w-[150px] md:h-[40px]" />
+          <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="hidden dark:block md:w-[150px] md:h-[40px]" />
         </div>
 
         <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">

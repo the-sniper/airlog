@@ -4,9 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutGrid, Users2, LogOut } from "lucide-react";
+import { LayoutGrid, Users2, LogOut, UserPlus, Menu, Bell, Settings, Moon, Sun } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -132,47 +139,114 @@ export function AdminMobileHeader() {
       <header className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50">
         <div className="flex items-center justify-between h-full px-4">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.svg" alt="AirLog" width={120} height={32} className="dark:hidden" />
-            <Image src="/logo-dark.svg" alt="AirLog" width={120} height={32} className="hidden dark:block" />
+            <Image src="/logo.svg" alt="AirLog" width={90} height={24} className="dark:hidden" />
+            <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="hidden dark:block" />
           </Link>
           <div className="flex items-center gap-1">
-            <ThemeToggle />
+            {/* Notifications */}
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              onClick={() => setShowLogoutDialog(true)}
+              className="text-muted-foreground hover:text-foreground"
             >
-              <LogOut className="w-5 h-5" strokeWidth={1.75} />
+              <Bell className="w-5 h-5" strokeWidth={1.75} />
             </Button>
+            
+            {/* Hamburger Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Menu className="w-5 h-5" strokeWidth={1.75} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                    <LayoutGrid className="w-4 h-4" />
+                    <span>Sessions</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/admin/teams" className="flex items-center gap-2 cursor-pointer">
+                    <Users2 className="w-4 h-4" />
+                    <span>Teams</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <Settings className="w-4 h-4" />
+                      <span>Theme</span>
+                    </div>
+                    <ThemeToggle />
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                  onClick={() => setShowLogoutDialog(true)}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  <span>Sign Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
 
       {/* Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-border/50 bg-card/80 glass z-40">
-        <div className="flex items-center justify-around h-full">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 z-40">
+        {/* Background with notch cutout effect */}
+        <div className="absolute inset-0 bg-card/95 backdrop-blur-xl border-t border-border/50" />
+        
+        <div className="relative flex items-center justify-around h-full px-6">
           <Link 
             href="/admin" 
-            className={`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-1 py-2 transition-all ${
               isActive("/admin") 
                 ? "text-primary" 
-                : "text-muted-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <LayoutGrid className="w-5 h-5" strokeWidth={1.75} />
-            <span className="text-xs font-medium">Sessions</span>
+            <LayoutGrid className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Sessions</span>
           </Link>
+          
+          {/* Prominent Join Button */}
+          <Link 
+            href="/join" 
+            className="flex flex-col items-center -mt-8"
+          >
+            <div className="relative group">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-primary/40 rounded-full blur-xl group-hover:blur-2xl transition-all" />
+              {/* Outer ring */}
+              <div className="relative w-16 h-16 rounded-full bg-gradient-to-b from-primary to-primary/80 p-[3px] shadow-xl shadow-primary/25">
+                {/* Inner button */}
+                <div className="w-full h-full rounded-full bg-primary flex items-center justify-center">
+                  <UserPlus className="w-7 h-7 text-primary-foreground" strokeWidth={2} />
+                </div>
+              </div>
+            </div>
+            <span className="text-[10px] font-semibold text-primary mt-1">Join</span>
+          </Link>
+          
           <Link 
             href="/admin/teams" 
-            className={`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-1 py-2 transition-all ${
               isActive("/admin/teams") 
                 ? "text-primary" 
-                : "text-muted-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Users2 className="w-5 h-5" strokeWidth={1.75} />
-            <span className="text-xs font-medium">Teams</span>
+            <Users2 className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Teams</span>
           </Link>
         </div>
       </nav>

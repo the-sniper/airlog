@@ -37,8 +37,8 @@ export default function Home() {
       </div>
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <Image src="/logo.svg" alt="AirLog" width={150} height={40} className="mx-auto dark:hidden" />
-          <Image src="/logo-dark.svg" alt="AirLog" width={150} height={40} className="mx-auto hidden dark:block" />
+          <Image src="/logo.svg" alt="AirLog" width={90} height={24} className="mx-auto dark:hidden md:w-[150px] md:h-[40px]" />
+          <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="mx-auto hidden dark:block md:w-[150px] md:h-[40px]" />
         </div>
         
         <Card>

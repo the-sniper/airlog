@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Mic,
   AlertCircle,
@@ -26,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VoiceRecorder } from "@/components/voice-recorder";
 import { TextNoteInput } from "@/components/text-note-input";
 import { NotesList } from "@/components/notes-list";
+import { AdminMobileHeader } from "@/components/admin-sidebar";
 import type { SessionWithScenes, Tester, Scene, Note } from "@/types";
 
 interface JoinData {
@@ -99,8 +101,24 @@ export default function TesterSessionPage({
   const [notes, setNotes] = useState<Note[]>([]);
   const [hasLeft, setHasLeft] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const sceneInitializedRef = useRef(false);
+
+  useEffect(() => {
+    // Check if user is admin
+    async function checkAdmin() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          setIsAdmin(true);
+        }
+      } catch {
+        // Not logged in as admin
+      }
+    }
+    checkAdmin();
+  }, []);
 
   useEffect(() => {
     fetchSession();
@@ -264,26 +282,42 @@ export default function TesterSessionPage({
   );
 
   return (
-    <div className="min-h-screen gradient-mesh">
-      <header className="border-b border-border bg-card/80 glass sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-              <Mic className="w-4 h-4 text-primary-foreground" />
+    <>
+      {/* Show admin mobile navigation when logged in as admin */}
+      {isAdmin && <AdminMobileHeader />}
+      
+      <div className={`min-h-screen gradient-mesh ${isAdmin ? "pt-16 pb-24 md:pt-0 md:pb-0" : ""}`}>
+        <header className="border-b border-border bg-card/80 glass sticky top-0 z-40">
+          <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+            {/* Left: Session info */}
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+                <Mic className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="font-semibold truncate text-sm sm:text-base">{session.name}</h1>
+                <p className="text-xs text-muted-foreground truncate">
+                  Testing as {tester.first_name} {tester.last_name}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h1 className="font-semibold truncate text-sm sm:text-base">{session.name}</h1>
-              <p className="text-xs text-muted-foreground truncate">
-                Testing as {tester.first_name} {tester.last_name}
-              </p>
+            
+            {/* Center: Logo (desktop only) */}
+            <div className="hidden md:flex absolute left-1/2 -translate-x-1/2">
+              <Link href="/">
+                <Image src="/logo.svg" alt="AirLog" width={100} height={28} className="dark:hidden" />
+                <Image src="/logo-dark.svg" alt="AirLog" width={100} height={28} className="hidden dark:block" />
+              </Link>
             </div>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="flex items-center gap-1.5 mr-1 sm:mr-2">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1.5 mr-1 sm:mr-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span className="text-xs sm:text-sm text-muted-foreground">Live</span>
             </div>
-            <ThemeToggle />
+            {/* Only show theme toggle when not admin (admin has it in hamburger menu) */}
+            {!isAdmin && <ThemeToggle />}
             {/* Mobile: Icon button */}
             <Button
               variant="ghost"
@@ -403,6 +437,7 @@ export default function TesterSessionPage({
           onNoteDeleted={handleNoteDeleted}
         />
       </main>
-    </div>
+      </div>
+    </>
   );
 }
