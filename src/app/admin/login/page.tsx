@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Loader2, Eye, EyeOff, Lock, Mail, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function AdminLoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/admin";
@@ -251,6 +251,27 @@ export default function AdminLoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+function LoginLoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center gradient-mesh">
+      <div className="animate-pulse flex flex-col items-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center">
+          <Shield className="w-8 h-8 text-primary" />
+        </div>
+        <div className="h-4 w-32 bg-secondary/50 rounded" />
+      </div>
+    </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<LoginLoadingFallback />}>
+      <LoginForm />
+    </Suspense>
   );
 }
 

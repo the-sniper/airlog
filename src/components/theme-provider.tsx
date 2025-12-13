@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "light" | "dark" | "system" | "auto";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -18,9 +18,16 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
+// Helper function to determine if it should be dark based on time of day
+// Dark mode from 6 PM (18:00) to 6 AM (06:00)
+function isDarkTimeOfDay(): boolean {
+  const hour = new Date().getHours();
+  return hour >= 18 || hour < 6;
+}
+
 export function ThemeProvider({
   children,
-  defaultTheme = "light",
+  defaultTheme = "auto",
   storageKey = "echo-test-theme",
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
@@ -53,6 +60,16 @@ export function ThemeProvider({
       const handler = (e: MediaQueryListEvent) => applyTheme(e.matches);
       mediaQuery.addEventListener("change", handler);
       return () => mediaQuery.removeEventListener("change", handler);
+    } else if (theme === "auto") {
+      // Time-based theme: dark from 6 PM to 6 AM
+      applyTheme(isDarkTimeOfDay());
+      
+      // Check every minute for time changes
+      const interval = setInterval(() => {
+        applyTheme(isDarkTimeOfDay());
+      }, 60000); // Check every minute
+      
+      return () => clearInterval(interval);
     } else {
       applyTheme(theme === "dark");
     }
