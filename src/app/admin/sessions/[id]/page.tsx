@@ -762,9 +762,9 @@ export default function SessionDetailPage({
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-start gap-3 min-w-0">
-                          <span className="text-sm text-muted-foreground font-mono w-6 pt-0.5 shrink-0">
+                          {/* <span className="text-sm text-muted-foreground font-mono w-6 pt-0.5 shrink-0">
                             {index + 1}
-                          </span>
+                          </span> */}
                           <p className="font-medium">{s.name}</p>
                         </div>
                         {session.status !== "completed" && (
@@ -821,7 +821,7 @@ export default function SessionDetailPage({
                         )}
                       </div>
                       {s.description ? (
-                        <div className="mt-2 ml-7">
+                        <div className="mt-2 ml-2">
                           <FormattedDescription text={s.description} />
                         </div>
                       ) : session.status !== "completed" && (

@@ -73,37 +73,37 @@
   --info: 222 70% 55%;
 }
 
-/* Dark Mode - Deep Ocean (#001825 based) */
+/* Dark Mode - Deep Ocean (#111824 based) */
 .dark {
-  --background: 205 75% 8%;
-  --foreground: 205 30% 93%;
-  --card: 205 65% 11%;
-  --card-foreground: 205 30% 93%;
-  --popover: 205 65% 11%;
-  --popover-foreground: 205 30% 93%;
+  --background: 218 36% 10%;
+  --foreground: 218 25% 93%;
+  --card: 218 36% 13%;
+  --card-foreground: 218 25% 93%;
+  --popover: 218 36% 13%;
+  --popover-foreground: 218 25% 93%;
   
   /* Primary: #5271C0 - Alpine Blue */
   --primary: 224 50% 54%;
   --primary-foreground: 205 30% 98%;
   
-  /* Secondary based on #001825 shades */
-  --secondary: 205 55% 15%;
-  --secondary-foreground: 205 30% 90%;
+  /* Secondary based on #111824 shades */
+  --secondary: 218 36% 16%;
+  --secondary-foreground: 218 25% 90%;
   
-  /* Muted based on #001825 shades */
-  --muted: 205 55% 15%;
-  --muted-foreground: 205 30% 55%;
+  /* Muted based on #111824 shades */
+  --muted: 218 36% 16%;
+  --muted-foreground: 218 25% 55%;
   
   /* Accent: #95B2F8 - Light blue */
   --accent: 222 89% 78%;
-  --accent-foreground: 205 75% 8%;
+  --accent-foreground: 218 36% 10%;
   
   --destructive: 0 72% 55%;
   --destructive-foreground: 210 40% 98%;
   
-  /* Borders based on #001825 shades */
-  --border: 205 45% 20%;
-  --input: 205 45% 20%;
+  /* Borders based on #111824 shades */
+  --border: 218 30% 22%;
+  --input: 218 30% 22%;
   --ring: 224 50% 54%;
   
   /* Additional semantic colors */
@@ -140,8 +140,8 @@ body {
   background: 
     radial-gradient(at 27% 37%, hsla(224, 50%, 54%, 0.15) 0px, transparent 50%),
     radial-gradient(at 97% 21%, hsla(222, 89%, 78%, 0.08) 0px, transparent 50%),
-    radial-gradient(at 52% 99%, hsla(205, 55%, 22%, 0.12) 0px, transparent 50%),
-    radial-gradient(at 10% 29%, hsla(205, 65%, 16%, 0.1) 0px, transparent 50%);
+    radial-gradient(at 52% 99%, hsla(218, 36%, 22%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(218, 36%, 16%, 0.1) 0px, transparent 50%);
 }
 
 /* Glassmorphism - Light mode */
@@ -153,9 +153,9 @@ body {
 
 /* Glassmorphism - Dark mode */
 .dark .glass {
-  background: hsla(205, 65%, 11%, 0.8);
+  background: hsla(218, 36%, 13%, 0.8);
   backdrop-filter: blur(16px);
-  border: 1px solid hsla(205, 45%, 35%, 0.15);
+  border: 1px solid hsla(218, 30%, 35%, 0.15);
 }
 
 /* Recording indicator */
