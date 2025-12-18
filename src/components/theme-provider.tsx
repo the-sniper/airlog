@@ -27,7 +27,7 @@ function isDarkTimeOfDay(): boolean {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "auto",
+  defaultTheme = "light",
   storageKey = "echo-test-theme",
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(defaultTheme);

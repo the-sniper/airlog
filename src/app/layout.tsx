@@ -80,13 +80,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('echo-test-theme') || 'dark';
+                  var theme = localStorage.getItem('echo-test-theme') || 'light';
                   if (theme === 'system') {
                     theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                   }
                   document.documentElement.classList.add(theme);
                 } catch (e) {
-                  document.documentElement.classList.add('dark');
+                  document.documentElement.classList.add('light');
                 }
               })();
             `,
@@ -94,7 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`${jakarta.variable} ${mono.variable} font-sans antialiased`}>
-        <ThemeProvider defaultTheme="dark" storageKey="echo-test-theme">
+        <ThemeProvider defaultTheme="light" storageKey="echo-test-theme">
           <PWAProvider>
             {children}
             <InstallBanner />
