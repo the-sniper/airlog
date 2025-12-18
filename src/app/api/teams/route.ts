@@ -18,6 +18,16 @@ export async function GET() {
   }
 }
 
+// Helper to generate invite token
+function generateInviteToken(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let token = "";
+  for (let i = 0; i < 12; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
 // POST create new team
 export async function POST(request: Request) {
   try {
@@ -30,7 +40,10 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("teams")
-      .insert({ name: name.trim() })
+      .insert({ 
+        name: name.trim(),
+        invite_token: generateInviteToken(),
+      })
       .select()
       .single();
 

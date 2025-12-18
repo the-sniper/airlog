@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Plus, Users, Trash2, Pencil, X, Loader2, ChevronRight, UserPlus } from "lucide-react";
+import { Plus, Users, Trash2, Pencil, Loader2, ChevronRight, UserPlus, Link2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +31,7 @@ export default function TeamsPage() {
   const [editTeamName, setEditTeamName] = useState("");
   const [memberForm, setMemberForm] = useState({ first_name: "", last_name: "", email: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetchTeams();
@@ -279,7 +280,7 @@ export default function TeamsPage() {
 
         {/* Team Details */}
         <Card>
-          <CardHeader>
+          <CardHeader className="space-y-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
                 {selectedTeam ? selectedTeam.name : "Team Members"}
@@ -291,6 +292,43 @@ export default function TeamsPage() {
                 </Button>
               )}
             </div>
+            {/* Invite Link Section */}
+            {selectedTeam?.invite_token && (
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Link2 className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">Invite Link</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    readOnly
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/teams/join/${selectedTeam.invite_token}`}
+                    className="text-xs font-mono bg-secondary/50 h-9"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 h-9"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${window.location.origin}/teams/join/${selectedTeam.invite_token}`
+                      );
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Share this link with team members to let them register
+                </p>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             {loadingTeam ? (

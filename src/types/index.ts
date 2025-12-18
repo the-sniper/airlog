@@ -9,6 +9,6 @@ export interface SessionWithScenes extends Session { scenes: Scene[]; }
 export interface SessionWithDetails extends Session { scenes: Scene[]; testers: Tester[]; notes: NoteWithDetails[]; }
 export interface NoteWithDetails extends Note { scene: Scene; tester: Tester; }
 
-export interface Team { id: string; name: string; created_at: string; }
+export interface Team { id: string; name: string; invite_token: string; created_at: string; }
 export interface TeamMember { id: string; team_id: string; first_name: string; last_name: string; email: string | null; created_at: string; }
 export interface TeamWithMembers extends Team { members: TeamMember[]; }

@@ -9,7 +9,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     
     const { data: team, error: teamError } = await supabase
       .from("teams")
-      .select("*")
+      .select("id, name, created_at, invite_token")
       .eq("id", id)
       .single();
 
