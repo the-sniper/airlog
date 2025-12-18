@@ -265,7 +265,7 @@ export default function TeamJoinPage({ params }: { params: { token: string } }) 
         </Card>
 
         <p className="text-center text-xs text-muted-foreground/60 mt-6">
-          You'll be added to testing sessions by the admin
+          You&apos;ll be added to testing sessions by the admin
         </p>
       </div>
     </div>

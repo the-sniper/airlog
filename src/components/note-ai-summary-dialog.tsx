@@ -22,7 +22,7 @@ interface NoteAISummaryDialogProps {
   note: Note | NoteWithDetails;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onNoteUpdated?: (note: Note) => void;
+  onNoteUpdated?: (note: NoteWithDetails) => void;
 }
 
 export function NoteAISummaryDialog({

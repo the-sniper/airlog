@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { ArrowLeft, Download, Loader2, FileText, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,15 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
-  useEffect(() => { fetchSession(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [id]);
-
-  async function fetchSession() {
+  const fetchSession = useCallback(async function() {
     try {
       const response = await fetch(`/api/sessions/${id}`);
       if (response.ok) setSession(await response.json());
     } catch (error) { console.error("Error:", error); }
     finally { setLoading(false); }
-  }
+  }, [id]);
+
+  useEffect(() => { fetchSession(); }, [fetchSession]);
 
   async function generatePDF() {
     if (!session) return;
