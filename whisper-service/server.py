@@ -6,7 +6,7 @@ from faster_whisper import WhisperModel
 app = Flask(__name__)
 CORS(app)
 
-MODEL_SIZE = os.environ.get("WHISPER_MODEL", "base")
+MODEL_SIZE = os.environ.get("WHISPER_MODEL", "small")
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
 
 @app.route("/health", methods=["GET"])
