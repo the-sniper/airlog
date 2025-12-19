@@ -1,4 +1,4 @@
-# Echo Test - Implementation Scope
+# AirLog - Implementation Scope
 
 This document details what's included in the MVP, what's partially implemented, and what's deferred to future phases - mapped against the [project description](./project_desc.md).
 

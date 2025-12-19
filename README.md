@@ -1,4 +1,4 @@
-# Echo Test - Voice-Based User Testing Platform
+# AirLog - Voice-Based User Testing Platform
 
 A Next.js web application for capturing and organizing tester feedback during user testing sessions using voice recordings and automatic transcription.
 

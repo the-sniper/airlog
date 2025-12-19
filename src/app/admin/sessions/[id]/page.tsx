@@ -187,9 +187,9 @@ function SessionSummaryContent({ summary }: { summary: string }) {
         const category = match[1];
         const content = match[2];
         const categoryColor: Record<string, string> = {
-          BUG: "bg-red-500/20 text-red-600 dark:text-red-400",
-          FEATURE: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
-          UX: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+          BUG: "bg-[#fb7088]/20 text-[#fb7088]",
+          FEATURE: "bg-[#6e71f1]/20 text-[#6e71f1]",
+          UX: "bg-[#03bcfa]/20 text-[#03bcfa]",
           PERFORMANCE: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
           OTHER: "bg-gray-500/20 text-gray-600 dark:text-gray-400",
         };

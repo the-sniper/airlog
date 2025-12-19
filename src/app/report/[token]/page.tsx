@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { Download, Loader2, FileText, BarChart3, AlertCircle, Activity, AlertTriangle, ClipboardList, Filter, X, CheckCircle, XCircle } from "lucide-react";
+import { Download, Loader2, FileText, BarChart3, AlertCircle, Activity, AlertTriangle, ClipboardList, Filter, X, CheckCircle, XCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -14,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
+import { AnalyticsTab } from "@/components/analytics";
 import type { SessionWithDetails, NoteWithDetails, NoteCategory, Tester, PollQuestion, PollResponse, Scene } from "@/types";
 import React from "react";
 
@@ -64,9 +66,9 @@ function SessionSummaryContent({ summary }: { summary: string }) {
         const category = match[1];
         const content = match[2];
         const categoryColor: Record<string, string> = {
-          BUG: "bg-red-500/20 text-red-600 dark:text-red-400",
-          FEATURE: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
-          UX: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+          BUG: "bg-[#fb7088]/20 text-[#fb7088]",
+          FEATURE: "bg-[#6e71f1]/20 text-[#6e71f1]",
+          UX: "bg-[#03bcfa]/20 text-[#03bcfa]",
           PERFORMANCE: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
           OTHER: "bg-gray-500/20 text-gray-600 dark:text-gray-400",
         };
@@ -165,6 +167,10 @@ export default function PublicReportPage({ params }: { params: { token: string }
   const [sceneFilter, setSceneFilter] = useState<string>("all");
   const [testerFilter, setTesterFilter] = useState<string>("all");
   const [groupBy, setGroupBy] = useState<"scene" | "tester" | "category">("scene");
+  
+  // Poll filter state
+  const [pollSceneFilter, setPollSceneFilter] = useState<string>("all");
+  const [pollTesterFilter, setPollTesterFilter] = useState<string>("all");
 
   const fetchReport = useCallback(async function () {
     try {
@@ -327,7 +333,7 @@ export default function PublicReportPage({ params }: { params: { token: string }
               height={80}
               className="hidden dark:block"
             />
-            <span className="font-semibold text-lg">Session Report</span>
+            <span className="font-semibold text-lg">OnSite Session Report</span>
           </div>
           <Button onClick={generatePDF} disabled={generating} size="sm">
             {generating ? (
@@ -355,6 +361,19 @@ export default function PublicReportPage({ params }: { params: { token: string }
           )}
         </div>
 
+        <Tabs defaultValue="report" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="report" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Report
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Analytics
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="report" className="space-y-6">
         {/* Summary Card */}
         <Card>
           <CardHeader>
@@ -363,7 +382,7 @@ export default function PublicReportPage({ params }: { params: { token: string }
               Summary
             </CardTitle>
             <CardDescription>
-              Completed on {session.ended_at ? formatDate(session.ended_at) : "N/A"}
+              Completed on {(session.first_ended_at || session.ended_at) ? formatDate((session.first_ended_at || session.ended_at)!) : "N/A"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -508,90 +527,162 @@ export default function PublicReportPage({ params }: { params: { token: string }
         {/* Poll Results */}
         {(() => {
           // Collect all poll questions from all scenes
-          const allPollQuestions: (PollQuestion & { sceneName: string })[] = [];
+          const allPollQuestions: (PollQuestion & { sceneName: string; sceneId: string })[] = [];
           session.scenes?.forEach((scene: Scene) => {
             if (scene.poll_questions && scene.poll_questions.length > 0) {
               scene.poll_questions.forEach((q: PollQuestion) => {
-                allPollQuestions.push({ ...q, sceneName: scene.name });
+                allPollQuestions.push({ ...q, sceneName: scene.name, sceneId: scene.id });
               });
             }
           });
 
           if (allPollQuestions.length === 0) return null;
 
+          // Filter poll questions by scene
+          const filteredPollQuestions = pollSceneFilter === "all" 
+            ? allPollQuestions 
+            : allPollQuestions.filter(q => q.sceneId === pollSceneFilter);
+
           const totalTesters = session.testers?.length || 0;
+          const hasPollFilters = pollSceneFilter !== "all" || pollTesterFilter !== "all";
+
+          const clearPollFilters = () => {
+            setPollSceneFilter("all");
+            setPollTesterFilter("all");
+          };
 
           return (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ClipboardList className="w-5 h-5 text-blue-500" />
-                  Poll Results
-                </CardTitle>
-                <CardDescription>Responses from {totalTesters} tester{totalTesters !== 1 ? "s" : ""}</CardDescription>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <ClipboardList className="w-5 h-5 text-blue-500" />
+                      Poll Results
+                    </CardTitle>
+                    {hasPollFilters && (
+                      <Button variant="ghost" size="sm" onClick={clearPollFilters} className="text-xs">
+                        <X className="w-3 h-3 mr-1" />
+                        Clear filters
+                      </Button>
+                    )}
+                  </div>
+                  <CardDescription>Responses from {totalTesters} tester{totalTesters !== 1 ? "s" : ""}</CardDescription>
+                  
+                  {/* Poll Filter Controls */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Filter:</span>
+                    </div>
+
+                    {session.scenes && session.scenes.length > 0 && (
+                      <Select value={pollSceneFilter} onValueChange={setPollSceneFilter}>
+                        <SelectTrigger className="h-8 w-[130px] text-xs">
+                          <SelectValue placeholder="Scene" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Scenes</SelectItem>
+                          {session.scenes.map((scene: Scene) => (
+                            <SelectItem key={scene.id} value={scene.id}>{scene.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+
+                    {session.testers && session.testers.length > 0 && (
+                      <Select value={pollTesterFilter} onValueChange={setPollTesterFilter}>
+                        <SelectTrigger className="h-8 w-[150px] text-xs">
+                          <SelectValue placeholder="Tester" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Testers</SelectItem>
+                          {session.testers.map((tester: Tester) => (
+                            <SelectItem key={tester.id} value={tester.id}>{tester.first_name} {tester.last_name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                {allPollQuestions.map((question) => {
-                  // Calculate responses for this question
-                  const questionResponses = pollResponses.filter(r => r.poll_question_id === question.id);
-                  const optionCounts: Record<string, { count: number; testers: string[] }> = {};
-                  question.options.forEach(opt => {
-                    optionCounts[opt] = { count: 0, testers: [] };
-                  });
-                  
-                  questionResponses.forEach(response => {
-                    const tester = session.testers?.find((t: Tester) => t.id === response.tester_id);
-                    const testerName = tester ? `${tester.first_name} ${tester.last_name}` : "Unknown";
-                    response.selected_options.forEach(opt => {
-                      if (optionCounts[opt]) {
-                        optionCounts[opt].count++;
-                        optionCounts[opt].testers.push(testerName);
-                      }
+                {filteredPollQuestions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">No poll questions match the selected filters</p>
+                    <Button variant="ghost" size="sm" onClick={clearPollFilters} className="mt-2">
+                      Clear filters
+                    </Button>
+                  </div>
+                ) : (
+                  filteredPollQuestions.map((question) => {
+                    // Calculate responses for this question, filtered by tester if needed
+                    const questionResponses = pollResponses.filter(r => {
+                      if (r.poll_question_id !== question.id) return false;
+                      if (pollTesterFilter !== "all" && r.tester_id !== pollTesterFilter) return false;
+                      return true;
                     });
-                  });
+                    const optionCounts: Record<string, { count: number; testers: string[] }> = {};
+                    question.options.forEach(opt => {
+                      optionCounts[opt] = { count: 0, testers: [] };
+                    });
+                    
+                    questionResponses.forEach(response => {
+                      const tester = session.testers?.find((t: Tester) => t.id === response.tester_id);
+                      const testerName = tester ? `${tester.first_name} ${tester.last_name}` : "Unknown";
+                      response.selected_options.forEach(opt => {
+                        if (optionCounts[opt]) {
+                          optionCounts[opt].count++;
+                          optionCounts[opt].testers.push(testerName);
+                        }
+                      });
+                    });
 
-                  const respondedCount = questionResponses.length;
+                    const respondedCount = questionResponses.length;
+                    const displayTotalTesters = pollTesterFilter !== "all" ? 1 : totalTesters;
 
-                  return (
-                    <div key={question.id} className="space-y-3">
-                      <div>
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">{question.sceneName}</Badge>
-                          {question.required && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">Required</Badge>}
+                    return (
+                      <div key={question.id} className="space-y-3">
+                        <div>
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">{question.sceneName}</Badge>
+                            {question.required && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">Required</Badge>}
+                          </div>
+                          <p className="font-medium">{question.question}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {respondedCount}/{displayTotalTesters} responded • {question.question_type === "radio" ? "Single choice" : "Multiple choice"}
+                          </p>
                         </div>
-                        <p className="font-medium">{question.question}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {respondedCount}/{totalTesters} responded • {question.question_type === "radio" ? "Single choice" : "Multiple choice"}
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        {question.options.map((option) => {
-                          const stats = optionCounts[option];
-                          const percentage = respondedCount > 0 ? (stats.count / respondedCount) * 100 : 0;
-                          return (
-                            <div key={option} className="p-3 rounded-lg bg-secondary/30 border border-border">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm">{option}</span>
-                                <span className="text-sm font-medium">{stats.count} ({Math.round(percentage)}%)</span>
+                        <div className="space-y-2">
+                          {question.options.map((option) => {
+                            const stats = optionCounts[option];
+                            const percentage = respondedCount > 0 ? (stats.count / respondedCount) * 100 : 0;
+                            return (
+                              <div key={option} className="p-3 rounded-lg bg-secondary/30 border border-border">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-sm">{option}</span>
+                                  <span className="text-sm font-medium">{stats.count} ({Math.round(percentage)}%)</span>
+                                </div>
+                                <div className="h-2 bg-secondary/50 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-blue-500 dark:bg-blue-400/60 rounded-full transition-all duration-500"
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                                {stats.testers.length > 0 && (
+                                  <p className="text-xs text-muted-foreground/70 mt-1.5">
+                                    {stats.testers.join(", ")}
+                                  </p>
+                                )}
                               </div>
-                              <div className="h-2 bg-secondary/50 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-blue-500 dark:bg-blue-400/60 rounded-full transition-all duration-500"
-                                  style={{ width: `${percentage}%` }}
-                                />
-                              </div>
-                              {stats.testers.length > 0 && (
-                                <p className="text-xs text-muted-foreground/70 mt-1.5">
-                                  {stats.testers.join(", ")}
-                                </p>
-                              )}
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </CardContent>
             </Card>
           );
@@ -744,6 +835,12 @@ export default function PublicReportPage({ params }: { params: { token: string }
             </CardContent>
           </Card>
         )}
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <AnalyticsTab session={session} pollResponses={pollResponses} shareToken={token} />
+          </TabsContent>
+        </Tabs>
 
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground pt-8 border-t border-border">

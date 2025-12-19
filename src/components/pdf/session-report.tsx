@@ -24,12 +24,12 @@ const colors = {
   borderLight: "#F1F5F9",
   
   // Category colors
-  bug: "#DC2626",
-  bugBg: "#FEF2F2",
-  feature: "#2563EB",
-  featureBg: "#EFF6FF",
-  ux: "#7C3AED",
-  uxBg: "#F5F3FF",
+  bug: "#fb7088",
+  bugBg: "#fef2f4",
+  feature: "#6e71f1",
+  featureBg: "#f0f0fe",
+  ux: "#03bcfa",
+  uxBg: "#e6f9ff",
   performance: "#EA580C",
   performanceBg: "#FFF7ED",
   other: "#64748B",
@@ -519,6 +519,7 @@ function formatDate(date: string): string {
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "America/New_York",
   }).format(new Date(date));
 }
 
@@ -528,6 +529,7 @@ function formatDateTime(date: string): string {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: "America/New_York",
   }).format(new Date(date));
 }
 
@@ -575,9 +577,9 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
             <View style={styles.coverLogoBox}>
               <Text style={styles.coverLogoText}>E</Text>
             </View>
-            <Text style={styles.coverBrandName}>ECHO TEST</Text>
+            <Text style={styles.coverBrandName}>AirLog</Text>
           </View>
-          <Text style={styles.coverReportLabel}>Session Report</Text>
+          <Text style={styles.coverReportLabel}>OnSite Session Report</Text>
           <Text style={styles.coverTitle}>{session.name}</Text>
         </View>
 
@@ -592,7 +594,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
               )}
               <View style={styles.coverMetaItem}>
                 <Text style={styles.coverMetaLabel}>Completed</Text>
-                <Text style={styles.coverMetaValue}>{session.ended_at ? formatDate(session.ended_at) : "In Progress"}</Text>
+                <Text style={styles.coverMetaValue}>{(session.first_ended_at || session.ended_at) ? formatDate((session.first_ended_at || session.ended_at)!) : "In Progress"}</Text>
               </View>
               <View style={styles.coverMetaItem}>
                 <Text style={styles.coverMetaLabel}>Testers</Text>
@@ -634,7 +636,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
             <View style={styles.headerLogo}>
               <Text style={styles.headerLogoText}>E</Text>
             </View>
-            <Text style={styles.headerBrand}>Echo Test</Text>
+            <Text style={styles.headerBrand}>AirLog</Text>
           </View>
           <Text style={styles.headerSession}>{session.name}</Text>
         </View>
@@ -710,7 +712,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Echo Test Report</Text>
+          <Text style={styles.footerText}>AirLog Report</Text>
           <Text style={styles.footerPage}>{++pageNum}</Text>
         </View>
       </Page>
@@ -723,7 +725,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
               <View style={styles.headerLogo}>
                 <Text style={styles.headerLogoText}>E</Text>
               </View>
-              <Text style={styles.headerBrand}>Echo Test</Text>
+              <Text style={styles.headerBrand}>AirLog</Text>
             </View>
             <Text style={styles.headerSession}>{session.name}</Text>
           </View>
@@ -761,7 +763,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Echo Test Report</Text>
+            <Text style={styles.footerText}>AirLog Report</Text>
             <Text style={styles.footerPage}>{++pageNum}</Text>
           </View>
         </Page>
@@ -775,7 +777,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
               <View style={styles.headerLogo}>
                 <Text style={styles.headerLogoText}>E</Text>
               </View>
-              <Text style={styles.headerBrand}>Echo Test</Text>
+              <Text style={styles.headerBrand}>AirLog</Text>
             </View>
             <Text style={styles.headerSession}>{session.name}</Text>
           </View>
@@ -839,7 +841,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
               <View style={styles.headerLogo}>
                 <Text style={styles.headerLogoText}>E</Text>
               </View>
-              <Text style={styles.headerBrand}>Echo Test</Text>
+              <Text style={styles.headerBrand}>AirLog</Text>
             </View>
             <Text style={styles.headerSession}>{session.name}</Text>
           </View>
@@ -849,7 +851,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Echo Test Report</Text>
+            <Text style={styles.footerText}>AirLog Report</Text>
             <Text style={styles.footerPage}>{++pageNum}</Text>
           </View>
         </Page>
