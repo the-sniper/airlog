@@ -24,12 +24,14 @@ import {
   Mail,
   AlertTriangle,
   Filter,
+  Activity,
   X,
   MoreVertical,
   Sparkles,
   UserPlus2,
   Eye,
   EyeOff,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -336,6 +338,18 @@ export default function SessionDetailPage({
   const [selectedTeamForAdd, setSelectedTeamForAdd] = useState<string | null>(null);
   const [addingToTeam, setAddingToTeam] = useState(false);
 
+  // End session confirmation dialog state
+  const [endSessionDialog, setEndSessionDialog] = useState(false);
+  const [endingSession, setEndingSession] = useState(false);
+  const [sendingReportEmails, setSendingReportEmails] = useState(false);
+
+  // Report sending state (for completed sessions)
+  const [selectedReportTesterIds, setSelectedReportTesterIds] = useState<Set<string>>(new Set());
+  const [sendingReports, setSendingReports] = useState(false);
+  const [skipReportEmailDialog, setSkipReportEmailDialog] = useState(false);
+  const [reportTestersWithoutEmail, setReportTestersWithoutEmail] = useState<Tester[]>([]);
+  const [reportTestersWithEmail, setReportTestersWithEmail] = useState<Tester[]>([]);
+
   // Calculate elapsed time for active sessions
   useEffect(() => {
     if (session?.status !== "active" || !session?.started_at) {
@@ -536,13 +550,71 @@ export default function SessionDetailPage({
     });
     fetchSession();
   }
-  async function handleEndSession() {
-    await fetch(`/api/sessions/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "end" }),
-    });
-    fetchSession();
+  async function handleEndSession(sendReport: boolean = false) {
+    if (sendReport) {
+      setSendingReportEmails(true);
+    } else {
+      setEndingSession(true);
+    }
+
+    try {
+      // End the session first
+      await fetch(`/api/sessions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "end" }),
+      });
+
+      // If sendReport is true, send report emails to all testers
+      if (sendReport) {
+        const testersWithEmail = session?.testers?.filter((t) => t.email) || [];
+        if (testersWithEmail.length > 0) {
+          const res = await fetch(`/api/sessions/${id}/report/send`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          if (res.ok) {
+            const result = await res.json();
+            toast({
+              title: "Session ended & report sent!",
+              description: `Report sent to ${result.sent} tester${result.sent !== 1 ? "s" : ""}.`,
+              variant: "success",
+            });
+          } else {
+            toast({
+              title: "Session ended",
+              description: "Failed to send report emails. You can share the report manually.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          toast({
+            title: "Session ended",
+            description: "No testers with email addresses to send report to.",
+          });
+        }
+      } else {
+        toast({
+          title: "Session ended",
+          description: "The testing session has been completed.",
+          variant: "success",
+        });
+      }
+
+      setEndSessionDialog(false);
+      fetchSession();
+    } catch (error) {
+      console.error("Error ending session:", error);
+      toast({
+        title: "Error",
+        description: "Failed to end session. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setEndingSession(false);
+      setSendingReportEmails(false);
+    }
   }
   async function handleRestartSession() {
     setRestarting(true);
@@ -796,6 +868,91 @@ export default function SessionDetailPage({
     }
   }
 
+  // Toggle report tester selection (for completed sessions)
+  function toggleReportTesterSelection(testerId: string) {
+    setSelectedReportTesterIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(testerId)) {
+        next.delete(testerId);
+      } else {
+        next.add(testerId);
+      }
+      return next;
+    });
+  }
+
+  // Toggle all report testers selection
+  function toggleAllReportTesters() {
+    if (!session?.testers) return;
+    if (selectedReportTesterIds.size === session.testers.length) {
+      setSelectedReportTesterIds(new Set());
+    } else {
+      setSelectedReportTesterIds(new Set(session.testers.map((t) => t.id)));
+    }
+  }
+
+  // Initiate report sending process (for completed sessions)
+  function handleSendReports() {
+    if (!session?.testers || selectedReportTesterIds.size === 0) return;
+
+    const selectedTesters = session.testers.filter((t) => selectedReportTesterIds.has(t.id));
+    const withEmail = selectedTesters.filter((t) => t.email);
+    const withoutEmail = selectedTesters.filter((t) => !t.email);
+
+    if (withoutEmail.length > 0) {
+      setReportTestersWithEmail(withEmail);
+      setReportTestersWithoutEmail(withoutEmail);
+      setSkipReportEmailDialog(true);
+    } else {
+      sendReports(withEmail);
+    }
+  }
+
+  // Send reports to selected testers
+  async function sendReports(testers: Tester[]) {
+    if (testers.length === 0) return;
+
+    setSendingReports(true);
+    try {
+      const res = await fetch(`/api/sessions/${id}/report/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          testerIds: testers.map((t) => t.id),
+        }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        // Clear selection after successful send
+        setSelectedReportTesterIds(new Set());
+        toast({
+          title: "Reports sent!",
+          description: `Successfully sent ${result.sent} report${result.sent !== 1 ? 's' : ''}.`,
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Failed to send reports",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error sending reports:", error);
+      toast({
+        title: "Failed to send reports",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingReports(false);
+      setSkipReportEmailDialog(false);
+      setReportTestersWithEmail([]);
+      setReportTestersWithoutEmail([]);
+    }
+  }
+
   // Open Add to Team dialog
   async function openAddToTeamDialog() {
     if (selectedTesterIds.size === 0) return;
@@ -958,7 +1115,7 @@ export default function SessionDetailPage({
                 <Clock className="w-4 h-4" />
                 <span className="font-mono">{formattedElapsedTime}</span>
               </div>
-              <Button variant="destructive" onClick={handleEndSession} className="flex-1 sm:flex-none">
+              <Button variant="destructive" onClick={() => setEndSessionDialog(true)} className="flex-1 sm:flex-none">
                 <Square className="w-4 h-4" />
                 End Session
               </Button>
@@ -1032,6 +1189,12 @@ export default function SessionDetailPage({
             <FileText className="w-4 h-4" />
             <span>Notes</span>
           </TabsTrigger>
+          {session.issue_options && session.issue_options.length > 0 && (
+            <TabsTrigger value="stability" className="gap-1.5 sm:gap-2 flex-1 sm:flex-none">
+              <Activity className="w-4 h-4" />
+              <span>Stability</span>
+            </TabsTrigger>
+          )}
           {session.ai_summary ? (
             <TabsTrigger value="summary" className="gap-1.5 sm:gap-2 flex-1 sm:flex-none">
               <Sparkles className="w-4 h-4" />
@@ -1177,6 +1340,23 @@ export default function SessionDetailPage({
                   </CardDescription>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                  {session.status === "completed" && selectedReportTesterIds.size > 0 && (
+                    <Button
+                      onClick={handleSendReports}
+                      disabled={sendingReports}
+                      size="sm"
+                      className="flex-1 sm:flex-none"
+                    >
+                      {sendingReports ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                      <span className="hidden sm:inline">Send Report</span>
+                      <span className="sm:hidden">Send</span>
+                      <span>({selectedReportTesterIds.size})</span>
+                    </Button>
+                  )}
                   {session.status !== "completed" && selectedTesterIds.size > 0 && (
                     <>
                       <Button 
@@ -1227,7 +1407,7 @@ export default function SessionDetailPage({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {/* Select all checkbox */}
+                  {/* Select all checkbox - for non-completed sessions */}
                   {session.status !== "completed" && session.testers && session.testers.length > 0 && (
                     <div className="flex items-center gap-3 pb-2 border-b border-border">
                       <button
@@ -1248,6 +1428,27 @@ export default function SessionDetailPage({
                       </button>
                     </div>
                   )}
+                  {/* Select all checkbox - for completed sessions (report sending) */}
+                  {session.status === "completed" && session.testers && session.testers.length > 0 && (
+                    <div className="flex items-center gap-3 pb-2 border-b border-border">
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={toggleAllReportTesters}
+                      >
+                        {selectedReportTesterIds.size === session.testers.length ? (
+                          <CheckSquare className="w-4 h-4 text-primary" />
+                        ) : selectedReportTesterIds.size > 0 ? (
+                          <div className="w-4 h-4 border-2 border-primary rounded-sm flex items-center justify-center">
+                            <div className="w-2 h-0.5 bg-primary" />
+                          </div>
+                        ) : (
+                          <SquareIcon className="w-4 h-4" />
+                        )}
+                        {selectedReportTesterIds.size === session.testers.length ? "Deselect all" : "Select all to send report"}
+                      </button>
+                    </div>
+                  )}
                   {session.testers?.map((t: Tester) => (
                     <div
                       key={t.id}
@@ -1261,6 +1462,19 @@ export default function SessionDetailPage({
                             onClick={() => toggleTesterSelection(t.id)}
                           >
                             {selectedTesterIds.has(t.id) ? (
+                              <CheckSquare className="w-5 h-5 text-primary" />
+                            ) : (
+                              <SquareIcon className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />
+                            )}
+                          </button>
+                        )}
+                        {session.status === "completed" && (
+                          <button
+                            type="button"
+                            className="flex-shrink-0 mt-0.5 sm:mt-0"
+                            onClick={() => toggleReportTesterSelection(t.id)}
+                          >
+                            {selectedReportTesterIds.has(t.id) ? (
                               <CheckSquare className="w-5 h-5 text-primary" />
                             ) : (
                               <SquareIcon className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />
@@ -1571,6 +1785,103 @@ export default function SessionDetailPage({
               </CardHeader>
               <CardContent>
                 <SessionSummaryContent summary={session.ai_summary} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+        {session.issue_options && session.issue_options.length > 0 && (
+          <TabsContent value="stability" className="mt-4">
+            <Card>
+              <CardHeader>
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-amber-500" />
+                    Stability Issues
+                  </CardTitle>
+                  <CardDescription>
+                    General issues reported by testers during the session
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  // Aggregate reported issues from all testers
+                  const issueStats: Record<string, { count: number; testers: string[] }> = {};
+                  session.issue_options.forEach((issue: string) => {
+                    issueStats[issue] = { count: 0, testers: [] };
+                  });
+                  session.testers?.forEach((tester: Tester) => {
+                    const testerIssues = tester.reported_issues || [];
+                    testerIssues.forEach((issue: string) => {
+                      if (issueStats[issue]) {
+                        issueStats[issue].count++;
+                        issueStats[issue].testers.push(`${tester.first_name} ${tester.last_name}`);
+                      }
+                    });
+                  });
+                  const totalTesters = session.testers?.length || 0;
+                  const hasAnyIssues = Object.values(issueStats).some((s) => s.count > 0);
+
+                  if (!hasAnyIssues) {
+                    return (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>No stability issues reported yet</p>
+                        <p className="text-sm mt-1">
+                          Testers can report issues during the session
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-4">
+                      {Object.entries(issueStats)
+                        .sort((a, b) => b[1].count - a[1].count)
+                        .map(([issue, stats]) => (
+                          <div
+                            key={issue}
+                            className={`p-3 rounded-lg border ${
+                              stats.count > 0
+                                ? "bg-secondary/30 border-border"
+                                : "bg-secondary/20 border-border/50"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <AlertTriangle
+                                  className={`w-4 h-4 ${
+                                    stats.count > 0
+                                      ? "text-amber-500/70"
+                                      : "text-muted-foreground/40"
+                                  }`}
+                                />
+                                <span className={`text-sm ${stats.count > 0 ? "font-medium" : "text-muted-foreground"}`}>{issue}</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="w-16 h-1.5 bg-secondary/50 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-amber-500 dark:bg-amber-400/60 rounded-full transition-all duration-500"
+                                    style={{
+                                      width: `${totalTesters ? (stats.count / totalTesters) * 100 : 0}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className={`text-xs ${stats.count > 0 ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
+                                  {stats.count}/{totalTesters}
+                                </span>
+                              </div>
+                            </div>
+                            {stats.count > 0 && (
+                              <p className="text-xs text-muted-foreground/70 mt-1.5 ml-7">
+                                {stats.testers.join(", ")}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1927,6 +2238,69 @@ export default function SessionDetailPage({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* End Session Confirmation Dialog */}
+      <Dialog open={endSessionDialog} onOpenChange={setEndSessionDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>End Testing Session?</DialogTitle>
+            <DialogDescription>
+              Choose how you&apos;d like to end this session.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <div className="rounded-lg bg-secondary/50 p-4 text-sm space-y-3">
+              <div>
+                <p className="font-medium mb-1">Session Summary</p>
+                <ul className="text-muted-foreground space-y-1 text-xs">
+                  <li>• {session?.notes?.length || 0} notes recorded</li>
+                  <li>• {session?.testers?.length || 0} testers participated</li>
+                  <li>• {session?.testers?.filter((t) => t.email).length || 0} testers with email addresses</li>
+                </ul>
+              </div>
+            </div>
+            {session?.testers?.filter((t) => t.email).length === 0 && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
+                <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                  No testers have email addresses. Reports can only be shared manually.
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                onClick={() => handleEndSession(false)}
+                disabled={endingSession || sendingReportEmails}
+                className="flex-1 border-primary text-primary hover:bg-primary/10 hover:text-primary"
+              >
+                {endingSession && <Loader2 className="w-4 h-4 animate-spin" />}
+                <Square className="w-4 h-4" />
+                Just End Session
+              </Button>
+              <Button
+                onClick={() => handleEndSession(true)}
+                disabled={endingSession || sendingReportEmails || (session?.testers?.filter((t) => t.email).length || 0) === 0}
+                className="flex-1"
+              >
+                {sendingReportEmails && <Loader2 className="w-4 h-4 animate-spin" />}
+                <Send className="w-4 h-4" />
+                End & Send Report
+              </Button>
+            </div>
+            <Button
+              variant="ghost"
+              onClick={() => setEndSessionDialog(false)}
+              disabled={endingSession || sendingReportEmails}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       {/* Edit Tester Dialog */}
       <Dialog open={editTesterDialog} onOpenChange={setEditTesterDialog}>
@@ -2030,6 +2404,56 @@ export default function SessionDetailPage({
               )}
               {testersWithEmail.length > 0 
                 ? `Send to ${testersWithEmail.length} tester${testersWithEmail.length !== 1 ? 's' : ''}` 
+                : 'No emails to send'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Skip report email dialog for testers without email */}
+      <Dialog open={skipReportEmailDialog} onOpenChange={setSkipReportEmailDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Some testers don&apos;t have email
+            </DialogTitle>
+            <DialogDescription>
+              The following testers will be skipped because they don&apos;t have an email address:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <div className="rounded-lg bg-secondary/50 p-3 max-h-40 overflow-y-auto">
+              <ul className="space-y-1">
+                {reportTestersWithoutEmail.map((t) => (
+                  <li key={t.id} className="text-sm text-muted-foreground flex items-center gap-2">
+                    <span className="text-yellow-500">•</span>
+                    {t.first_name} {t.last_name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {reportTestersWithEmail.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {reportTestersWithEmail.length} tester{reportTestersWithEmail.length !== 1 ? 's' : ''} will receive the report.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setSkipReportEmailDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => sendReports(reportTestersWithEmail)}
+              disabled={sendingReports || reportTestersWithEmail.length === 0}
+            >
+              {sendingReports ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+              {reportTestersWithEmail.length > 0
+                ? `Send to ${reportTestersWithEmail.length} tester${reportTestersWithEmail.length !== 1 ? 's' : ''}`
                 : 'No emails to send'}
             </Button>
           </DialogFooter>

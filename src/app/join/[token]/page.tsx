@@ -12,6 +12,8 @@ import {
   ChevronDown,
   ChevronRight,
   LogOut,
+  AlertTriangle,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -102,8 +104,11 @@ export default function TesterSessionPage({
   const [hasLeft, setHasLeft] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [reportedIssues, setReportedIssues] = useState<string[]>([]);
+  const [issuesExpanded, setIssuesExpanded] = useState(false);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const sceneInitializedRef = useRef(false);
+  const issuesInitializedRef = useRef(false);
 
   useEffect(() => {
     // Check if user is admin
@@ -166,6 +171,11 @@ export default function TesterSessionPage({
         setSelectedScene(result.session.scenes[0].id);
         sceneInitializedRef.current = true;
       }
+      // Initialize reported issues from tester data
+      if (!issuesInitializedRef.current && result.tester.reported_issues) {
+        setReportedIssues(result.tester.reported_issues);
+        issuesInitializedRef.current = true;
+      }
       fetchNotes(result.session.id, result.tester.id);
     } catch {
       setError({ message: "Failed to load session", type: "error" });
@@ -192,6 +202,25 @@ export default function TesterSessionPage({
   }
   function handleNoteDeleted(noteId: string) {
     setNotes((prev) => prev.filter((n) => n.id !== noteId));
+  }
+
+  async function toggleIssue(issue: string) {
+    if (!data) return;
+    const newIssues = reportedIssues.includes(issue)
+      ? reportedIssues.filter((i) => i !== issue)
+      : [...reportedIssues, issue];
+    setReportedIssues(newIssues);
+    
+    // Save to server
+    try {
+      await fetch(`/api/sessions/${data.session.id}/testers/${data.tester.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reported_issues: newIssues }),
+      });
+    } catch (error) {
+      console.error("Failed to save reported issues:", error);
+    }
   }
 
   if (loading)
@@ -387,6 +416,65 @@ export default function TesterSessionPage({
             )}
           </CardContent>
         </Card>
+        {session.issue_options && session.issue_options.length > 0 && (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="rounded-lg bg-amber-500/5 border border-amber-500/10 overflow-hidden">
+                <button
+                  onClick={() => setIssuesExpanded(!issuesExpanded)}
+                  className="w-full p-3 flex items-center gap-2 hover:bg-amber-500/10 transition-colors text-left"
+                >
+                  <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <span className="text-sm font-medium text-amber-600 dark:text-amber-400 flex-1">
+                    Report General Issues
+                    {reportedIssues.length > 0 && (
+                      <span className="ml-2 text-xs text-amber-500/70">
+                        ({reportedIssues.length} selected)
+                      </span>
+                    )}
+                  </span>
+                  {issuesExpanded ? (
+                    <ChevronDown className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  )}
+                </button>
+                {issuesExpanded && (
+                  <div className="px-3 pb-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      {session.issue_options.map((issue: string) => {
+                        const isChecked = reportedIssues.includes(issue);
+                        return (
+                          <button
+                            key={issue}
+                            type="button"
+                            onClick={() => toggleIssue(issue)}
+                            className={`flex items-center gap-2 p-3 rounded-lg border text-left text-sm transition-colors ${
+                              isChecked
+                                ? "bg-amber-500/10 border-amber-500/50 text-amber-600 dark:text-amber-400"
+                                : "bg-secondary/30 border-border hover:bg-secondary/50"
+                            }`}
+                          >
+                            <div
+                              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                isChecked
+                                  ? "bg-amber-500 border-amber-500"
+                                  : "border-muted-foreground/30"
+                              }`}
+                            >
+                              {isChecked && <Check className="w-3 h-3 text-white" />}
+                            </div>
+                            <span className="truncate">{issue}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
         {currentScene && (
           <Card>
             <CardHeader className="pb-3">

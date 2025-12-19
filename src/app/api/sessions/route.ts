@@ -15,10 +15,10 @@ interface SceneInput {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, description, build_version, scenes } = body;
+  const { name, description, build_version, scenes, issue_options } = body;
   if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
   const supabase = createAdminClient();
-  const { data: session, error } = await supabase.from("sessions").insert({ name, description: description || null, build_version: build_version || null, status: "draft" }).select().single();
+  const { data: session, error } = await supabase.from("sessions").insert({ name, description: description || null, build_version: build_version || null, status: "draft", issue_options: issue_options || [] }).select().single();
   if (error) return NextResponse.json({ error: "Failed" }, { status: 500 });
   if (scenes?.length > 0) {
     // Support both string[] (legacy) and SceneInput[] (with description)

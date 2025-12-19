@@ -26,138 +26,6 @@ export interface FilterLabels {
   tester?: string;
 }
 
-// Parse and render the session summary with proper formatting
-function FormattedSessionSummary({ text }: { text: string }) {
-  const lines = text.split("\n");
-  const elements: React.ReactNode[] = [];
-
-  lines.forEach((line, index) => {
-    const trimmed = line.trim();
-    
-    // Bold headers like **Summary Overview:** or **Actionable Items:**
-    if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
-      const headerText = trimmed.slice(2, -2);
-      elements.push(
-        <h4 key={index} className="font-semibold text-foreground mt-4 first:mt-0 mb-2">
-          {headerText}
-        </h4>
-      );
-      return;
-    }
-    
-    // Headers with colons like **Summary Overview:**
-    if (trimmed.startsWith("**") && trimmed.includes(":**")) {
-      const headerMatch = trimmed.match(/^\*\*(.+?):\*\*\s*(.*)?$/);
-      if (headerMatch) {
-        const headerText = headerMatch[1];
-        const isWarning = headerText.includes("⚠️") || headerText.toLowerCase().includes("requiring review") || headerText.toLowerCase().includes("quality issue");
-        elements.push(
-          <div key={index} className={`mt-4 first:mt-0 ${isWarning ? "p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20" : ""}`}>
-            <h4 className={`font-semibold mb-1 ${isWarning ? "text-yellow-600 dark:text-yellow-400" : "text-foreground"}`}>
-              {headerText}:
-            </h4>
-            {headerMatch[2] && (
-              <p className="text-sm text-muted-foreground">{headerMatch[2]}</p>
-            )}
-          </div>
-        );
-        return;
-      }
-    }
-    
-    // Bullet points with category tags like - **[Bug]** - Scene:
-    if (trimmed.startsWith("- **[")) {
-      const match = trimmed.match(/^-\s*\*\*\[(\w+)\]\*\*\s*(.+)$/);
-      if (match) {
-        const category = match[1];
-        const content = match[2];
-        const categoryColor = {
-          BUG: "bg-red-500/20 text-red-600 dark:text-red-400",
-          FEATURE: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
-          UX: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
-          PERFORMANCE: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
-          OTHER: "bg-gray-500/20 text-gray-600 dark:text-gray-400",
-        }[category.toUpperCase()] || "bg-gray-500/20 text-gray-600";
-        
-        elements.push(
-          <div key={index} className="flex gap-2 mt-3 first:mt-0">
-            <span className={`shrink-0 px-2 py-0.5 rounded text-xs font-medium ${categoryColor}`}>
-              {category}
-            </span>
-            <span 
-              className="text-sm flex-1"
-              dangerouslySetInnerHTML={{ 
-                __html: content.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-              }}
-            />
-          </div>
-        );
-        return;
-      }
-    }
-    
-    // Reported by line
-    if (trimmed.startsWith("- *Reported by:") || trimmed.startsWith("*Reported by:")) {
-      const reporter = trimmed.replace(/^-?\s*\*Reported by:\s*/, "").replace(/\*$/, "");
-      elements.push(
-        <p key={index} className="text-xs text-muted-foreground ml-14 -mt-1 mb-2 italic">
-          Reported by: {reporter}
-        </p>
-      );
-      return;
-    }
-    
-    // Issue line for notes requiring review
-    if (trimmed.startsWith("- *Issue:") || trimmed.startsWith("*Issue:")) {
-      const issue = trimmed.replace(/^-?\s*\*Issue:\s*/, "").replace(/\*$/, "");
-      elements.push(
-        <p key={index} className="text-xs text-yellow-600 dark:text-yellow-400 ml-4 -mt-1 mb-2 italic">
-          Issue: {issue}
-        </p>
-      );
-      return;
-    }
-    
-    // Regular bullet points
-    if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
-      const bulletContent = trimmed.slice(2);
-      const formattedContent = bulletContent.replace(
-        /\*\*(.+?)\*\*/g,
-        '<strong class="font-semibold">$1</strong>'
-      );
-      elements.push(
-        <div key={index} className="flex gap-2 ml-2 mt-1.5">
-          <span className="text-primary shrink-0">•</span>
-          <span 
-            className="text-sm text-muted-foreground flex-1"
-            dangerouslySetInnerHTML={{ __html: formattedContent }}
-          />
-        </div>
-      );
-      return;
-    }
-    
-    // Empty lines
-    if (trimmed === "") {
-      return;
-    }
-    
-    // Regular text - check for bold
-    const formattedText = trimmed.replace(
-      /\*\*(.+?)\*\*/g,
-      '<strong class="font-semibold">$1</strong>'
-    );
-    elements.push(
-      <p 
-        key={index} 
-        className="text-sm text-muted-foreground mt-1"
-        dangerouslySetInnerHTML={{ __html: formattedText }}
-      />
-    );
-  });
-
-  return <div className="space-y-1">{elements}</div>;
-}
 
 interface AISummaryDialogProps {
   sessionId: string;
@@ -442,7 +310,9 @@ export function AISummaryDialog({
                 />
               ) : (
                 <div className="rounded-lg border border-border bg-secondary/30 p-4 max-h-[400px] overflow-y-auto">
-                  <FormattedSessionSummary text={summary} />
+                  <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed">
+                    {summary}
+                  </pre>
                 </div>
               )}
             </div>

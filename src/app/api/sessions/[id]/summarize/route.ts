@@ -122,44 +122,53 @@ Please analyze these notes and provide a structured summary with actionable item
 IMPORTANT - HANDLING TRANSCRIPTION QUALITY:
 1. These are voice transcriptions which may contain:
    - Unclear or garbled text from transcription errors
-   - Very short or vague feedback that lacks detail
    - Incomplete sentences or filler words
    - Gibberish that doesn't make sense
 
-2. For notes with CLEAR, actionable feedback:
-   - Include them in the actionable items list
-   - Use first-person language (e.g., "I noticed...", "I found...")
+2. For notes with feedback - INCLUDE them in actionable items:
+   - Most notes should be included, even if brief or general
+   - "Vague" feedback is still useful - include it with the context provided
+   - Subjective observations are valid feedback (e.g., "felt confusing", "didn't feel right")
+   - Notes that mention a problem OR a positive observation should be included
+   - Write from the tester's perspective using first-person language (e.g., "I noticed...", "I found...")
 
-3. For notes that are UNCLEAR or problematic:
-   - List them in a separate "⚠️ Notes Requiring Review" section
-   - Be transparent about what the issue is
-   - Include the tester name so they can be asked to clarify
-   - Do NOT try to guess or fabricate meaning from gibberish
+3. ONLY flag notes in "⚠️ Notes Requiring Review" if they are TRULY UNUSABLE:
+   - Obvious test phrases (e.g., "testing 1 2 3", "hello hello")
+   - Actually garbled/incomprehensible transcription errors
+   - Complete gibberish with no discernible meaning
+   - Empty or near-empty content
+   
+   Do NOT flag notes just because they:
+   - Could be "more specific" or "more detailed"
+   - Are brief or concise
+   - Express general feelings without technical specifics
+   - Are subjective observations
 
 FORMATTING REQUIREMENTS:
-1. For each actionable item, ALWAYS include:
-   - The tester name who provided the feedback
-   - The scene/area it relates to
-   - The category (Bug, Feature, UX, Performance, Other)
+1. For each actionable item, include:
+   - The scene/area it relates to in brackets
+   - The feedback written from first-person perspective
+   - The tester name who reported it
 
 2. Group similar issues together but maintain attribution.
 
+3. Do NOT include category tags like [Bug], [Feature], [UX], etc. - just describe the actionable items plainly.
+
 Format your response as:
 
-**Summary Overview:**
+**Summary:**
 Brief 2-3 sentence overview of the key findings. If many notes are unclear, mention this.
 
 **Actionable Items:**
+- [Scene Name]: Description of the actionable item from first-person perspective (Reported by: Tester Name)
+- [Scene Name]: Another actionable item (Reported by: Tester Name)
 
-- **[Category]** - [Scene]: Description of the actionable item
-  - *Reported by: [Tester Name]*
+**Notes:** (optional - any additional context or patterns observed)
 
-**⚠️ Notes Requiring Review:** (only include this section if there are problematic notes)
+**⚠️ Notes Requiring Review:** (ONLY include if there are truly unusable notes - test phrases, gibberish, or garbled transcriptions)
+- [Scene] - [Tester Name]: "[Brief quote of the unusable note]" - Issue: [Explain why]
 
-- [Scene] - [Tester Name]: "[Brief quote or description of the unclear note]"
-  - *Issue: [Explain why - e.g., "Transcription appears garbled/incomplete/too vague to action"]*
-
-Be honest about transcription quality. It's better to flag unclear notes for review than to create confusing or incorrect action items.`;
+IMPORTANT: Be generous with including notes as actionable items. Most tester feedback, even if brief or general, provides useful signal. Only flag notes that are literally unusable (test phrases, gibberish, transcription errors). Do NOT flag notes just for being "vague" - vague feedback is still feedback.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",

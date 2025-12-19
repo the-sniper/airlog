@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, X, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +72,17 @@ export default function NewSessionPage() {
   const [addSceneDialog, setAddSceneDialog] = useState(false);
   const [newSceneName, setNewSceneName] = useState("");
   const [newSceneDescription, setNewSceneDescription] = useState("");
+  const [issueOptions, setIssueOptions] = useState<string[]>([]);
+  const [newIssueOption, setNewIssueOption] = useState("");
+
+  const defaultIssueOptions = [
+    "Performance lag",
+    "Spatialization issues",
+    "Network lag",
+    "Audio issues",
+    "Visual glitches",
+    "Input/Controls issues",
+  ];
 
   function openAddSceneDialog() {
     setNewSceneName("");
@@ -90,12 +101,24 @@ export default function NewSessionPage() {
 
   function removeScene(i: number) { setScenes(scenes.filter((_, idx) => idx !== i)); }
 
+  function addIssueOption(option: string) {
+    const trimmed = option.trim();
+    if (trimmed && !issueOptions.includes(trimmed)) {
+      setIssueOptions([...issueOptions, trimmed]);
+    }
+    setNewIssueOption("");
+  }
+
+  function removeIssueOption(option: string) {
+    setIssueOptions(issueOptions.filter(o => o !== option));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || scenes.length === 0) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim(), description: description.trim() || null, build_version: buildVersion.trim() || null, scenes }) });
+      const res = await fetch("/api/sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim(), description: description.trim() || null, build_version: buildVersion.trim() || null, scenes, issue_options: issueOptions }) });
       if (res.ok) { const session = await res.json(); router.push(`/admin/sessions/${session.id}`); }
     } finally { setLoading(false); }
   }
@@ -137,6 +160,99 @@ export default function NewSessionPage() {
                 <span className="text-sm font-medium">Add your first scene</span>
                 <span className="text-xs">Define areas or features to test</span>
               </button>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
+              Issue Checkboxes
+            </CardTitle>
+            <CardDescription>Quick checkboxes for common issues testers can report</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {issueOptions.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {issueOptions.map((option) => (
+                  <div
+                    key={option}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 text-sm"
+                  >
+                    <span>{option}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeIssueOption(option)}
+                      className="hover:text-destructive"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Input
+                value={newIssueOption}
+                onChange={(e) => setNewIssueOption(e.target.value)}
+                placeholder="Add custom issue option..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addIssueOption(newIssueOption);
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => addIssueOption(newIssueOption)}
+                disabled={!newIssueOption.trim()}
+              >
+                Add
+              </Button>
+            </div>
+            {issueOptions.length === 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Quick add common issues:</p>
+                <div className="flex flex-wrap gap-2">
+                  {defaultIssueOptions.map((option) => (
+                    <Button
+                      key={option}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addIssueOption(option)}
+                      className="text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      {option}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {issueOptions.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Add more:</p>
+                <div className="flex flex-wrap gap-2">
+                  {defaultIssueOptions
+                    .filter((option) => !issueOptions.includes(option))
+                    .map((option) => (
+                      <Button
+                        key={option}
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => addIssueOption(option)}
+                        className="text-xs h-7"
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        {option}
+                      </Button>
+                    ))}
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

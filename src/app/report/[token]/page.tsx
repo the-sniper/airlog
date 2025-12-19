@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
-import { Download, Loader2, FileText, BarChart3, AlertCircle } from "lucide-react";
+import { Download, Loader2, FileText, BarChart3, AlertCircle, Activity, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
-import type { SessionWithDetails, NoteWithDetails, NoteCategory } from "@/types";
+import type { SessionWithDetails, NoteWithDetails, NoteCategory, Tester } from "@/types";
 
 export default function PublicReportPage({ params }: { params: { token: string } }) {
   const { token } = params;
@@ -222,6 +222,67 @@ export default function PublicReportPage({ params }: { params: { token: string }
             </div>
           </CardContent>
         </Card>
+
+        {/* Stability Issues */}
+        {session.issue_options && session.issue_options.length > 0 && (() => {
+          const issueStats: Record<string, { count: number; testers: string[] }> = {};
+          session.issue_options.forEach((issue: string) => {
+            issueStats[issue] = { count: 0, testers: [] };
+          });
+          session.testers?.forEach((tester: Tester) => {
+            const testerIssues = tester.reported_issues || [];
+            testerIssues.forEach((issue: string) => {
+              if (issueStats[issue]) {
+                issueStats[issue].count++;
+                issueStats[issue].testers.push(`${tester.first_name} ${tester.last_name}`);
+              }
+            });
+          });
+          const totalTesters = session.testers?.length || 0;
+          const reportedIssues = Object.entries(issueStats).filter(([, s]) => s.count > 0);
+
+          if (reportedIssues.length === 0) return null;
+
+          return (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-amber-500" />
+                  Stability Issues
+                </CardTitle>
+                <CardDescription>General issues reported during testing</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {reportedIssues
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .map(([issue, stats]) => (
+                      <div key={issue} className="p-3 rounded-lg bg-secondary/30 border border-border">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <AlertTriangle className="w-4 h-4 text-amber-500/70" />
+                            <span className="text-sm font-medium">{issue}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+<div className="w-16 h-1.5 bg-secondary/50 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-amber-500 dark:bg-amber-400/60 rounded-full"
+                              style={{ width: `${totalTesters ? (stats.count / totalTesters) * 100 : 0}%` }}
+                            />
+                          </div>
+                            <span className="text-xs text-muted-foreground">{stats.count}/{totalTesters}</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground/70 mt-1.5 ml-7">
+                          {stats.testers.join(", ")}
+                        </p>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* AI Summary */}
         {session.ai_summary && (
