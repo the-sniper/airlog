@@ -18,7 +18,7 @@ export async function GET(
     // Find session by share token
     const { data: session, error } = await supabase
       .from("sessions")
-      .select(`*, scenes (*), testers (*), notes (*, scene:scenes (*), tester:testers (*))`)
+      .select(`*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*))`)
       .eq("share_token", token)
       .eq("status", "completed")
       .order("order_index", { referencedTable: "scenes", ascending: true })
@@ -30,6 +30,17 @@ export async function GET(
         { error: "Report not found or not available" },
         { status: 404 }
       );
+    }
+
+    // Fetch poll responses for all testers in this session
+    const testerIds = session.testers?.map((t: { id: string }) => t.id) || [];
+    let pollResponses: { poll_question_id: string; tester_id: string; selected_options: string[] }[] = [];
+    if (testerIds.length > 0) {
+      const { data: responses } = await supabase
+        .from("poll_responses")
+        .select("*")
+        .in("tester_id", testerIds);
+      pollResponses = responses || [];
     }
 
     // Calculate category breakdown
@@ -46,6 +57,7 @@ export async function GET(
 
     return NextResponse.json({
       session,
+      pollResponses,
       summary: {
         total_notes: session.notes?.length || 0,
         category_breakdown: categoryBreakdown,
@@ -73,7 +85,7 @@ export async function POST(
     // Find session by share token
     const { data: session, error } = await supabase
       .from("sessions")
-      .select(`*, scenes (*), testers (*), notes (*, scene:scenes (*), tester:testers (*))`)
+      .select(`*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*))`)
       .eq("share_token", token)
       .eq("status", "completed")
       .order("order_index", { referencedTable: "scenes", ascending: true })

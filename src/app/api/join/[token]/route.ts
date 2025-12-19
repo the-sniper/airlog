@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   
   const sessionRes = await fetch(
-    `${supabaseUrl}/rest/v1/sessions?id=eq.${tester.session_id}&select=*,scenes(*)`,
+    `${supabaseUrl}/rest/v1/sessions?id=eq.${tester.session_id}&select=*,scenes(*,poll_questions(*))`,
     {
       headers: {
         'apikey': serviceKey,
@@ -29,8 +29,24 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
   const sessions = await sessionRes.json();
   const session = sessions?.[0];
   
+  // Fetch poll responses for this tester
+  const pollResponsesRes = await fetch(
+    `${supabaseUrl}/rest/v1/poll_responses?tester_id=eq.${tester.id}&select=*`,
+    {
+      headers: {
+        'apikey': serviceKey,
+        'Authorization': `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
+      cache: 'no-store',
+    }
+  );
+  
+  const pollResponses = await pollResponsesRes.json();
+  
   if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
   if (session.status === "completed") return NextResponse.json({ error: "Session has ended" }, { status: 410 });
   if (session.status === "draft") return NextResponse.json({ error: "Session not started" }, { status: 425 });
-  return NextResponse.json({ tester, session });
+  return NextResponse.json({ tester, session, pollResponses: pollResponses || [] });
 }

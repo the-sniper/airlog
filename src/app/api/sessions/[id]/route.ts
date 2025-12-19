@@ -12,7 +12,7 @@ function generateShareToken(): string {
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const { id } = params;
   const supabase = createAdminClient();
-  const { data, error } = await supabase.from("sessions").select("*, scenes (*), testers (*), notes (*, scene:scenes (*), tester:testers (*))").eq("id", id).order("order_index", { referencedTable: "scenes", ascending: true }).single();
+  const { data, error } = await supabase.from("sessions").select("*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*))").eq("id", id).order("order_index", { referencedTable: "scenes", ascending: true }).single();
   if (error) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(data);
 }

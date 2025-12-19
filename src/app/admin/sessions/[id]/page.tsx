@@ -25,6 +25,8 @@ import {
   AlertTriangle,
   Filter,
   Activity,
+  CheckCircle,
+  XCircle,
   X,
   MoreVertical,
   Sparkles,
@@ -32,6 +34,7 @@ import {
   Eye,
   EyeOff,
   Send,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,7 +78,18 @@ import type {
   Team,
   TeamMember,
   TeamWithMembers,
+  PollQuestion,
+  PollQuestionType,
+  PollResponse,
 } from "@/types";
+
+interface PollQuestionInput {
+  id: string;
+  question: string;
+  question_type: PollQuestionType;
+  options: string[];
+  required: boolean;
+}
 
 interface TeamWithCount extends Team {
   members: { count: number }[];
@@ -291,11 +305,13 @@ export default function SessionDetailPage({
   const [addSceneDialog, setAddSceneDialog] = useState(false);
   const [newSceneName, setNewSceneName] = useState("");
   const [newSceneDescription, setNewSceneDescription] = useState("");
+  const [newScenePollQuestions, setNewScenePollQuestions] = useState<PollQuestionInput[]>([]);
   const [addingScene, setAddingScene] = useState(false);
   const [editSceneDialog, setEditSceneDialog] = useState(false);
   const [editingScene, setEditingScene] = useState<Scene | null>(null);
   const [editSceneName, setEditSceneName] = useState("");
   const [editSceneDescription, setEditSceneDescription] = useState("");
+  const [editScenePollQuestions, setEditScenePollQuestions] = useState<PollQuestionInput[]>([]);
   const [savingScene, setSavingScene] = useState(false);
   const [restartDialog, setRestartDialog] = useState(false);
   const [restarting, setRestarting] = useState(false);
@@ -342,6 +358,13 @@ export default function SessionDetailPage({
   const [endSessionDialog, setEndSessionDialog] = useState(false);
   const [endingSession, setEndingSession] = useState(false);
   const [sendingReportEmails, setSendingReportEmails] = useState(false);
+
+  // Poll responses state
+  const [pollResponses, setPollResponses] = useState<(PollResponse & { poll_question: PollQuestion & { scene: { session_id: string } } })[]>([]);
+
+  // Refresh loading states
+  const [refreshingSession, setRefreshingSession] = useState(false);
+  const [refreshingPoll, setRefreshingPoll] = useState(false);
 
   // Report sending state (for completed sessions)
   const [selectedReportTesterIds, setSelectedReportTesterIds] = useState<Set<string>>(new Set());
@@ -438,6 +461,7 @@ export default function SessionDetailPage({
   useEffect(() => {
     fetchSession();
     fetchTeams();
+    fetchPollResponses();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [id]);
 
@@ -456,6 +480,33 @@ export default function SessionDetailPage({
       if (res.ok) setTeams(await res.json());
     } catch (error) {
       console.error("Failed to fetch teams:", error);
+    }
+  }
+
+  async function fetchPollResponses() {
+    try {
+      const res = await fetch(`/api/sessions/${id}/poll-responses`);
+      if (res.ok) setPollResponses(await res.json());
+    } catch (error) {
+      console.error("Failed to fetch poll responses:", error);
+    }
+  }
+
+  async function refreshSession() {
+    setRefreshingSession(true);
+    try {
+      await fetchSession();
+    } finally {
+      setRefreshingSession(false);
+    }
+  }
+
+  async function refreshPollResponses() {
+    setRefreshingPoll(true);
+    try {
+      await fetchPollResponses();
+    } finally {
+      setRefreshingPoll(false);
     }
   }
 
@@ -732,13 +783,28 @@ export default function SessionDetailPage({
     if (!newSceneName.trim()) return;
     setAddingScene(true);
     try {
+      // Filter out empty poll questions
+      const validPollQuestions = newScenePollQuestions
+        .filter(q => q.question.trim() && q.options.some(o => o.trim()))
+        .map(q => ({
+          question: q.question.trim(),
+          question_type: q.question_type,
+          options: q.options.filter(o => o.trim()),
+          required: q.required,
+        }));
+      
       await fetch(`/api/sessions/${id}/scenes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newSceneName.trim(), description: newSceneDescription.trim() || null }),
+        body: JSON.stringify({ 
+          name: newSceneName.trim(), 
+          description: newSceneDescription.trim() || null,
+          poll_questions: validPollQuestions.length > 0 ? validPollQuestions : undefined,
+        }),
       });
       setNewSceneName("");
       setNewSceneDescription("");
+      setNewScenePollQuestions([]);
       setAddSceneDialog(false);
       fetchSession();
     } finally {
@@ -749,19 +815,44 @@ export default function SessionDetailPage({
     setEditingScene(scene);
     setEditSceneName(scene.name);
     setEditSceneDescription(scene.description || "");
+    // Load existing poll questions
+    const existingQuestions = (scene.poll_questions || []).map((q: PollQuestion) => ({
+      id: q.id,
+      question: q.question,
+      question_type: q.question_type,
+      options: q.options,
+      required: q.required,
+    }));
+    setEditScenePollQuestions(existingQuestions);
     setEditSceneDialog(true);
   }
   async function handleSaveScene() {
     if (!editingScene || !editSceneName.trim()) return;
     setSavingScene(true);
     try {
+      // Filter out empty poll questions
+      const validPollQuestions = editScenePollQuestions
+        .filter(q => q.question.trim() && q.options.some(o => o.trim()))
+        .map(q => ({
+          question: q.question.trim(),
+          question_type: q.question_type,
+          options: q.options.filter(o => o.trim()),
+          required: q.required,
+        }));
+      
       await fetch(`/api/sessions/${id}/scenes`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sceneId: editingScene.id, name: editSceneName.trim(), description: editSceneDescription.trim() || null }),
+        body: JSON.stringify({ 
+          sceneId: editingScene.id, 
+          name: editSceneName.trim(), 
+          description: editSceneDescription.trim() || null,
+          poll_questions: validPollQuestions,
+        }),
       });
       setEditSceneDialog(false);
       setEditingScene(null);
+      setEditScenePollQuestions([]);
       fetchSession();
     } finally {
       setSavingScene(false);
@@ -1195,6 +1286,12 @@ export default function SessionDetailPage({
               <span>Stability</span>
             </TabsTrigger>
           )}
+          {session.scenes?.some((s: Scene) => s.poll_questions && s.poll_questions.length > 0) && (
+            <TabsTrigger value="poll" className="gap-1.5 sm:gap-2 flex-1 sm:flex-none">
+              <BarChart3 className="w-4 h-4" />
+              <span>Poll</span>
+            </TabsTrigger>
+          )}
           {session.ai_summary ? (
             <TabsTrigger value="summary" className="gap-1.5 sm:gap-2 flex-1 sm:flex-none">
               <Sparkles className="w-4 h-4" />
@@ -1581,10 +1678,11 @@ export default function SessionDetailPage({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={fetchSession}
+                          onClick={refreshSession}
+                          disabled={refreshingSession}
                           className="gap-2"
                         >
-                          <RotateCcw className="w-4 h-4" />
+                          <RotateCcw className={`w-4 h-4 ${refreshingSession ? "animate-spin" : ""}`} />
                           <span className="hidden sm:inline">Refresh</span>
                         </Button>
                       )}
@@ -1793,14 +1891,26 @@ export default function SessionDetailPage({
           <TabsContent value="stability" className="mt-4">
             <Card>
               <CardHeader>
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-amber-500" />
-                    Stability Issues
-                  </CardTitle>
-                  <CardDescription>
-                    General issues reported by testers during the session
-                  </CardDescription>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-amber-500" />
+                      Stability Issues
+                    </CardTitle>
+                    <CardDescription>
+                      General issues reported by testers during the session
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={refreshSession}
+                    disabled={refreshingSession}
+                    className="gap-2"
+                  >
+                    <RotateCcw className={`w-4 h-4 ${refreshingSession ? "animate-spin" : ""}`} />
+                    <span className="hidden sm:inline">Refresh</span>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
@@ -1838,47 +1948,222 @@ export default function SessionDetailPage({
                     <div className="space-y-4">
                       {Object.entries(issueStats)
                         .sort((a, b) => b[1].count - a[1].count)
-                        .map(([issue, stats]) => (
-                          <div
-                            key={issue}
-                            className={`p-3 rounded-lg border ${
-                              stats.count > 0
-                                ? "bg-secondary/30 border-border"
-                                : "bg-secondary/20 border-border/50"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <AlertTriangle
-                                  className={`w-4 h-4 ${
-                                    stats.count > 0
-                                      ? "text-amber-500/70"
-                                      : "text-muted-foreground/40"
-                                  }`}
-                                />
-                                <span className={`text-sm ${stats.count > 0 ? "font-medium" : "text-muted-foreground"}`}>{issue}</span>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <div className="w-16 h-1.5 bg-secondary/50 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-amber-500 dark:bg-amber-400/60 rounded-full transition-all duration-500"
-                                    style={{
-                                      width: `${totalTesters ? (stats.count / totalTesters) * 100 : 0}%`,
-                                    }}
-                                  />
+                        .map(([issue, stats]) => {
+                          const percentage = totalTesters ? (stats.count / totalTesters) * 100 : 0;
+                          // Color coding: < 50% green, 50-80% orange, > 80% red
+                          const getColorClasses = () => {
+                            if (stats.count === 0) return { icon: "text-muted-foreground/40", bar: "bg-muted-foreground/30" };
+                            if (percentage < 50) return { icon: "text-green-500", bar: "bg-green-500 dark:bg-green-400/60" };
+                            if (percentage <= 80) return { icon: "text-amber-500", bar: "bg-amber-500 dark:bg-amber-400/60" };
+                            return { icon: "text-red-500", bar: "bg-red-500 dark:bg-red-400/60" };
+                          };
+                          const colors = getColorClasses();
+                          
+                          // Icon based on severity
+                          const getIcon = () => {
+                            if (stats.count === 0) return <AlertTriangle className={`w-4 h-4 ${colors.icon}`} />;
+                            if (percentage < 50) return <CheckCircle className={`w-4 h-4 ${colors.icon}`} />;
+                            if (percentage <= 80) return <AlertTriangle className={`w-4 h-4 ${colors.icon}`} />;
+                            return <XCircle className={`w-4 h-4 ${colors.icon}`} />;
+                          };
+                          
+                          return (
+                            <div
+                              key={issue}
+                              className={`p-3 rounded-lg border ${
+                                stats.count > 0
+                                  ? "bg-secondary/30 border-border"
+                                  : "bg-secondary/20 border-border/50"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  {getIcon()}
+                                  <span className={`text-sm ${stats.count > 0 ? "font-medium" : "text-muted-foreground"}`}>{issue}</span>
                                 </div>
-                                <span className={`text-xs ${stats.count > 0 ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
-                                  {stats.count}/{totalTesters}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-16 h-1.5 bg-secondary/50 rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full ${colors.bar} rounded-full transition-all duration-500`}
+                                      style={{
+                                        width: `${percentage}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className={`text-xs ${stats.count > 0 ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
+                                    {stats.count}/{totalTesters}
+                                  </span>
+                                </div>
                               </div>
+                              {stats.count > 0 && (
+                                <p className="text-xs text-muted-foreground/70 mt-1.5 ml-7">
+                                  {stats.testers.join(", ")}
+                                </p>
+                              )}
                             </div>
-                            {stats.count > 0 && (
-                              <p className="text-xs text-muted-foreground/70 mt-1.5 ml-7">
-                                {stats.testers.join(", ")}
-                              </p>
-                            )}
+                          );
+                        })}
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+        {session.scenes?.some((s: Scene) => s.poll_questions && s.poll_questions.length > 0) && (
+          <TabsContent value="poll" className="mt-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-blue-500" />
+                      Poll Results
+                    </CardTitle>
+                    <CardDescription>
+                      Poll responses from testers grouped by scene
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={refreshPollResponses}
+                    disabled={refreshingPoll}
+                    className="gap-2"
+                  >
+                    <RotateCcw className={`w-4 h-4 ${refreshingPoll ? "animate-spin" : ""}`} />
+                    <span className="hidden sm:inline">Refresh</span>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  // Filter scenes with poll questions
+                  const scenesWithPolls = session.scenes?.filter(
+                    (s: Scene) => s.poll_questions && s.poll_questions.length > 0
+                  ) || [];
+
+                  if (scenesWithPolls.length === 0) {
+                    return (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>No poll questions configured</p>
+                      </div>
+                    );
+                  }
+
+                  const totalTesters = session.testers?.length || 0;
+
+                  return (
+                    <div className="space-y-8">
+                      {scenesWithPolls.map((scene: Scene) => (
+                        <div key={scene.id} className="space-y-4">
+                          <div className="flex items-center gap-2 border-b pb-2">
+                            <Layout className="w-4 h-4 text-muted-foreground" />
+                            <h3 className="font-semibold text-lg">{scene.name}</h3>
                           </div>
-                        ))}
+                          <div className="space-y-6 pl-2">
+                            {scene.poll_questions?.map((question: PollQuestion, qIndex: number) => {
+                              // Get responses for this question
+                              const questionResponses = pollResponses.filter(
+                                (r) => r.poll_question_id === question.id
+                              );
+                              
+                              // Count responses for each option
+                              const optionCounts: Record<string, { count: number; testers: string[] }> = {};
+                              question.options.forEach((opt) => {
+                                optionCounts[opt] = { count: 0, testers: [] };
+                              });
+                              
+                              questionResponses.forEach((response) => {
+                                const tester = session.testers?.find((t: Tester) => t.id === response.tester_id);
+                                const testerName = tester ? `${tester.first_name} ${tester.last_name}` : "Unknown";
+                                response.selected_options.forEach((opt) => {
+                                  if (optionCounts[opt]) {
+                                    optionCounts[opt].count++;
+                                    optionCounts[opt].testers.push(testerName);
+                                  }
+                                });
+                              });
+
+                              const respondentCount = questionResponses.length;
+                              const hasResponses = respondentCount > 0;
+
+                              return (
+                                <div key={question.id} className="space-y-3">
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-sm text-muted-foreground font-mono shrink-0">
+                                      Q{qIndex + 1}.
+                                    </span>
+                                    <div className="flex-1">
+                                      <p className="font-medium text-sm">{question.question}</p>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <Badge variant="outline" className="text-xs">
+                                          {question.question_type === "radio" ? "Single Choice" : "Multiple Choice"}
+                                        </Badge>
+                                        {question.required && (
+                                          <Badge variant="secondary" className="text-xs">Required</Badge>
+                                        )}
+                                        <span className="text-xs text-muted-foreground">
+                                          {respondentCount}/{totalTesters} responded
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {!hasResponses ? (
+                                    <div className="text-sm text-muted-foreground/70 py-2 pl-8">
+                                      No responses yet
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-2 pl-8">
+                                      {question.options.map((option, optIndex) => {
+                                        const stats = optionCounts[option];
+                                        const percentage = respondentCount > 0 
+                                          ? Math.round((stats.count / respondentCount) * 100) 
+                                          : 0;
+                                        
+                                        return (
+                                          <div
+                                            key={optIndex}
+                                            className={`p-2.5 rounded-lg border ${
+                                              stats.count > 0
+                                                ? "bg-secondary/30 border-border"
+                                                : "bg-secondary/10 border-border/50"
+                                            }`}
+                                          >
+                                            <div className="flex items-center justify-between gap-3">
+                                              <span className={`text-sm flex-1 ${stats.count > 0 ? "" : "text-muted-foreground"}`}>
+                                                {option}
+                                              </span>
+                                              <div className="flex items-center gap-3 shrink-0">
+                                                <div className="w-20 h-1.5 bg-secondary/50 rounded-full overflow-hidden">
+                                                  <div
+                                                    className="h-full bg-blue-500 dark:bg-blue-400/60 rounded-full transition-all duration-500"
+                                                    style={{ width: `${percentage}%` }}
+                                                  />
+                                                </div>
+                                                <span className={`text-xs w-12 text-right ${stats.count > 0 ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
+                                                  {percentage}% ({stats.count})
+                                                </span>
+                                              </div>
+                                            </div>
+                                            {stats.count > 0 && (
+                                              <p className="text-xs text-muted-foreground/70 mt-1.5">
+                                                {stats.testers.join(", ")}
+                                              </p>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   );
                 })()}
@@ -2123,7 +2408,7 @@ export default function SessionDetailPage({
         </DialogContent>
       </Dialog>
       <Dialog open={addSceneDialog} onOpenChange={setAddSceneDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Scene</DialogTitle>
             <DialogDescription>
@@ -2147,13 +2432,170 @@ export default function SessionDetailPage({
                 value={newSceneDescription}
                 onChange={(e) => setNewSceneDescription(e.target.value)}
                 placeholder={"Use bullet points for clarity:\n• Test player movement and controls\n• Check collision detection\n• Verify UI interactions work correctly"}
-                className="min-h-[120px] resize-none"
+                className="min-h-[100px] resize-none"
               />
               <p className="text-xs text-muted-foreground">Tip: Use • or - for bullet points</p>
             </div>
+            
+            {/* Poll Questions Section */}
+            <div className="space-y-3 pt-2 border-t">
+              <div className="flex items-center justify-between">
+                <Label>Poll Questions <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setNewScenePollQuestions([...newScenePollQuestions, {
+                    id: crypto.randomUUID(),
+                    question: "",
+                    question_type: "radio",
+                    options: ["", ""],
+                    required: false,
+                  }])}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Add Question
+                </Button>
+              </div>
+              
+              {newScenePollQuestions.length === 0 && (
+                <p className="text-sm text-muted-foreground py-2">
+                  No poll questions added. Click &quot;Add Question&quot; to create a poll for testers.
+                </p>
+              )}
+              
+              {newScenePollQuestions.map((q, qIndex) => (
+                <div key={q.id} className="p-4 rounded-lg border bg-secondary/30 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 space-y-2">
+                      <Input
+                        placeholder="Enter your question..."
+                        value={q.question}
+                        onChange={(e) => {
+                          const updated = [...newScenePollQuestions];
+                          updated[qIndex].question = e.target.value;
+                          setNewScenePollQuestions(updated);
+                        }}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => setNewScenePollQuestions(newScenePollQuestions.filter((_, i) => i !== qIndex))}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <Select
+                      value={q.question_type}
+                      onValueChange={(value: PollQuestionType) => {
+                        const updated = [...newScenePollQuestions];
+                        updated[qIndex].question_type = value;
+                        setNewScenePollQuestions(updated);
+                      }}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="radio">Single Choice</SelectItem>
+                        <SelectItem value="checkbox">Multiple Choice</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={q.required}
+                        onChange={(e) => {
+                          const updated = [...newScenePollQuestions];
+                          updated[qIndex].required = e.target.checked;
+                          setNewScenePollQuestions(updated);
+                        }}
+                        className="rounded"
+                      />
+                      Required
+                    </label>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Options</Label>
+                    {q.options.map((opt, optIndex) => (
+                      <div key={optIndex} className="flex items-center gap-2">
+                        <div className="w-4 h-4 flex items-center justify-center text-muted-foreground">
+                          {q.question_type === "radio" ? (
+                            <div className="w-3 h-3 rounded-full border-2 border-current" />
+                          ) : (
+                            <div className="w-3 h-3 rounded border-2 border-current" />
+                          )}
+                        </div>
+                        <Input
+                          className="flex-1"
+                          placeholder={`Option ${optIndex + 1}`}
+                          value={opt}
+                          onChange={(e) => {
+                            const updated = [...newScenePollQuestions];
+                            updated[qIndex].options[optIndex] = e.target.value;
+                            setNewScenePollQuestions(updated);
+                          }}
+                        />
+                        {q.options.length > 2 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => {
+                              const updated = [...newScenePollQuestions];
+                              updated[qIndex].options = updated[qIndex].options.filter((_, i) => i !== optIndex);
+                              setNewScenePollQuestions(updated);
+                            }}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        const updated = [...newScenePollQuestions];
+                        updated[qIndex].options.push("");
+                        setNewScenePollQuestions(updated);
+                      }}
+                    >
+                      <Plus className="w-3 h-3 mr-1" /> Add Option
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              
+              {newScenePollQuestions.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setNewScenePollQuestions([...newScenePollQuestions, {
+                    id: crypto.randomUUID(),
+                    question: "",
+                    question_type: "radio",
+                    options: ["", ""],
+                    required: false,
+                  }])}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Add Question
+                </Button>
+              )}
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setAddSceneDialog(false)}>
+            <Button variant="ghost" onClick={() => { setAddSceneDialog(false); setNewScenePollQuestions([]); }}>
               Cancel
             </Button>
             <Button
@@ -2166,7 +2608,7 @@ export default function SessionDetailPage({
         </DialogContent>
       </Dialog>
       <Dialog open={editSceneDialog} onOpenChange={setEditSceneDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Scene</DialogTitle>
             <DialogDescription>
@@ -2190,13 +2632,170 @@ export default function SessionDetailPage({
                 value={editSceneDescription}
                 onChange={(e) => setEditSceneDescription(e.target.value)}
                 placeholder={"Use bullet points for clarity:\n• Test player movement and controls\n• Check collision detection\n• Verify UI interactions work correctly"}
-                className="min-h-[120px] resize-none"
+                className="min-h-[100px] resize-none"
               />
               <p className="text-xs text-muted-foreground">Tip: Use • or - for bullet points</p>
             </div>
+            
+            {/* Poll Questions Section */}
+            <div className="space-y-3 pt-2 border-t">
+              <div className="flex items-center justify-between">
+                <Label>Poll Questions <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditScenePollQuestions([...editScenePollQuestions, {
+                    id: crypto.randomUUID(),
+                    question: "",
+                    question_type: "radio",
+                    options: ["", ""],
+                    required: false,
+                  }])}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Add Question
+                </Button>
+              </div>
+              
+              {editScenePollQuestions.length === 0 && (
+                <p className="text-sm text-muted-foreground py-2">
+                  No poll questions added. Click &quot;Add Question&quot; to create a poll for testers.
+                </p>
+              )}
+              
+              {editScenePollQuestions.map((q, qIndex) => (
+                <div key={q.id} className="p-4 rounded-lg border bg-secondary/30 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 space-y-2">
+                      <Input
+                        placeholder="Enter your question..."
+                        value={q.question}
+                        onChange={(e) => {
+                          const updated = [...editScenePollQuestions];
+                          updated[qIndex].question = e.target.value;
+                          setEditScenePollQuestions(updated);
+                        }}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => setEditScenePollQuestions(editScenePollQuestions.filter((_, i) => i !== qIndex))}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <Select
+                      value={q.question_type}
+                      onValueChange={(value: PollQuestionType) => {
+                        const updated = [...editScenePollQuestions];
+                        updated[qIndex].question_type = value;
+                        setEditScenePollQuestions(updated);
+                      }}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="radio">Single Choice</SelectItem>
+                        <SelectItem value="checkbox">Multiple Choice</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={q.required}
+                        onChange={(e) => {
+                          const updated = [...editScenePollQuestions];
+                          updated[qIndex].required = e.target.checked;
+                          setEditScenePollQuestions(updated);
+                        }}
+                        className="rounded"
+                      />
+                      Required
+                    </label>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Options</Label>
+                    {q.options.map((opt, optIndex) => (
+                      <div key={optIndex} className="flex items-center gap-2">
+                        <div className="w-4 h-4 flex items-center justify-center text-muted-foreground">
+                          {q.question_type === "radio" ? (
+                            <div className="w-3 h-3 rounded-full border-2 border-current" />
+                          ) : (
+                            <div className="w-3 h-3 rounded border-2 border-current" />
+                          )}
+                        </div>
+                        <Input
+                          className="flex-1"
+                          placeholder={`Option ${optIndex + 1}`}
+                          value={opt}
+                          onChange={(e) => {
+                            const updated = [...editScenePollQuestions];
+                            updated[qIndex].options[optIndex] = e.target.value;
+                            setEditScenePollQuestions(updated);
+                          }}
+                        />
+                        {q.options.length > 2 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => {
+                              const updated = [...editScenePollQuestions];
+                              updated[qIndex].options = updated[qIndex].options.filter((_, i) => i !== optIndex);
+                              setEditScenePollQuestions(updated);
+                            }}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        const updated = [...editScenePollQuestions];
+                        updated[qIndex].options.push("");
+                        setEditScenePollQuestions(updated);
+                      }}
+                    >
+                      <Plus className="w-3 h-3 mr-1" /> Add Option
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              
+              {editScenePollQuestions.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setEditScenePollQuestions([...editScenePollQuestions, {
+                    id: crypto.randomUUID(),
+                    question: "",
+                    question_type: "radio",
+                    options: ["", ""],
+                    required: false,
+                  }])}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Add Question
+                </Button>
+              )}
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditSceneDialog(false)}>
+            <Button variant="ghost" onClick={() => { setEditSceneDialog(false); setEditScenePollQuestions([]); }}>
               Cancel
             </Button>
             <Button

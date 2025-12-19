@@ -14,6 +14,7 @@ import {
   LogOut,
   AlertTriangle,
   Check,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,11 +31,12 @@ import { VoiceRecorder } from "@/components/voice-recorder";
 import { TextNoteInput } from "@/components/text-note-input";
 import { NotesList } from "@/components/notes-list";
 import { AdminMobileHeader } from "@/components/admin-sidebar";
-import type { SessionWithScenes, Tester, Scene, Note } from "@/types";
+import type { SessionWithScenes, Tester, Scene, Note, PollQuestion, PollResponse } from "@/types";
 
 interface JoinData {
   tester: Tester;
   session: SessionWithScenes;
+  pollResponses: PollResponse[];
 }
 
 function FormattedDescription({ text }: { text: string }) {
@@ -106,9 +108,13 @@ export default function TesterSessionPage({
   const [isAdmin, setIsAdmin] = useState(false);
   const [reportedIssues, setReportedIssues] = useState<string[]>([]);
   const [issuesExpanded, setIssuesExpanded] = useState(false);
+  const [pollExpanded, setPollExpanded] = useState(false);
+  const [pollResponses, setPollResponses] = useState<Record<string, string[]>>({});
+  const [savingPollResponse, setSavingPollResponse] = useState<string | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const sceneInitializedRef = useRef(false);
   const issuesInitializedRef = useRef(false);
+  const pollInitializedRef = useRef(false);
 
   useEffect(() => {
     // Check if user is admin
@@ -176,6 +182,15 @@ export default function TesterSessionPage({
         setReportedIssues(result.tester.reported_issues);
         issuesInitializedRef.current = true;
       }
+      // Initialize poll responses
+      if (!pollInitializedRef.current && result.pollResponses) {
+        const responsesMap: Record<string, string[]> = {};
+        result.pollResponses.forEach((r: PollResponse) => {
+          responsesMap[r.poll_question_id] = r.selected_options;
+        });
+        setPollResponses(responsesMap);
+        pollInitializedRef.current = true;
+      }
       fetchNotes(result.session.id, result.tester.id);
     } catch {
       setError({ message: "Failed to load session", type: "error" });
@@ -220,6 +235,46 @@ export default function TesterSessionPage({
       });
     } catch (error) {
       console.error("Failed to save reported issues:", error);
+    }
+  }
+
+  async function handlePollResponse(questionId: string, questionType: string, option: string) {
+    if (!data) return;
+    
+    let newSelected: string[];
+    const currentSelected = pollResponses[questionId] || [];
+    
+    if (questionType === "radio") {
+      // Radio: single selection
+      newSelected = [option];
+    } else {
+      // Checkbox: toggle selection
+      if (currentSelected.includes(option)) {
+        newSelected = currentSelected.filter(o => o !== option);
+      } else {
+        newSelected = [...currentSelected, option];
+      }
+    }
+    
+    // Update local state immediately
+    setPollResponses(prev => ({ ...prev, [questionId]: newSelected }));
+    setSavingPollResponse(questionId);
+    
+    // Save to server
+    try {
+      await fetch(`/api/sessions/${data.session.id}/poll-responses`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          poll_question_id: questionId,
+          tester_id: data.tester.id,
+          selected_options: newSelected,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to save poll response:", error);
+    } finally {
+      setSavingPollResponse(null);
     }
   }
 
@@ -345,8 +400,7 @@ export default function TesterSessionPage({
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span className="text-xs sm:text-sm text-muted-foreground">Live</span>
             </div>
-            {/* Only show theme toggle when not admin (admin has it in hamburger menu) */}
-            {!isAdmin && <ThemeToggle />}
+            <ThemeToggle />
             {/* Mobile: Icon button */}
             <Button
               variant="ghost"
@@ -475,6 +529,136 @@ export default function TesterSessionPage({
             </CardContent>
           </Card>
         )}
+        {currentScene && currentScene.poll_questions && currentScene.poll_questions.length > 0 && (() => {
+          const requiredQuestions = currentScene.poll_questions?.filter((q: PollQuestion) => q.required) || [];
+          const unansweredRequired = requiredQuestions.filter((q: PollQuestion) => !pollResponses[q.id]?.length);
+          const hasUnansweredRequired = unansweredRequired.length > 0;
+          const allQuestions = currentScene.poll_questions || [];
+          const answeredCount = allQuestions.filter((q: PollQuestion) => pollResponses[q.id]?.length > 0).length;
+          
+          return (
+            <Card>
+              <CardContent className="pt-6">
+                <div className={`rounded-lg overflow-hidden ${
+                  hasUnansweredRequired 
+                    ? "bg-amber-500/5 border border-amber-500/20" 
+                    : "bg-blue-500/5 border border-blue-500/10"
+                }`}>
+                  <button
+                    onClick={() => setPollExpanded(!pollExpanded)}
+                    className={`w-full p-3 flex items-center gap-2 transition-colors text-left ${
+                      hasUnansweredRequired 
+                        ? "hover:bg-amber-500/10" 
+                        : "hover:bg-blue-500/10"
+                    }`}
+                  >
+                    <ClipboardList className={`w-4 h-4 flex-shrink-0 ${
+                      hasUnansweredRequired ? "text-amber-500" : "text-blue-500"
+                    }`} />
+                    <span className={`text-sm font-medium flex-1 ${
+                      hasUnansweredRequired 
+                        ? "text-amber-600 dark:text-amber-400" 
+                        : "text-blue-600 dark:text-blue-400"
+                    }`}>
+                      Scene Poll
+                      {hasUnansweredRequired ? (
+                        <span className="ml-2 text-xs text-amber-500">
+                          ({unansweredRequired.length} required unanswered)
+                        </span>
+                      ) : answeredCount > 0 ? (
+                        <span className="ml-2 text-xs text-blue-500/70">
+                          ({answeredCount}/{allQuestions.length} answered)
+                        </span>
+                      ) : null}
+                    </span>
+                    {pollExpanded ? (
+                      <ChevronDown className={`w-4 h-4 flex-shrink-0 ${
+                        hasUnansweredRequired ? "text-amber-500" : "text-blue-500"
+                      }`} />
+                    ) : (
+                      <ChevronRight className={`w-4 h-4 flex-shrink-0 ${
+                        hasUnansweredRequired ? "text-amber-500" : "text-blue-500"
+                      }`} />
+                    )}
+                  </button>
+                  {pollExpanded && (
+                    <div className="px-3 pb-3 space-y-4">
+                      {currentScene.poll_questions?.map((q: PollQuestion) => {
+                        const isAnswered = (pollResponses[q.id] || []).length > 0;
+                        const isRequiredUnanswered = q.required && !isAnswered;
+                        
+                        return (
+                          <div 
+                            key={q.id} 
+                            className={`space-y-2 ${
+                              isRequiredUnanswered 
+                                ? "p-3 -mx-3 rounded-lg bg-amber-500/5 border border-amber-500/20" 
+                                : ""
+                            }`}
+                          >
+                            <p className="text-sm font-medium flex items-center gap-1">
+                              {q.question}
+                              {q.required && (
+                                <span className={isRequiredUnanswered ? "text-amber-500" : "text-red-500"}>*</span>
+                              )}
+                              {isRequiredUnanswered && (
+                                <span className="text-xs text-amber-500 ml-1">(required)</span>
+                              )}
+                            </p>
+                            <div className="space-y-1.5">
+                              {q.options.map((option, optIndex) => {
+                                const isSelected = (pollResponses[q.id] || []).includes(option);
+                                const isSaving = savingPollResponse === q.id;
+                                return (
+                                  <button
+                                    key={optIndex}
+                                    type="button"
+                                    onClick={() => handlePollResponse(q.id, q.question_type, option)}
+                                    disabled={isSaving}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left text-sm transition-colors ${
+                                      isSelected
+                                        ? "bg-blue-500/10 border-blue-500/50 text-blue-600 dark:text-blue-400"
+                                        : "bg-secondary/30 border-border hover:bg-secondary/50"
+                                    } ${isSaving ? "opacity-50" : ""}`}
+                                  >
+                                    <div
+                                      className={`w-5 h-5 flex items-center justify-center shrink-0 transition-colors ${
+                                        q.question_type === "radio"
+                                          ? `rounded-full border-2 ${
+                                              isSelected
+                                                ? "border-blue-500 bg-blue-500"
+                                                : "border-muted-foreground/30"
+                                            }`
+                                          : `rounded border-2 ${
+                                              isSelected
+                                                ? "border-blue-500 bg-blue-500"
+                                                : "border-muted-foreground/30"
+                                            }`
+                                      }`}
+                                    >
+                                      {isSelected && (
+                                        q.question_type === "radio" ? (
+                                          <div className="w-2 h-2 rounded-full bg-white" />
+                                        ) : (
+                                          <Check className="w-3 h-3 text-white" />
+                                        )
+                                      )}
+                                    </div>
+                                    <span className="flex-1">{option}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
         {currentScene && (
           <Card>
             <CardHeader className="pb-3">

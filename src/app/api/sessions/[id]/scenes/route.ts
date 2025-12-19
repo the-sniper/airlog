@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import type { PollQuestion } from "@/types";
+
+interface PollQuestionInput {
+  question: string;
+  question_type: "radio" | "checkbox";
+  options: string[];
+  required?: boolean;
+}
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const { id } = params;
   const body = await req.json();
-  const { name, description } = body;
+  const { name, description, poll_questions } = body;
   if (!name) return NextResponse.json({ error: "Scene name required" }, { status: 400 });
   
   const supabase = createAdminClient();
@@ -26,13 +34,35 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     .single();
   
   if (error) return NextResponse.json({ error: "Failed to add scene" }, { status: 500 });
-  return NextResponse.json(data, { status: 201 });
+  
+  // Add poll questions if provided
+  if (poll_questions && poll_questions.length > 0) {
+    const pollQuestionsToInsert = poll_questions.map((q: PollQuestionInput, index: number) => ({
+      scene_id: data.id,
+      question: q.question,
+      question_type: q.question_type,
+      options: q.options,
+      order_index: index,
+      required: q.required || false,
+    }));
+    
+    await supabase.from("poll_questions").insert(pollQuestionsToInsert);
+  }
+  
+  // Fetch the scene with poll questions
+  const { data: sceneWithQuestions } = await supabase
+    .from("scenes")
+    .select("*, poll_questions(*)")
+    .eq("id", data.id)
+    .single();
+  
+  return NextResponse.json(sceneWithQuestions || data, { status: 201 });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { id } = params;
   const body = await req.json();
-  const { sceneId, name, description } = body;
+  const { sceneId, name, description, poll_questions } = body;
   if (!sceneId) return NextResponse.json({ error: "Scene ID required" }, { status: 400 });
   
   const supabase = createAdminClient();
@@ -49,7 +79,35 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     .single();
   
   if (error) return NextResponse.json({ error: "Failed to update scene" }, { status: 500 });
-  return NextResponse.json(data);
+  
+  // Update poll questions if provided
+  if (poll_questions !== undefined) {
+    // Delete existing poll questions for this scene
+    await supabase.from("poll_questions").delete().eq("scene_id", sceneId);
+    
+    // Insert new poll questions
+    if (poll_questions && poll_questions.length > 0) {
+      const pollQuestionsToInsert = poll_questions.map((q: PollQuestionInput, index: number) => ({
+        scene_id: sceneId,
+        question: q.question,
+        question_type: q.question_type,
+        options: q.options,
+        order_index: index,
+        required: q.required || false,
+      }));
+      
+      await supabase.from("poll_questions").insert(pollQuestionsToInsert);
+    }
+  }
+  
+  // Fetch the scene with poll questions
+  const { data: sceneWithQuestions } = await supabase
+    .from("scenes")
+    .select("*, poll_questions(*)")
+    .eq("id", sceneId)
+    .single();
+  
+  return NextResponse.json(sceneWithQuestions || data);
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
