@@ -1,300 +1,295 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, Svg, Path, Circle } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { SessionWithDetails, NoteWithDetails, NoteCategory, Scene } from "@/types";
 
-// Color palette
+// Brand colors
 const colors = {
-  primary: "#10b981",
-  primaryDark: "#059669",
-  primaryLight: "#d1fae5",
-  dark: "#111827",
-  gray900: "#1f2937",
-  gray700: "#374151",
-  gray600: "#4b5563",
-  gray500: "#6b7280",
-  gray400: "#9ca3af",
-  gray300: "#d1d5db",
-  gray200: "#e5e7eb",
-  gray100: "#f3f4f6",
-  gray50: "#f9fafb",
-  white: "#ffffff",
-  red: "#ef4444",
-  redLight: "#fef2f2",
-  blue: "#3b82f6",
-  blueLight: "#eff6ff",
-  purple: "#8b5cf6",
-  purpleLight: "#f5f3ff",
-  orange: "#f97316",
-  orangeLight: "#fff7ed",
-  grayCategory: "#6b7280",
-  grayLight: "#f3f4f6",
+  // Primary brand
+  primary: "#5271C0",
+  primaryLight: "#95B2F8",
+  primaryLightest: "#EEF2FF",
+  
+  // Text
+  text: "#2D3F4E",
+  textSecondary: "#64748B",
+  textMuted: "#94A3B8",
+  
+  // Backgrounds
+  white: "#FFFFFF",
+  background: "#F8FAFC",
+  backgroundAlt: "#F1F5F9",
+  
+  // Borders
+  border: "#E2E8F0",
+  borderLight: "#F1F5F9",
+  
+  // Category colors
+  bug: "#DC2626",
+  bugBg: "#FEF2F2",
+  feature: "#2563EB",
+  featureBg: "#EFF6FF",
+  ux: "#7C3AED",
+  uxBg: "#F5F3FF",
+  performance: "#EA580C",
+  performanceBg: "#FFF7ED",
+  other: "#64748B",
+  otherBg: "#F8FAFC",
 };
 
-const categoryConfig: Record<NoteCategory, { color: string; bgColor: string; label: string; icon: string }> = {
-  bug: { color: colors.red, bgColor: colors.redLight, label: "Bug", icon: "🐛" },
-  feature: { color: colors.blue, bgColor: colors.blueLight, label: "Feature Request", icon: "✨" },
-  ux: { color: colors.purple, bgColor: colors.purpleLight, label: "UX Feedback", icon: "🎨" },
-  performance: { color: colors.orange, bgColor: colors.orangeLight, label: "Performance", icon: "⚡" },
-  other: { color: colors.grayCategory, bgColor: colors.grayLight, label: "Other", icon: "📝" },
+const categoryConfig: Record<NoteCategory, { color: string; bg: string; label: string }> = {
+  bug: { color: colors.bug, bg: colors.bugBg, label: "Bug" },
+  feature: { color: colors.feature, bg: colors.featureBg, label: "Feature" },
+  ux: { color: colors.ux, bg: colors.uxBg, label: "UX" },
+  performance: { color: colors.performance, bg: colors.performanceBg, label: "Performance" },
+  other: { color: colors.other, bg: colors.otherBg, label: "Other" },
 };
 
 const styles = StyleSheet.create({
-  // Cover Page
+  // Page base
+  page: {
+    padding: 48,
+    fontFamily: "Helvetica",
+    fontSize: 10,
+    color: colors.text,
+    backgroundColor: colors.white,
+  },
+
+  // Cover page
   coverPage: {
     padding: 0,
     backgroundColor: colors.white,
   },
-  coverHeader: {
+  coverTop: {
+    height: 320,
     backgroundColor: colors.primary,
-    height: 200,
-    padding: 40,
-    position: "relative",
-  },
-  coverPattern: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    width: 300,
-    height: 200,
-    opacity: 0.1,
+    padding: 48,
+    justifyContent: "flex-end",
   },
   coverBrand: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 40,
   },
-  coverLogo: {
-    width: 40,
-    height: 40,
+  coverLogoBox: {
+    width: 44,
+    height: 44,
     backgroundColor: colors.white,
-    borderRadius: 8,
-    marginRight: 12,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 14,
   },
   coverLogoText: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     color: colors.primary,
   },
-  coverBrandText: {
-    fontSize: 20,
+  coverBrandName: {
+    fontSize: 18,
     fontWeight: "bold",
     color: colors.white,
-    letterSpacing: 1,
-  },
-  coverTitle: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: colors.white,
-    marginBottom: 8,
-  },
-  coverSubtitle: {
-    fontSize: 14,
-    color: colors.primaryLight,
-    textTransform: "uppercase",
     letterSpacing: 2,
   },
-  coverBody: {
-    padding: 40,
-    flex: 1,
-  },
-  coverMetaSection: {
-    marginBottom: 32,
-  },
-  coverMetaLabel: {
-    fontSize: 10,
-    color: colors.gray500,
+  coverReportLabel: {
+    fontSize: 11,
+    color: colors.primaryLight,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 4,
+    letterSpacing: 3,
+    marginBottom: 12,
   },
-  coverMetaValue: {
-    fontSize: 16,
-    color: colors.dark,
-    fontWeight: "bold",
-  },
-  coverStatsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginTop: 20,
-    gap: 16,
-  },
-  coverStatBox: {
-    width: "47%",
-    padding: 20,
-    backgroundColor: colors.gray50,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  coverStatValue: {
+  coverTitle: {
     fontSize: 32,
     fontWeight: "bold",
-    color: colors.dark,
+    color: colors.white,
+    lineHeight: 1.2,
+  },
+  coverBottom: {
+    flex: 1,
+    padding: 48,
+    justifyContent: "space-between",
+  },
+  coverMeta: {
+    flexDirection: "row",
+    gap: 48,
+  },
+  coverMetaItem: {},
+  coverMetaLabel: {
+    fontSize: 9,
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  coverMetaValue: {
+    fontSize: 13,
+    color: colors.text,
+    fontWeight: "bold",
+  },
+  coverStats: {
+    flexDirection: "row",
+    gap: 20,
+    marginTop: 40,
+  },
+  coverStatCard: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: colors.background,
+    borderRadius: 12,
+  },
+  coverStatNumber: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: colors.text,
     marginBottom: 4,
   },
   coverStatLabel: {
-    fontSize: 11,
-    color: colors.gray600,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+    fontSize: 10,
+    color: colors.textSecondary,
+  },
+  coverStatHighlight: {
+    backgroundColor: colors.bugBg,
+  },
+  coverStatNumberRed: {
+    color: colors.bug,
   },
   coverFooter: {
-    position: "absolute",
-    bottom: 40,
-    left: 40,
-    right: 40,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: colors.gray200,
     paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   coverFooterText: {
-    fontSize: 10,
-    color: colors.gray500,
+    fontSize: 9,
+    color: colors.textMuted,
   },
 
-  // Standard Page
-  page: {
-    padding: 40,
-    fontFamily: "Helvetica",
-    fontSize: 10,
-    color: colors.dark,
-    backgroundColor: colors.white,
-  },
-  pageHeader: {
+  // Header
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 32,
     paddingBottom: 16,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  pageHeaderLeft: {
+  headerLeft: {
     flexDirection: "row",
     alignItems: "center",
   },
-  pageHeaderLogo: {
-    width: 24,
-    height: 24,
+  headerLogo: {
+    width: 28,
+    height: 28,
     backgroundColor: colors.primary,
-    borderRadius: 4,
-    marginRight: 8,
+    borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 10,
   },
-  pageHeaderLogoText: {
-    fontSize: 12,
+  headerLogoText: {
+    fontSize: 14,
     fontWeight: "bold",
     color: colors.white,
   },
-  pageHeaderTitle: {
-    fontSize: 12,
+  headerBrand: {
+    fontSize: 11,
     fontWeight: "bold",
-    color: colors.dark,
+    color: colors.text,
+    letterSpacing: 0.5,
   },
-  pageHeaderSession: {
+  headerSession: {
     fontSize: 10,
-    color: colors.gray600,
-    maxWidth: 300,
+    color: colors.textSecondary,
+    maxWidth: 250,
+    textAlign: "right",
   },
 
-  // Section styles
+  // Section
+  section: {
+    marginBottom: 28,
+  },
+  sectionHeader: {
+    marginBottom: 16,
+  },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-    color: colors.dark,
+    color: colors.text,
     marginBottom: 4,
   },
   sectionSubtitle: {
-    fontSize: 11,
-    color: colors.gray600,
-    marginBottom: 20,
+    fontSize: 10,
+    color: colors.textSecondary,
   },
-  sectionDivider: {
+  divider: {
     height: 1,
-    backgroundColor: colors.gray200,
+    backgroundColor: colors.border,
     marginVertical: 24,
   },
 
-  // Summary section
-  summaryCard: {
-    backgroundColor: colors.gray50,
+  // Summary card
+  summaryBox: {
+    backgroundColor: colors.primaryLightest,
     borderRadius: 8,
     padding: 20,
     marginBottom: 24,
-  },
-  summaryText: {
-    fontSize: 11,
-    color: colors.gray700,
-    lineHeight: 1.6,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
   },
   summaryLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: colors.primary,
     fontWeight: "bold",
     textTransform: "uppercase",
     letterSpacing: 1,
     marginBottom: 8,
   },
+  summaryText: {
+    fontSize: 10,
+    color: colors.text,
+    lineHeight: 1.7,
+  },
 
-  // Stats grid
+  // Stats row
   statsRow: {
     flexDirection: "row",
-    gap: 12,
+    gap: 16,
     marginBottom: 24,
   },
-  statCard: {
+  statBox: {
     flex: 1,
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.background,
     borderRadius: 8,
     padding: 16,
     alignItems: "center",
   },
-  statCardAccent: {
-    borderTopWidth: 3,
-    borderTopColor: colors.primary,
-  },
-  statCardRed: {
-    borderTopWidth: 3,
-    borderTopColor: colors.red,
-  },
   statNumber: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
-    color: colors.dark,
+    color: colors.text,
+    marginBottom: 4,
   },
-  statNumberRed: {
-    color: colors.red,
-  },
-  statLabelCard: {
+  statLabel: {
     fontSize: 9,
-    color: colors.gray600,
+    color: colors.textSecondary,
     textTransform: "uppercase",
-    marginTop: 4,
     letterSpacing: 0.5,
   },
 
   // Category breakdown
-  categorySection: {
-    marginBottom: 24,
+  categoryList: {
+    gap: 10,
   },
-  categoryRow: {
+  categoryItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-    padding: 12,
-    backgroundColor: colors.gray50,
-    borderRadius: 8,
   },
   categoryBadge: {
-    width: 100,
+    width: 90,
     paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     borderRadius: 6,
     marginRight: 16,
   },
@@ -304,139 +299,139 @@ const styles = StyleSheet.create({
     color: colors.white,
     textAlign: "center",
   },
-  categoryBarContainer: {
+  categoryBarOuter: {
     flex: 1,
-    height: 12,
-    backgroundColor: colors.gray200,
-    borderRadius: 6,
-    overflow: "hidden",
-    marginRight: 12,
+    height: 8,
+    backgroundColor: colors.backgroundAlt,
+    borderRadius: 4,
+    marginRight: 16,
   },
-  categoryBar: {
-    height: 12,
-    borderRadius: 6,
+  categoryBarInner: {
+    height: 8,
+    borderRadius: 4,
   },
-  categoryStats: {
+  categoryValue: {
+    width: 50,
     flexDirection: "row",
-    alignItems: "center",
-    width: 70,
     justifyContent: "flex-end",
+    alignItems: "baseline",
   },
   categoryCount: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "bold",
-    color: colors.dark,
-    marginRight: 4,
+    color: colors.text,
   },
   categoryPercent: {
-    fontSize: 10,
-    color: colors.gray500,
+    fontSize: 9,
+    color: colors.textMuted,
+    marginLeft: 4,
   },
 
-  // Scene overview table
-  tableContainer: {
+  // Table
+  table: {
     marginBottom: 24,
   },
-  tableHeader: {
+  tableHead: {
     flexDirection: "row",
-    backgroundColor: colors.gray100,
+    backgroundColor: colors.background,
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
-  tableHeaderCell: {
+  tableHeadCell: {
     fontSize: 9,
     fontWeight: "bold",
-    color: colors.gray600,
+    color: colors.textSecondary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   tableRow: {
     flexDirection: "row",
-    padding: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray100,
-    backgroundColor: colors.white,
+    borderBottomColor: colors.borderLight,
   },
   tableRowLast: {
+    borderBottomWidth: 0,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
-    borderBottomWidth: 0,
   },
   tableCell: {
     fontSize: 10,
-    color: colors.gray700,
+    color: colors.text,
   },
-  tableCellBold: {
-    fontWeight: "bold",
-    color: colors.dark,
+  tableCellMuted: {
+    color: colors.textMuted,
   },
-  colScene: { width: "35%" },
-  colNotes: { width: "15%", textAlign: "center" },
-  colBugs: { width: "12%", textAlign: "center" },
-  colFeatures: { width: "13%", textAlign: "center" },
-  colUX: { width: "12%", textAlign: "center" },
-  colOther: { width: "13%", textAlign: "center" },
+  colName: { width: "40%" },
+  colTotal: { width: "15%", textAlign: "center" },
+  colBug: { width: "15%", textAlign: "center" },
+  colFeature: { width: "15%", textAlign: "center" },
+  colOther: { width: "15%", textAlign: "center" },
 
-  // Scene detail page
-  scenePageTitle: {
-    fontSize: 22,
+  // Scene page
+  sceneTitle: {
+    fontSize: 20,
     fontWeight: "bold",
-    color: colors.dark,
+    color: colors.text,
     marginBottom: 8,
   },
-  scenePageMeta: {
+  sceneMetaRow: {
     flexDirection: "row",
-    alignItems: "center",
+    gap: 12,
     marginBottom: 20,
-    gap: 16,
   },
-  sceneMetaBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.gray100,
+  sceneBadge: {
+    backgroundColor: colors.background,
     paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    borderRadius: 100,
   },
-  sceneMetaText: {
+  sceneBadgeText: {
+    fontSize: 9,
+    color: colors.textSecondary,
+  },
+  sceneBadgeRed: {
+    backgroundColor: colors.bugBg,
+  },
+  sceneBadgeTextRed: {
+    color: colors.bug,
+  },
+  sceneDesc: {
     fontSize: 10,
-    color: colors.gray600,
-  },
-  sceneDescription: {
-    fontSize: 11,
-    color: colors.gray600,
-    marginBottom: 20,
+    color: colors.textSecondary,
     fontStyle: "italic",
+    marginBottom: 20,
+    lineHeight: 1.6,
   },
 
   // Note card
   noteCard: {
-    marginBottom: 12,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: colors.gray200,
+    borderColor: colors.border,
     borderRadius: 8,
     overflow: "hidden",
   },
-  noteCardHeader: {
+  noteHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 12,
-    backgroundColor: colors.gray50,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    borderBottomColor: colors.borderLight,
   },
-  noteCardHeaderLeft: {
+  noteHeaderLeft: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
   noteBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
     borderRadius: 4,
   },
   noteBadgeText: {
@@ -444,32 +439,35 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.white,
   },
-  noteAutoTag: {
+  noteAuto: {
     fontSize: 8,
-    color: colors.gray500,
-    fontStyle: "italic",
+    color: colors.textMuted,
+  },
+  noteMeta: {
+    alignItems: "flex-end",
   },
   noteTester: {
     fontSize: 9,
-    color: colors.gray600,
+    color: colors.textSecondary,
+    marginBottom: 2,
   },
-  noteTimestamp: {
+  noteTime: {
     fontSize: 8,
-    color: colors.gray500,
+    color: colors.textMuted,
   },
-  noteCardBody: {
-    padding: 12,
+  noteBody: {
+    padding: 14,
   },
   noteText: {
     fontSize: 10,
-    color: colors.gray700,
-    lineHeight: 1.6,
+    color: colors.text,
+    lineHeight: 1.7,
   },
-  noteSummary: {
+  noteSummaryBox: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.gray100,
+    borderTopColor: colors.borderLight,
   },
   noteSummaryLabel: {
     fontSize: 8,
@@ -481,65 +479,43 @@ const styles = StyleSheet.create({
   },
   noteSummaryText: {
     fontSize: 9,
-    color: colors.gray600,
-    fontStyle: "italic",
-    lineHeight: 1.5,
+    color: colors.textSecondary,
+    lineHeight: 1.6,
   },
 
   // Footer
   footer: {
     position: "absolute",
-    bottom: 24,
-    left: 40,
-    right: 40,
+    bottom: 32,
+    left: 48,
+    right: 48,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray200,
   },
-  footerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  footerBrand: {
+  footerText: {
     fontSize: 8,
-    color: colors.gray500,
-    fontWeight: "bold",
-  },
-  footerDivider: {
-    width: 1,
-    height: 10,
-    backgroundColor: colors.gray300,
-    marginHorizontal: 8,
-  },
-  footerSession: {
-    fontSize: 8,
-    color: colors.gray400,
-    maxWidth: 200,
+    color: colors.textMuted,
   },
   footerPage: {
     fontSize: 9,
-    color: colors.gray500,
+    color: colors.textSecondary,
+    fontWeight: "bold",
   },
 
-  // Empty state
-  emptyState: {
-    padding: 40,
+  // Empty
+  emptyBox: {
+    padding: 48,
     alignItems: "center",
-    justifyContent: "center",
   },
-  emptyStateText: {
-    fontSize: 14,
-    color: colors.gray500,
-    marginTop: 12,
+  emptyText: {
+    fontSize: 12,
+    color: colors.textMuted,
   },
 });
 
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat("en-US", {
-    weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -550,355 +526,295 @@ function formatDateTime(date: string): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric",
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(date));
 }
 
-function formatTime(date: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(date));
-}
-
-interface SceneStats {
+interface SceneData {
   scene: Scene;
   notes: NoteWithDetails[];
-  categoryBreakdown: Record<NoteCategory, number>;
+  breakdown: Record<NoteCategory, number>;
 }
 
 export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
-  const categoryBreakdown: Record<NoteCategory, number> = {
-    bug: 0,
-    feature: 0,
-    ux: 0,
-    performance: 0,
-    other: 0,
-  };
+  // Calculate totals
+  const breakdown: Record<NoteCategory, number> = { bug: 0, feature: 0, ux: 0, performance: 0, other: 0 };
+  session.notes?.forEach((n) => breakdown[n.category]++);
+  const total = session.notes?.length || 0;
 
-  session.notes?.forEach((note) => {
-    categoryBreakdown[note.category]++;
+  // Group by scene
+  const sceneData: SceneData[] = (session.scenes || []).map((scene) => {
+    const notes = session.notes?.filter((n) => n.scene_id === scene.id) || [];
+    const bd: Record<NoteCategory, number> = { bug: 0, feature: 0, ux: 0, performance: 0, other: 0 };
+    notes.forEach((n) => bd[n.category]++);
+    return { scene, notes, breakdown: bd };
   });
 
-  const totalNotes = session.notes?.length || 0;
-
-  // Group notes by scene with stats
-  const sceneStats: SceneStats[] = (session.scenes || []).map((scene) => {
-    const sceneNotes = session.notes?.filter((n) => n.scene_id === scene.id) || [];
-    const sceneCategoryBreakdown: Record<NoteCategory, number> = {
-      bug: 0,
-      feature: 0,
-      ux: 0,
-      performance: 0,
-      other: 0,
-    };
-    sceneNotes.forEach((note) => {
-      sceneCategoryBreakdown[note.category]++;
-    });
-    return {
-      scene,
-      notes: sceneNotes,
-      categoryBreakdown: sceneCategoryBreakdown,
-    };
-  });
-
-  // Add "Unknown" scene for notes without a scene
+  // Unknown scene
   const unknownNotes = session.notes?.filter((n) => !n.scene_id || !session.scenes?.find((s) => s.id === n.scene_id)) || [];
   if (unknownNotes.length > 0) {
-    const unknownCategoryBreakdown: Record<NoteCategory, number> = {
-      bug: 0,
-      feature: 0,
-      ux: 0,
-      performance: 0,
-      other: 0,
-    };
-    unknownNotes.forEach((note) => {
-      unknownCategoryBreakdown[note.category]++;
-    });
-    sceneStats.push({
+    const bd: Record<NoteCategory, number> = { bug: 0, feature: 0, ux: 0, performance: 0, other: 0 };
+    unknownNotes.forEach((n) => bd[n.category]++);
+    sceneData.push({
       scene: { id: "unknown", session_id: session.id, name: "Uncategorized", description: null, order_index: 999 },
       notes: unknownNotes,
-      categoryBreakdown: unknownCategoryBreakdown,
+      breakdown: bd,
     });
   }
 
-  const scenesWithNotes = sceneStats.filter((s) => s.notes.length > 0);
+  const scenesWithNotes = sceneData.filter((s) => s.notes.length > 0);
+  let pageNum = 1;
 
   return (
     <Document>
-      {/* Cover Page */}
+      {/* Cover */}
       <Page size="A4" style={styles.coverPage}>
-        <View style={styles.coverHeader}>
+        <View style={styles.coverTop}>
           <View style={styles.coverBrand}>
-            <View style={styles.coverLogo}>
+            <View style={styles.coverLogoBox}>
               <Text style={styles.coverLogoText}>E</Text>
             </View>
-            <Text style={styles.coverBrandText}>ECHO TEST</Text>
+            <Text style={styles.coverBrandName}>ECHO TEST</Text>
           </View>
-          <Text style={styles.coverSubtitle}>Testing Session Report</Text>
+          <Text style={styles.coverReportLabel}>Session Report</Text>
           <Text style={styles.coverTitle}>{session.name}</Text>
         </View>
 
-        <View style={styles.coverBody}>
-          {session.description && (
-            <View style={styles.coverMetaSection}>
-              <Text style={styles.coverMetaLabel}>Description</Text>
-              <Text style={styles.coverMetaValue}>{session.description}</Text>
+        <View style={styles.coverBottom}>
+          <View>
+            <View style={styles.coverMeta}>
+              {session.build_version && (
+                <View style={styles.coverMetaItem}>
+                  <Text style={styles.coverMetaLabel}>Build</Text>
+                  <Text style={styles.coverMetaValue}>{session.build_version}</Text>
+                </View>
+              )}
+              <View style={styles.coverMetaItem}>
+                <Text style={styles.coverMetaLabel}>Completed</Text>
+                <Text style={styles.coverMetaValue}>{session.ended_at ? formatDate(session.ended_at) : "In Progress"}</Text>
+              </View>
+              <View style={styles.coverMetaItem}>
+                <Text style={styles.coverMetaLabel}>Testers</Text>
+                <Text style={styles.coverMetaValue}>{session.testers?.length || 0}</Text>
+              </View>
             </View>
-          )}
 
-          {session.build_version && (
-            <View style={styles.coverMetaSection}>
-              <Text style={styles.coverMetaLabel}>Build Version</Text>
-              <Text style={styles.coverMetaValue}>{session.build_version}</Text>
+            <View style={styles.coverStats}>
+              <View style={styles.coverStatCard}>
+                <Text style={styles.coverStatNumber}>{total}</Text>
+                <Text style={styles.coverStatLabel}>Total Notes</Text>
+              </View>
+              <View style={[styles.coverStatCard, styles.coverStatHighlight]}>
+                <Text style={[styles.coverStatNumber, styles.coverStatNumberRed]}>{breakdown.bug}</Text>
+                <Text style={styles.coverStatLabel}>Bugs Found</Text>
+              </View>
+              <View style={styles.coverStatCard}>
+                <Text style={styles.coverStatNumber}>{breakdown.feature}</Text>
+                <Text style={styles.coverStatLabel}>Features</Text>
+              </View>
+              <View style={styles.coverStatCard}>
+                <Text style={styles.coverStatNumber}>{session.scenes?.length || 0}</Text>
+                <Text style={styles.coverStatLabel}>Scenes</Text>
+              </View>
             </View>
-          )}
-
-          <View style={styles.coverMetaSection}>
-            <Text style={styles.coverMetaLabel}>Session Completed</Text>
-            <Text style={styles.coverMetaValue}>
-              {session.ended_at ? formatDate(session.ended_at) : "In Progress"}
-            </Text>
           </View>
 
-          <View style={styles.coverStatsGrid}>
-            <View style={styles.coverStatBox}>
-              <Text style={styles.coverStatValue}>{totalNotes}</Text>
-              <Text style={styles.coverStatLabel}>Total Notes</Text>
-            </View>
-            <View style={[styles.coverStatBox, { borderLeftColor: colors.red }]}>
-              <Text style={[styles.coverStatValue, { color: colors.red }]}>{categoryBreakdown.bug}</Text>
-              <Text style={styles.coverStatLabel}>Bugs Found</Text>
-            </View>
-            <View style={[styles.coverStatBox, { borderLeftColor: colors.blue }]}>
-              <Text style={styles.coverStatValue}>{session.testers?.length || 0}</Text>
-              <Text style={styles.coverStatLabel}>Testers</Text>
-            </View>
-            <View style={[styles.coverStatBox, { borderLeftColor: colors.purple }]}>
-              <Text style={styles.coverStatValue}>{session.scenes?.length || 0}</Text>
-              <Text style={styles.coverStatLabel}>Scenes Tested</Text>
-            </View>
+          <View style={styles.coverFooter}>
+            <Text style={styles.coverFooterText}>Generated {formatDateTime(new Date().toISOString())}</Text>
+            <Text style={styles.coverFooterText}>Page {pageNum}</Text>
           </View>
-        </View>
-
-        <View style={styles.coverFooter}>
-          <Text style={styles.coverFooterText}>
-            Generated on {formatDateTime(new Date().toISOString())}
-          </Text>
-          <Text style={styles.coverFooterText}>Page 1</Text>
         </View>
       </Page>
 
-      {/* Executive Summary Page */}
+      {/* Summary Page */}
       <Page size="A4" style={styles.page}>
-        <View style={styles.pageHeader}>
-          <View style={styles.pageHeaderLeft}>
-            <View style={styles.pageHeaderLogo}>
-              <Text style={styles.pageHeaderLogoText}>E</Text>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <View style={styles.headerLogo}>
+              <Text style={styles.headerLogoText}>E</Text>
             </View>
-            <Text style={styles.pageHeaderTitle}>Echo Test</Text>
+            <Text style={styles.headerBrand}>Echo Test</Text>
           </View>
-          <Text style={styles.pageHeaderSession}>{session.name}</Text>
+          <Text style={styles.headerSession}>{session.name}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Executive Summary</Text>
-        <Text style={styles.sectionSubtitle}>Overview of testing session results and key findings</Text>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Summary</Text>
+            <Text style={styles.sectionSubtitle}>Testing session overview and key metrics</Text>
+          </View>
 
-        {/* AI Summary if available */}
-        {session.ai_summary && (
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>AI-Generated Summary</Text>
-            <Text style={styles.summaryText}>{session.ai_summary}</Text>
-          </View>
-        )}
+          {session.ai_summary && (
+            <View style={styles.summaryBox}>
+              <Text style={styles.summaryLabel}>AI Summary</Text>
+              <Text style={styles.summaryText}>{session.ai_summary}</Text>
+            </View>
+          )}
 
-        {/* Quick Stats */}
-        <View style={styles.statsRow}>
-          <View style={[styles.statCard, styles.statCardAccent]}>
-            <Text style={styles.statNumber}>{totalNotes}</Text>
-            <Text style={styles.statLabelCard}>Total Notes</Text>
-          </View>
-          <View style={[styles.statCard, styles.statCardRed]}>
-            <Text style={[styles.statNumber, styles.statNumberRed]}>{categoryBreakdown.bug}</Text>
-            <Text style={styles.statLabelCard}>Bugs</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{categoryBreakdown.feature}</Text>
-            <Text style={styles.statLabelCard}>Features</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{categoryBreakdown.ux}</Text>
-            <Text style={styles.statLabelCard}>UX Issues</Text>
+          {session.description && !session.ai_summary && (
+            <View style={styles.summaryBox}>
+              <Text style={styles.summaryLabel}>Description</Text>
+              <Text style={styles.summaryText}>{session.description}</Text>
+            </View>
+          )}
+
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>{total}</Text>
+              <Text style={styles.statLabel}>Notes</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statNumber, { color: colors.bug }]}>{breakdown.bug}</Text>
+              <Text style={styles.statLabel}>Bugs</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statNumber, { color: colors.feature }]}>{breakdown.feature}</Text>
+              <Text style={styles.statLabel}>Features</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statNumber, { color: colors.ux }]}>{breakdown.ux}</Text>
+              <Text style={styles.statLabel}>UX</Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.sectionDivider} />
+        <View style={styles.divider} />
 
-        {/* Category Breakdown */}
-        <Text style={styles.sectionTitle}>Feedback by Category</Text>
-        <Text style={styles.sectionSubtitle}>Distribution of feedback across different categories</Text>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Category Breakdown</Text>
+            <Text style={styles.sectionSubtitle}>Distribution of feedback by type</Text>
+          </View>
 
-        <View style={styles.categorySection}>
-          {(Object.entries(categoryBreakdown) as [NoteCategory, number][]).map(([category, count]) => {
-            const config = categoryConfig[category];
-            const percentage = totalNotes > 0 ? Math.round((count / totalNotes) * 100) : 0;
-            return (
-              <View key={category} style={styles.categoryRow}>
-                <View style={[styles.categoryBadge, { backgroundColor: config.color }]}>
-                  <Text style={styles.categoryBadgeText}>{config.label}</Text>
+          <View style={styles.categoryList}>
+            {(Object.entries(breakdown) as [NoteCategory, number][]).map(([cat, count]) => {
+              const cfg = categoryConfig[cat];
+              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+              return (
+                <View key={cat} style={styles.categoryItem}>
+                  <View style={[styles.categoryBadge, { backgroundColor: cfg.color }]}>
+                    <Text style={styles.categoryBadgeText}>{cfg.label}</Text>
+                  </View>
+                  <View style={styles.categoryBarOuter}>
+                    <View style={[styles.categoryBarInner, { width: `${pct}%`, backgroundColor: cfg.color }]} />
+                  </View>
+                  <View style={styles.categoryValue}>
+                    <Text style={styles.categoryCount}>{count}</Text>
+                    <Text style={styles.categoryPercent}>{pct}%</Text>
+                  </View>
                 </View>
-                <View style={styles.categoryBarContainer}>
-                  <View
-                    style={[
-                      styles.categoryBar,
-                      {
-                        width: `${percentage}%`,
-                        backgroundColor: config.color,
-                      },
-                    ]}
-                  />
-                </View>
-                <View style={styles.categoryStats}>
-                  <Text style={styles.categoryCount}>{count}</Text>
-                  <Text style={styles.categoryPercent}>({percentage}%)</Text>
-                </View>
-              </View>
-            );
-          })}
+              );
+            })}
+          </View>
         </View>
 
         <View style={styles.footer}>
-          <View style={styles.footerLeft}>
-            <Text style={styles.footerBrand}>Echo Test Report</Text>
-            <View style={styles.footerDivider} />
-            <Text style={styles.footerSession}>{session.name}</Text>
-          </View>
-          <Text style={styles.footerPage}>Page 2</Text>
+          <Text style={styles.footerText}>Echo Test Report</Text>
+          <Text style={styles.footerPage}>{++pageNum}</Text>
         </View>
       </Page>
 
-      {/* Scene Overview Page */}
+      {/* Scene Overview */}
       {scenesWithNotes.length > 0 && (
         <Page size="A4" style={styles.page}>
-          <View style={styles.pageHeader}>
-            <View style={styles.pageHeaderLeft}>
-              <View style={styles.pageHeaderLogo}>
-                <Text style={styles.pageHeaderLogoText}>E</Text>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <View style={styles.headerLogo}>
+                <Text style={styles.headerLogoText}>E</Text>
               </View>
-              <Text style={styles.pageHeaderTitle}>Echo Test</Text>
+              <Text style={styles.headerBrand}>Echo Test</Text>
             </View>
-            <Text style={styles.pageHeaderSession}>{session.name}</Text>
+            <Text style={styles.headerSession}>{session.name}</Text>
           </View>
 
-          <Text style={styles.sectionTitle}>Scene Overview</Text>
-          <Text style={styles.sectionSubtitle}>Breakdown of feedback by testing scene</Text>
-
-          <View style={styles.tableContainer}>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.tableHeaderCell, styles.colScene]}>Scene</Text>
-              <Text style={[styles.tableHeaderCell, styles.colNotes]}>Notes</Text>
-              <Text style={[styles.tableHeaderCell, styles.colBugs]}>Bugs</Text>
-              <Text style={[styles.tableHeaderCell, styles.colFeatures]}>Features</Text>
-              <Text style={[styles.tableHeaderCell, styles.colUX]}>UX</Text>
-              <Text style={[styles.tableHeaderCell, styles.colOther]}>Other</Text>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Scenes Overview</Text>
+              <Text style={styles.sectionSubtitle}>Feedback distribution across testing scenes</Text>
             </View>
-            {scenesWithNotes.map((item, index) => (
-              <View
-                key={item.scene.id}
-                style={[
-                  styles.tableRow,
-                  index === scenesWithNotes.length - 1 ? styles.tableRowLast : {},
-                ]}
-              >
-                <Text style={[styles.tableCell, styles.tableCellBold, styles.colScene]}>
-                  {item.scene.name}
-                </Text>
-                <Text style={[styles.tableCell, styles.colNotes]}>{item.notes.length}</Text>
-                <Text style={[styles.tableCell, styles.colBugs, { color: item.categoryBreakdown.bug > 0 ? colors.red : colors.gray400 }]}>
-                  {item.categoryBreakdown.bug}
-                </Text>
-                <Text style={[styles.tableCell, styles.colFeatures, { color: item.categoryBreakdown.feature > 0 ? colors.blue : colors.gray400 }]}>
-                  {item.categoryBreakdown.feature}
-                </Text>
-                <Text style={[styles.tableCell, styles.colUX, { color: item.categoryBreakdown.ux > 0 ? colors.purple : colors.gray400 }]}>
-                  {item.categoryBreakdown.ux}
-                </Text>
-                <Text style={[styles.tableCell, styles.colOther]}>
-                  {item.categoryBreakdown.performance + item.categoryBreakdown.other}
-                </Text>
+
+            <View style={styles.table}>
+              <View style={styles.tableHead}>
+                <Text style={[styles.tableHeadCell, styles.colName]}>Scene</Text>
+                <Text style={[styles.tableHeadCell, styles.colTotal]}>Total</Text>
+                <Text style={[styles.tableHeadCell, styles.colBug]}>Bugs</Text>
+                <Text style={[styles.tableHeadCell, styles.colFeature]}>Features</Text>
+                <Text style={[styles.tableHeadCell, styles.colOther]}>Other</Text>
               </View>
-            ))}
+              {scenesWithNotes.map((s, i) => (
+                <View key={s.scene.id} style={[styles.tableRow, i === scenesWithNotes.length - 1 && styles.tableRowLast]}>
+                  <Text style={[styles.tableCell, styles.colName, { fontWeight: "bold" }]}>{s.scene.name}</Text>
+                  <Text style={[styles.tableCell, styles.colTotal]}>{s.notes.length}</Text>
+                  <Text style={[styles.tableCell, styles.colBug, s.breakdown.bug > 0 ? { color: colors.bug, fontWeight: "bold" } : styles.tableCellMuted]}>
+                    {s.breakdown.bug}
+                  </Text>
+                  <Text style={[styles.tableCell, styles.colFeature, s.breakdown.feature > 0 ? { color: colors.feature } : styles.tableCellMuted]}>
+                    {s.breakdown.feature}
+                  </Text>
+                  <Text style={[styles.tableCell, styles.colOther, styles.tableCellMuted]}>
+                    {s.breakdown.ux + s.breakdown.performance + s.breakdown.other}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </View>
 
           <View style={styles.footer}>
-            <View style={styles.footerLeft}>
-              <Text style={styles.footerBrand}>Echo Test Report</Text>
-              <View style={styles.footerDivider} />
-              <Text style={styles.footerSession}>{session.name}</Text>
-            </View>
-            <Text style={styles.footerPage}>Page 3</Text>
+            <Text style={styles.footerText}>Echo Test Report</Text>
+            <Text style={styles.footerPage}>{++pageNum}</Text>
           </View>
         </Page>
       )}
 
-      {/* Scene Detail Pages */}
-      {scenesWithNotes.map((sceneData, sceneIndex) => (
-        <Page key={sceneData.scene.id} size="A4" style={styles.page}>
-          <View style={styles.pageHeader}>
-            <View style={styles.pageHeaderLeft}>
-              <View style={styles.pageHeaderLogo}>
-                <Text style={styles.pageHeaderLogoText}>E</Text>
+      {/* Scene Details */}
+      {scenesWithNotes.map((s) => (
+        <Page key={s.scene.id} size="A4" style={styles.page}>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <View style={styles.headerLogo}>
+                <Text style={styles.headerLogoText}>E</Text>
               </View>
-              <Text style={styles.pageHeaderTitle}>Echo Test</Text>
+              <Text style={styles.headerBrand}>Echo Test</Text>
             </View>
-            <Text style={styles.pageHeaderSession}>{session.name}</Text>
+            <Text style={styles.headerSession}>{session.name}</Text>
           </View>
 
-          <Text style={styles.scenePageTitle}>{sceneData.scene.name}</Text>
+          <Text style={styles.sceneTitle}>{s.scene.name}</Text>
 
-          <View style={styles.scenePageMeta}>
-            <View style={styles.sceneMetaBadge}>
-              <Text style={styles.sceneMetaText}>{sceneData.notes.length} notes</Text>
+          <View style={styles.sceneMetaRow}>
+            <View style={styles.sceneBadge}>
+              <Text style={styles.sceneBadgeText}>{s.notes.length} {s.notes.length === 1 ? "note" : "notes"}</Text>
             </View>
-            {sceneData.categoryBreakdown.bug > 0 && (
-              <View style={[styles.sceneMetaBadge, { backgroundColor: colors.redLight }]}>
-                <Text style={[styles.sceneMetaText, { color: colors.red }]}>
-                  {sceneData.categoryBreakdown.bug} bugs
-                </Text>
+            {s.breakdown.bug > 0 && (
+              <View style={[styles.sceneBadge, styles.sceneBadgeRed]}>
+                <Text style={[styles.sceneBadgeText, styles.sceneBadgeTextRed]}>{s.breakdown.bug} {s.breakdown.bug === 1 ? "bug" : "bugs"}</Text>
               </View>
             )}
           </View>
 
-          {sceneData.scene.description && (
-            <Text style={styles.sceneDescription}>{sceneData.scene.description}</Text>
-          )}
+          {s.scene.description && <Text style={styles.sceneDesc}>{s.scene.description}</Text>}
 
-          {sceneData.notes.map((note) => {
-            const config = categoryConfig[note.category];
+          {s.notes.map((note) => {
+            const cfg = categoryConfig[note.category];
             return (
               <View key={note.id} style={styles.noteCard}>
-                <View style={[styles.noteCardHeader, { backgroundColor: config.bgColor }]}>
-                  <View style={styles.noteCardHeaderLeft}>
-                    <View style={[styles.noteBadge, { backgroundColor: config.color }]}>
-                      <Text style={styles.noteBadgeText}>{config.label}</Text>
+                <View style={[styles.noteHeader, { backgroundColor: cfg.bg }]}>
+                  <View style={styles.noteHeaderLeft}>
+                    <View style={[styles.noteBadge, { backgroundColor: cfg.color }]}>
+                      <Text style={styles.noteBadgeText}>{cfg.label}</Text>
                     </View>
-                    {note.auto_classified && <Text style={styles.noteAutoTag}>auto-classified</Text>}
+                    {note.auto_classified && <Text style={styles.noteAuto}>auto</Text>}
                   </View>
-                  <View>
-                    <Text style={styles.noteTester}>
-                      {note.tester?.first_name} {note.tester?.last_name}
-                    </Text>
-                    <Text style={styles.noteTimestamp}>{formatDateTime(note.created_at)}</Text>
+                  <View style={styles.noteMeta}>
+                    <Text style={styles.noteTester}>{note.tester?.first_name} {note.tester?.last_name}</Text>
+                    <Text style={styles.noteTime}>{formatDateTime(note.created_at)}</Text>
                   </View>
                 </View>
-                <View style={styles.noteCardBody}>
-                  <Text style={styles.noteText}>
-                    {note.edited_transcript || note.raw_transcript || "No transcript available"}
-                  </Text>
+                <View style={styles.noteBody}>
+                  <Text style={styles.noteText}>{note.edited_transcript || note.raw_transcript || "No transcript"}</Text>
                   {note.ai_summary && (
-                    <View style={styles.noteSummary}>
+                    <View style={styles.noteSummaryBox}>
                       <Text style={styles.noteSummaryLabel}>AI Summary</Text>
                       <Text style={styles.noteSummaryText}>{note.ai_summary}</Text>
                     </View>
@@ -909,40 +825,32 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
           })}
 
           <View style={styles.footer}>
-            <View style={styles.footerLeft}>
-              <Text style={styles.footerBrand}>Echo Test Report</Text>
-              <View style={styles.footerDivider} />
-              <Text style={styles.footerSession}>{sceneData.scene.name}</Text>
-            </View>
-            <Text style={styles.footerPage}>Page {4 + sceneIndex}</Text>
+            <Text style={styles.footerText}>{s.scene.name}</Text>
+            <Text style={styles.footerPage}>{++pageNum}</Text>
           </View>
         </Page>
       ))}
 
-      {/* Empty state if no notes */}
-      {totalNotes === 0 && (
+      {/* Empty state */}
+      {total === 0 && (
         <Page size="A4" style={styles.page}>
-          <View style={styles.pageHeader}>
-            <View style={styles.pageHeaderLeft}>
-              <View style={styles.pageHeaderLogo}>
-                <Text style={styles.pageHeaderLogoText}>E</Text>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <View style={styles.headerLogo}>
+                <Text style={styles.headerLogoText}>E</Text>
               </View>
-              <Text style={styles.pageHeaderTitle}>Echo Test</Text>
+              <Text style={styles.headerBrand}>Echo Test</Text>
             </View>
-            <Text style={styles.pageHeaderSession}>{session.name}</Text>
+            <Text style={styles.headerSession}>{session.name}</Text>
           </View>
 
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No notes were recorded during this session.</Text>
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyText}>No notes were recorded during this session.</Text>
           </View>
 
           <View style={styles.footer}>
-            <View style={styles.footerLeft}>
-              <Text style={styles.footerBrand}>Echo Test Report</Text>
-              <View style={styles.footerDivider} />
-              <Text style={styles.footerSession}>{session.name}</Text>
-            </View>
-            <Text style={styles.footerPage}>Page 2</Text>
+            <Text style={styles.footerText}>Echo Test Report</Text>
+            <Text style={styles.footerPage}>{++pageNum}</Text>
           </View>
         </Page>
       )}

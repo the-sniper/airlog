@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { createAdminClient } from "@/lib/supabase/server";
 
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
@@ -80,6 +81,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         console.error(`Email failure ${i + 1}:`, f.reason);
       }
     });
+
+    // Update invite_sent_at for successfully sent emails
+    if (successful > 0) {
+      const supabase = createAdminClient();
+      const successfulTesterIds = testers
+        .filter((_: { id: string }, index: number) => results[index].status === "fulfilled")
+        .map((t: { id: string }) => t.id);
+      
+      await supabase
+        .from("testers")
+        .update({ invite_sent_at: new Date().toISOString() })
+        .in("id", successfulTesterIds);
+    }
 
     return NextResponse.json({ 
       success: true, 
