@@ -61,7 +61,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDate, getStatusLabel, getCategoryLabel } from "@/lib/utils";
-import { AISummaryDialog } from "@/components/ai-summary-dialog";
+import { AISummaryDialog, SummaryFilters, FilterLabels } from "@/components/ai-summary-dialog";
 import { NoteAISummaryDialog } from "@/components/note-ai-summary-dialog";
 import { AISummaryViewDialog } from "@/components/ai-summary-view-dialog";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -381,6 +381,30 @@ export default function SessionDetailPage({
   }, [session?.notes, noteCategoryFilter, noteSceneFilter, noteTesterFilter]);
 
   const hasActiveNoteFilters = noteCategoryFilter !== "all" || noteSceneFilter !== "all" || noteTesterFilter !== "all";
+
+  // Prepare filter values for AI Summary dialog
+  const summaryFilters: SummaryFilters = useMemo(() => ({
+    category: noteCategoryFilter !== "all" ? noteCategoryFilter : undefined,
+    sceneId: noteSceneFilter !== "all" ? noteSceneFilter : undefined,
+    testerId: noteTesterFilter !== "all" ? noteTesterFilter : undefined,
+  }), [noteCategoryFilter, noteSceneFilter, noteTesterFilter]);
+
+  // Prepare filter labels for display in AI Summary dialog
+  const summaryFilterLabels: FilterLabels = useMemo(() => {
+    const labels: FilterLabels = {};
+    if (noteCategoryFilter !== "all") {
+      labels.category = getCategoryLabel(noteCategoryFilter);
+    }
+    if (noteSceneFilter !== "all" && session?.scenes) {
+      const scene = session.scenes.find(s => s.id === noteSceneFilter);
+      labels.scene = scene?.name;
+    }
+    if (noteTesterFilter !== "all" && session?.testers) {
+      const tester = session.testers.find(t => t.id === noteTesterFilter);
+      labels.tester = tester ? `${tester.first_name} ${tester.last_name}` : undefined;
+    }
+    return labels;
+  }, [noteCategoryFilter, noteSceneFilter, noteTesterFilter, session?.scenes, session?.testers]);
 
   function clearNoteFilters() {
     setNoteCategoryFilter("all");
@@ -2017,12 +2041,15 @@ export default function SessionDetailPage({
         sessionId={id}
         sessionName={session.name}
         notesCount={session.notes?.length || 0}
+        filteredNotesCount={hasActiveNoteFilters ? filteredNotes.length : undefined}
         open={aiSummaryDialog}
         onOpenChange={setAISummaryDialog}
         existingSummary={session.ai_summary}
         onSummaryApproved={(summary) => {
           setSession({ ...session, ai_summary: summary });
         }}
+        filters={hasActiveNoteFilters ? summaryFilters : undefined}
+        filterLabels={hasActiveNoteFilters ? summaryFilterLabels : undefined}
       />
 
       {/* Note-level AI Summary Dialog (from three-dot menu) */}

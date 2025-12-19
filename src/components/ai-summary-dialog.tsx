@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles, Loader2, RefreshCw, Check, Edit2, Copy, X } from "lucide-react";
+import { Sparkles, Loader2, RefreshCw, Check, Edit2, Copy, X, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +13,18 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+
+export interface SummaryFilters {
+  category?: string;
+  sceneId?: string;
+  testerId?: string;
+}
+
+export interface FilterLabels {
+  category?: string;
+  scene?: string;
+  tester?: string;
+}
 
 // Parse and render the session summary with proper formatting
 function FormattedSessionSummary({ text }: { text: string }) {
@@ -151,20 +163,26 @@ interface AISummaryDialogProps {
   sessionId: string;
   sessionName: string;
   notesCount: number;
+  filteredNotesCount?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSummaryApproved?: (summary: string) => void;
   existingSummary?: string | null;
+  filters?: SummaryFilters;
+  filterLabels?: FilterLabels;
 }
 
 export function AISummaryDialog({
   sessionId,
   sessionName,
   notesCount,
+  filteredNotesCount,
   open,
   onOpenChange,
   onSummaryApproved,
   existingSummary,
+  filters,
+  filterLabels,
 }: AISummaryDialogProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -174,6 +192,11 @@ export function AISummaryDialog({
   const [editedSummary, setEditedSummary] = useState(existingSummary || "");
   const [approved, setApproved] = useState(!!existingSummary);
   const [copied, setCopied] = useState(false);
+  const [summarizeFiltered, setSummarizeFiltered] = useState(false);
+
+  // Check if filters are active
+  const hasActiveFilters = filters && (filters.category || filters.sceneId || filters.testerId);
+  const actualFilteredCount = filteredNotesCount ?? notesCount;
 
   // Initialize state when dialog opens or existingSummary changes
   useEffect(() => {
@@ -183,8 +206,10 @@ export function AISummaryDialog({
       setApproved(!!existingSummary);
       setIsEditing(false);
       setLoading(false);
+      // Default to filtered if filters are active
+      setSummarizeFiltered(!!hasActiveFilters);
     }
-  }, [open, existingSummary]);
+  }, [open, existingSummary, hasActiveFilters]);
 
   async function generateSummary() {
     setLoading(true);
@@ -193,8 +218,13 @@ export function AISummaryDialog({
     setIsEditing(false);
     
     try {
+      // Only pass filters if user chose to summarize filtered notes
+      const body = summarizeFiltered && hasActiveFilters ? filters : {};
+      
       const response = await fetch(`/api/sessions/${sessionId}/summarize`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -313,14 +343,69 @@ export function AISummaryDialog({
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2">Summarize Entire Session</h3>
-              <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                Our AI will analyze all {notesCount} notes from this session and create
+              <h3 className="font-semibold mb-2">
+                {hasActiveFilters ? "Summarize Session" : "Summarize Entire Session"}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+                Our AI will analyze notes from this session and create
                 a comprehensive list of actionable items for your team.
               </p>
+              
+              {/* Filter selection when filters are active */}
+              {hasActiveFilters && (
+                <div className="w-full max-w-sm mb-6 space-y-3">
+                  <div className="flex items-center gap-2 justify-center text-sm text-muted-foreground">
+                    <Filter className="w-4 h-4" />
+                    <span>Active filters:</span>
+                    <span className="text-foreground font-medium">
+                      {[filterLabels?.category, filterLabels?.scene, filterLabels?.tester]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSummarizeFiltered(true)}
+                      className={`p-3 rounded-lg border text-left transition-all ${
+                        summarizeFiltered
+                          ? "border-primary bg-primary/10 ring-1 ring-primary"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <p className="font-medium text-sm">Filtered Notes</p>
+                      <p className="text-xs text-muted-foreground">
+                        {actualFilteredCount} note{actualFilteredCount !== 1 ? "s" : ""}
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSummarizeFiltered(false)}
+                      className={`p-3 rounded-lg border text-left transition-all ${
+                        !summarizeFiltered
+                          ? "border-primary bg-primary/10 ring-1 ring-primary"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <p className="font-medium text-sm">Entire Session</p>
+                      <p className="text-xs text-muted-foreground">
+                        {notesCount} note{notesCount !== 1 ? "s" : ""}
+                      </p>
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {!hasActiveFilters && (
+                <p className="text-sm text-muted-foreground mb-2">
+                  {notesCount} note{notesCount !== 1 ? "s" : ""} to analyze
+                </p>
+              )}
+              
               <Button onClick={generateSummary}>
                 <Sparkles className="w-4 h-4" />
-                Generate Session Summary
+                Generate Summary
               </Button>
             </div>
           )}
@@ -329,8 +414,13 @@ export function AISummaryDialog({
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
               <p className="text-sm text-muted-foreground">
-                Analyzing {notesCount} notes...
+                Analyzing {summarizeFiltered ? actualFilteredCount : notesCount} notes...
               </p>
+              {hasActiveFilters && summarizeFiltered && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  (filtered notes only)
+                </p>
+              )}
             </div>
           )}
 
