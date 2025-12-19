@@ -743,7 +743,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
                 <Text style={[styles.tableHeadCell, styles.colOther]}>Other</Text>
               </View>
               {scenesWithNotes.map((s, i) => (
-                <View key={s.scene.id} style={[styles.tableRow, i === scenesWithNotes.length - 1 && styles.tableRowLast]}>
+                <View key={s.scene.id} style={[styles.tableRow, i === scenesWithNotes.length - 1 ? styles.tableRowLast : {}]}>
                   <Text style={[styles.tableCell, styles.colName, { fontWeight: "bold" }]}>{s.scene.name}</Text>
                   <Text style={[styles.tableCell, styles.colTotal]}>{s.notes.length}</Text>
                   <Text style={[styles.tableCell, styles.colBug, s.breakdown.bug > 0 ? { color: colors.bug, fontWeight: "bold" } : styles.tableCellMuted]}>
