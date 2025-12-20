@@ -13,8 +13,9 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   
+  // Fetch session without scenes first
   const sessionRes = await fetch(
-    `${supabaseUrl}/rest/v1/sessions?id=eq.${tester.session_id}&select=*,scenes(*,poll_questions(*))`,
+    `${supabaseUrl}/rest/v1/sessions?id=eq.${tester.session_id}&select=*`,
     {
       headers: {
         'apikey': serviceKey,
@@ -28,6 +29,24 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
   
   const sessions = await sessionRes.json();
   const session = sessions?.[0];
+  
+  // Fetch scenes with proper ordering
+  if (session) {
+    const scenesRes = await fetch(
+      `${supabaseUrl}/rest/v1/scenes?session_id=eq.${session.id}&select=*,poll_questions(*)&order=order_index.asc`,
+      {
+        headers: {
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+        cache: 'no-store',
+      }
+    );
+    const scenes = await scenesRes.json();
+    session.scenes = scenes || [];
+  }
   
   // Fetch poll responses for this tester
   const pollResponsesRes = await fetch(

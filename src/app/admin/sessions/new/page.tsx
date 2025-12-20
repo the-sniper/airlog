@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Plus, X, Loader2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Plus, X, Loader2, AlertTriangle, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface SceneInput {
   name: string;
@@ -62,6 +79,68 @@ function FormattedDescription({ text }: { text: string }) {
   return <div className="text-xs text-muted-foreground space-y-1">{elements}</div>;
 }
 
+function SortableSceneItem({
+  scene,
+  index,
+  onRemove,
+}: {
+  scene: SceneInput;
+  index: number;
+  onRemove: (index: number) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `scene-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-start items-center gap-2 p-3 rounded-lg bg-secondary/50 group w-full"
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors pt-0.5 shrink-0 w-4 h-4 flex items-center justify-center"
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+      <div className="flex-1 min-w-0">
+        <span className="text-sm font-medium">{scene.name}</span>
+        {scene.description && (
+          <div className="mt-1">
+            <FormattedDescription text={scene.description} />
+          </div>
+        )}
+      </div>
+      <div className="h-8 w-8 shrink-0 flex-shrink-0 flex items-center justify-center">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 opacity-0 group-hover:opacity-100"
+          onClick={() => onRemove(index)}
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function NewSessionPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -101,6 +180,22 @@ export default function NewSessionPage() {
 
   function removeScene(i: number) { setScenes(scenes.filter((_, idx) => idx !== i)); }
 
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = scenes.findIndex((_, i) => `scene-${i}` === active.id);
+      const newIndex = scenes.findIndex((_, i) => `scene-${i}` === over.id);
+      setScenes(arrayMove(scenes, oldIndex, newIndex));
+    }
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   function addIssueOption(option: string) {
     const trimmed = option.trim();
     if (trimmed && !issueOptions.includes(trimmed)) {
@@ -132,22 +227,28 @@ export default function NewSessionPage() {
           <CardHeader><CardTitle>Scenes</CardTitle><CardDescription>Areas being tested</CardDescription></CardHeader>
           <CardContent className="space-y-4">
             {scenes.length > 0 ? (
-              <div className="space-y-2">
-                {scenes.map((s, i) => (
-                  <div key={i} className="flex items-start gap-2 p-3 rounded-lg bg-secondary/50 group">
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm font-medium">{s.name}</span>
-                      {s.description && (
-                        <div className="mt-1">
-                          <FormattedDescription text={s.description} />
-                        </div>
-                      )}
-                    </div>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 shrink-0" onClick={() => removeScene(i)}><X className="w-4 h-4" /></Button>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={scenes.map((_, i) => `scene-${i}`)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2 w-full">
+                    {scenes.map((s, i) => (
+                      <SortableSceneItem
+                        key={i}
+                        scene={s}
+                        index={i}
+                        onRemove={removeScene}
+                      />
+                    ))}
                   </div>
-                ))}
-                <Button type="button" variant="outline" className="w-full border-dashed" onClick={openAddSceneDialog}><Plus className="w-4 h-4 mr-2" />Add Scene</Button>
-              </div>
+                </SortableContext>
+                <Button type="button" variant="outline" className="w-full border-dashed mt-2" onClick={openAddSceneDialog}><Plus className="w-4 h-4 mr-2" />Add Scene</Button>
+              </DndContext>
             ) : (
               <button
                 type="button"

@@ -35,6 +35,7 @@ import {
   EyeOff,
   Send,
   BarChart3,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,23 @@ import { AISummaryDialog, SummaryFilters, FilterLabels } from "@/components/ai-s
 import { NoteAISummaryDialog } from "@/components/note-ai-summary-dialog";
 import { AISummaryViewDialog } from "@/components/ai-summary-view-dialog";
 import { Tooltip } from "@/components/ui/tooltip";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type {
   SessionWithDetails,
   Tester,
@@ -93,6 +111,118 @@ interface PollQuestionInput {
 
 interface TeamWithCount extends Team {
   members: { count: number }[];
+}
+
+function SortableSceneItem({
+  scene,
+  session,
+  onEdit,
+  onDelete,
+}: {
+  scene: Scene;
+  session: SessionWithDetails;
+  onEdit: (scene: Scene) => void;
+  onDelete: (scene: Scene) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: scene.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="p-4 rounded-lg bg-secondary/30 group"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          {session.status !== "completed" && (
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors pt-0.5 shrink-0 w-4 h-4 flex items-center justify-center"
+              aria-label="Drag to reorder"
+            >
+              <GripVertical className="w-4 h-4" />
+            </button>
+          )}
+          <p className="font-medium">{scene.name}</p>
+        </div>
+        {session.status !== "completed" && (
+          <>
+            {/* Desktop: Icon + text buttons */}
+            <div className="hidden sm:flex items-center gap-1 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground h-8"
+                onClick={() => onEdit(scene)}
+              >
+                <Edit2 className="w-4 h-4" />
+                Edit
+              </Button>
+              {session.scenes && session.scenes.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive h-8"
+                  onClick={() => onDelete(scene)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </Button>
+              )}
+            </div>
+            {/* Mobile: 3-dot menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="sm:hidden h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit(scene)}>
+                  <Edit2 className="w-4 h-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                {session.scenes && session.scenes.length > 1 && (
+                  <DropdownMenuItem
+                    onClick={() => onDelete(scene)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        )}
+      </div>
+      {scene.description ? (
+        <div className="mt-2 ml-2">
+          <FormattedDescription text={scene.description} />
+        </div>
+      ) : session.status !== "completed" && (
+        <p className="text-sm text-muted-foreground/50 mt-2 ml-7 italic">No testing instructions</p>
+      )}
+    </div>
+  );
 }
 
 function FormattedDescription({ text }: { text: string }) {
@@ -1027,6 +1157,49 @@ export default function SessionDetailPage({
       setSavingScene(false);
     }
   }
+
+  async function handleSceneDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || !session?.scenes || active.id === over.id) return;
+
+    const oldIndex = session.scenes.findIndex((s) => s.id === active.id);
+    const newIndex = session.scenes.findIndex((s) => s.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Optimistically update the UI
+    const newScenes = arrayMove(session.scenes, oldIndex, newIndex);
+    setSession({ ...session, scenes: newScenes });
+
+    // Update the order in the database
+    try {
+      const sceneIds = newScenes.map((s) => s.id);
+      await fetch(`/api/sessions/${id}/scenes`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sceneIds }),
+      });
+      // Refresh to ensure consistency
+      fetchSession();
+    } catch (error) {
+      console.error("Error updating scene order:", error);
+      // Revert on error
+      fetchSession();
+      toast({
+        title: "Error",
+        description: "Failed to update scene order. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   function openDeleteSceneDialog(scene: Scene) {
     setSceneToDelete(scene);
     setDeleteSceneDialog(true);
@@ -1554,85 +1727,49 @@ export default function SessionDetailPage({
                   <Layout className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>No scenes added</p>
                 </div>
-              ) : (
+              ) : session.status === "completed" ? (
                 <div className="space-y-3">
-                  {session.scenes?.map((s: Scene, index: number) => (
+                  {session.scenes?.map((s: Scene) => (
                     <div
                       key={s.id}
                       className="p-4 rounded-lg bg-secondary/30 group"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-start gap-3 min-w-0">
-                          {/* <span className="text-sm text-muted-foreground font-mono w-6 pt-0.5 shrink-0">
-                            {index + 1}
-                          </span> */}
                           <p className="font-medium">{s.name}</p>
                         </div>
-                        {session.status !== "completed" && (
-                          <>
-                            {/* Desktop: Icon + text buttons */}
-                            <div className="hidden sm:flex items-center gap-1 shrink-0">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-muted-foreground hover:text-foreground h-8"
-                                onClick={() => openEditSceneDialog(s)}
-                              >
-                                <Edit2 className="w-4 h-4" />
-                                Edit
-                              </Button>
-                              {session.scenes && session.scenes.length > 1 && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-muted-foreground hover:text-destructive h-8"
-                                  onClick={() => openDeleteSceneDialog(s)}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                  Delete
-                                </Button>
-                              )}
-                            </div>
-                            {/* Mobile: 3-dot menu */}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="sm:hidden h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
-                                >
-                                  <MoreVertical className="w-4 h-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => openEditSceneDialog(s)}>
-                                  <Edit2 className="w-4 h-4 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                {session.scenes && session.scenes.length > 1 && (
-                                  <DropdownMenuItem
-                                    onClick={() => openDeleteSceneDialog(s)}
-                                    className="text-destructive focus:text-destructive"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </>
-                        )}
                       </div>
-                      {s.description ? (
+                      {s.description && (
                         <div className="mt-2 ml-2">
                           <FormattedDescription text={s.description} />
                         </div>
-                      ) : session.status !== "completed" && (
-                        <p className="text-sm text-muted-foreground/50 mt-2 ml-7 italic">No testing instructions</p>
                       )}
                     </div>
                   ))}
                 </div>
+              ) : (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleSceneDragEnd}
+                >
+                  <SortableContext
+                    items={session.scenes?.map((s) => s.id) || []}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-3">
+                      {session.scenes?.map((s: Scene) => (
+                        <SortableSceneItem
+                          key={s.id}
+                          scene={s}
+                          session={session}
+                          onEdit={openEditSceneDialog}
+                          onDelete={openDeleteSceneDialog}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               )}
             </CardContent>
           </Card>

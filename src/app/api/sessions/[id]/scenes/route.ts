@@ -62,13 +62,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { id } = params;
   const body = await req.json();
-  const { sceneId, name, description, poll_questions } = body;
+  const { sceneId, name, description, poll_questions, order_index } = body;
   if (!sceneId) return NextResponse.json({ error: "Scene ID required" }, { status: 400 });
   
   const supabase = createAdminClient();
-  const updateData: { name?: string; description?: string | null } = {};
+  const updateData: { name?: string; description?: string | null; order_index?: number } = {};
   if (name !== undefined) updateData.name = name;
   if (description !== undefined) updateData.description = description || null;
+  if (order_index !== undefined) updateData.order_index = order_index;
   
   const { data, error } = await supabase
     .from("scenes")
@@ -108,6 +109,37 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     .single();
   
   return NextResponse.json(sceneWithQuestions || data);
+}
+
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const body = await req.json();
+  const { sceneIds } = body; // Array of scene IDs in the new order
+  
+  if (!Array.isArray(sceneIds)) {
+    return NextResponse.json({ error: "sceneIds array required" }, { status: 400 });
+  }
+  
+  const supabase = createAdminClient();
+  
+  // Update order_index for all scenes
+  const updates = sceneIds.map((sceneId: string, index: number) => ({
+    id: sceneId,
+    order_index: index,
+  }));
+  
+  // Perform updates in parallel
+  const updatePromises = updates.map((update) =>
+    supabase
+      .from("scenes")
+      .update({ order_index: update.order_index })
+      .eq("id", update.id)
+      .eq("session_id", id)
+  );
+  
+  await Promise.all(updatePromises);
+  
+  return NextResponse.json({ success: true });
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
