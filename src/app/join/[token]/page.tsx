@@ -379,9 +379,24 @@ export default function TesterSessionPage({
       {/* Show admin mobile navigation when logged in as admin (hide bottom nav to not overlap with tester FAB) */}
       {isAdmin && <AdminMobileHeader hideBottomNav />}
       
-      <div className={`min-h-screen gradient-mesh flex flex-col ${isAdmin ? "pt-16 md:pt-0" : ""}`}>
-        {/* Clean Header */}
-        <header className="border-b border-border bg-card/80 glass sticky top-0 z-40">
+      {/* Header with logo - using AdminMobileHeader pattern, show on all screens for testers */}
+      {!isAdmin && (
+        <header className="fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50">
+          <div className="flex items-center justify-between h-full px-4">
+            <Link href="/" className="flex items-center gap-3">
+              <Image src="/logo.svg" alt="AirLog" width={90} height={24} className="dark:hidden" />
+              <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="hidden dark:block" />
+            </Link>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            </div>
+          </div>
+        </header>
+      )}
+      
+      <div className={`min-h-screen gradient-mesh flex flex-col ${isAdmin ? "pt-16 md:pt-0" : "pt-16"}`}>
+        {/* Session Info Bar */}
+        <div className="border-b border-border bg-card/80 glass sticky top-16 z-40">
           <div className="container mx-auto px-4 h-14 flex items-center justify-between">
             {/* Left: Session info */}
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -402,9 +417,6 @@ export default function TesterSessionPage({
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 <span className="text-sm text-green-600 dark:text-green-400 font-medium">Live</span>
               </div>
-              <div className="hidden sm:block">
-                <ThemeToggle />
-              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -416,7 +428,7 @@ export default function TesterSessionPage({
               </Button>
             </div>
           </div>
-        </header>
+        </div>
 
         {/* Main content area */}
         <main className="flex-1 overflow-y-auto pb-36">
