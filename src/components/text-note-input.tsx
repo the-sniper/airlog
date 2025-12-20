@@ -45,38 +45,40 @@ export function TextNoteInput({ sessionId, sceneId, testerId, sceneName, onNoteC
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Category:</span>
-        <Select value={category} onValueChange={(v) => setCategory(v as NoteCategory | "auto")} disabled={isSubmitting}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="auto">Auto-detect</SelectItem>
-            <SelectItem value="bug">{getCategoryLabel("bug")}</SelectItem>
-            <SelectItem value="feature">{getCategoryLabel("feature")}</SelectItem>
-            <SelectItem value="ux">{getCategoryLabel("ux")}</SelectItem>
-            <SelectItem value="performance">{getCategoryLabel("performance")}</SelectItem>
-            <SelectItem value="other">{getCategoryLabel("other")}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <Textarea 
-          placeholder={`Type your feedback for: ${sceneName}`} 
-          value={text} 
-          onChange={(e) => setText(e.target.value)} 
-          disabled={isSubmitting}
-          className="min-h-[100px] resize-none"
-        />
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            {isSubmitting ? step : `${text.length} characters`}
-          </p>
-          <Button onClick={handleSubmit} disabled={!text.trim() || isSubmitting} size="sm">
-            {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-            {isSubmitting ? "Submitting..." : "Submit Note"}
-          </Button>
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="space-y-4 flex-1 flex flex-col min-h-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-sm text-muted-foreground">Category:</span>
+          <Select value={category} onValueChange={(v) => setCategory(v as NoteCategory | "auto")} disabled={isSubmitting}>
+            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Auto-detect</SelectItem>
+              <SelectItem value="bug">{getCategoryLabel("bug")}</SelectItem>
+              <SelectItem value="feature">{getCategoryLabel("feature")}</SelectItem>
+              <SelectItem value="ux">{getCategoryLabel("ux")}</SelectItem>
+              <SelectItem value="performance">{getCategoryLabel("performance")}</SelectItem>
+              <SelectItem value="other">{getCategoryLabel("other")}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+        <div className="flex-1 flex flex-col min-h-0">
+          <Textarea 
+            placeholder={`Type your feedback for: ${sceneName}`} 
+            value={text} 
+            onChange={(e) => setText(e.target.value)} 
+            disabled={isSubmitting}
+            className="min-h-[180px] flex-1 resize-none"
+          />
+        </div>
+      </div>
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-border shrink-0">
+        <p className="text-xs text-muted-foreground">
+          {isSubmitting ? step : `${text.length} characters`}
+        </p>
+        <Button onClick={handleSubmit} disabled={!text.trim() || isSubmitting} size="sm">
+          {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+          {isSubmitting ? "Submitting..." : "Submit Note"}
+        </Button>
       </div>
     </div>
   );

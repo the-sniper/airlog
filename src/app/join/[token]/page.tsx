@@ -552,11 +552,12 @@ export default function TesterSessionPage({
           <div className="fixed inset-0 z-50 flex items-end justify-center">
             {/* Backdrop */}
             <div 
-              className="absolute inset-0 bg-black/50" 
+              className="absolute inset-0" 
+              style={{ backdropFilter: 'blur(5px)' }}
               onClick={() => setPollPanelOpen(false)}
             />
             {/* Panel */}
-            <div className="relative w-full max-w-xl mx-4 mb-0 bg-card border border-border rounded-t-2xl shadow-2xl max-h-[80vh] flex flex-col">
+            <div className="relative w-full max-w-xl mx-4 mb-0 bg-card border border-border rounded-t-2xl shadow-2xl h-[500px] flex flex-col">
               {/* Header */}
               <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
@@ -582,7 +583,7 @@ export default function TesterSessionPage({
                 </div>
               </div>
               {/* Content */}
-              <div className="px-3 py-4 pb-6 overflow-y-auto">
+              <div className="px-3 py-4 pb-6 overflow-y-auto flex-1 min-h-0">
                 {hasPollQuestions ? (
                   <div className="space-y-3">
                     {pollQuestions.map((q: PollQuestion, qIndex: number) => {
@@ -658,11 +659,92 @@ export default function TesterSessionPage({
         )}
 
         {/* Floating Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-40">
-          <div className="container mx-auto px-4 max-w-xl">
-            <div className="bg-card border border-border rounded-t-2xl shadow-2xl">
-              {/* Collapsed state - FAB buttons */}
-              {!recorderExpanded ? (
+        {recorderExpanded ? (
+          <div className="fixed inset-0 z-40 flex items-end justify-center">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0" 
+              style={{ backdropFilter: 'blur(5px)' }}
+              onClick={() => setRecorderExpanded(false)}
+            />
+            {/* Panel Container */}
+            <div className="relative w-full max-w-xl mx-4 mb-0">
+              <div className="bg-card border border-border rounded-t-2xl shadow-2xl flex flex-col h-[500px]">
+                {/* Expanded state header */}
+                <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setInputMode("voice")}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                        inputMode === "voice" 
+                          ? "bg-primary text-primary-foreground" 
+                          : "text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      <Mic className="w-4 h-4" />
+                      Voice
+                    </button>
+                    <button
+                      onClick={() => setInputMode("text")}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                        inputMode === "text" 
+                          ? "bg-primary text-primary-foreground" 
+                          : "text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      <Keyboard className="w-4 h-4" />
+                      Text
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => setRecorderExpanded(false)}
+                    className="p-2 rounded-lg hover:bg-secondary text-muted-foreground"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                {/* Recorder content */}
+                <div className="p-4 pb-4 overflow-y-auto flex-1 min-h-0 flex flex-col">
+                  <div className="mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      Adding note for: <span className="font-medium text-foreground">{currentScene?.name}</span>
+                    </p>
+                  </div>
+                  {currentScene && inputMode === "voice" ? (
+                    <VoiceRecorder
+                      sessionId={session.id}
+                      sceneId={selectedScene}
+                      testerId={tester.id}
+                      sceneName={currentScene.name}
+                      onNoteCreated={(note) => {
+                        handleNoteCreated(note);
+                        setRecorderExpanded(false);
+                      }}
+                    />
+                  ) : currentScene ? (
+                    <TextNoteInput
+                      sessionId={session.id}
+                      sceneId={selectedScene}
+                      testerId={tester.id}
+                      sceneName={currentScene.name}
+                      onNoteCreated={(note) => {
+                        handleNoteCreated(note);
+                        setRecorderExpanded(false);
+                      }}
+                    />
+                  ) : null}
+                </div>
+              </div>
+            </div>
+            {/* Safe area padding for mobile */}
+            <div className="absolute bottom-0 left-0 right-0 h-safe-area-inset-bottom bg-card pointer-events-none" />
+          </div>
+        ) : (
+          <div className="fixed bottom-0 left-0 right-0 z-40">
+            <div className="container mx-auto px-4 max-w-xl">
+              <div className="bg-card border border-border rounded-t-2xl shadow-2xl flex flex-col">
+                {/* Collapsed state - FAB buttons */}
                 <div className="p-5 flex items-center justify-center gap-4">
                   {/* Text note button */}
                   <button
@@ -706,78 +788,12 @@ export default function TesterSessionPage({
                     )}
                   </button>
                 </div>
-              ) : (
-                <>
-                  {/* Expanded state header */}
-                  <div className="p-4 border-b border-border flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setInputMode("voice")}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                          inputMode === "voice" 
-                            ? "bg-primary text-primary-foreground" 
-                            : "text-muted-foreground hover:bg-secondary"
-                        }`}
-                      >
-                        <Mic className="w-4 h-4" />
-                        Voice
-                      </button>
-                      <button
-                        onClick={() => setInputMode("text")}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                          inputMode === "text" 
-                            ? "bg-primary text-primary-foreground" 
-                            : "text-muted-foreground hover:bg-secondary"
-                        }`}
-                      >
-                        <Keyboard className="w-4 h-4" />
-                        Text
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => setRecorderExpanded(false)}
-                      className="p-2 rounded-lg hover:bg-secondary text-muted-foreground"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  {/* Recorder content */}
-                  <div className="p-4 pb-6">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Adding note for: <span className="font-medium text-foreground">{currentScene?.name}</span>
-                    </p>
-                    {currentScene && inputMode === "voice" ? (
-                      <VoiceRecorder
-                        sessionId={session.id}
-                        sceneId={selectedScene}
-                        testerId={tester.id}
-                        sceneName={currentScene.name}
-                        onNoteCreated={(note) => {
-                          handleNoteCreated(note);
-                          setRecorderExpanded(false);
-                        }}
-                      />
-                    ) : currentScene ? (
-                      <TextNoteInput
-                        sessionId={session.id}
-                        sceneId={selectedScene}
-                        testerId={tester.id}
-                        sceneName={currentScene.name}
-                        onNoteCreated={(note) => {
-                          handleNoteCreated(note);
-                          setRecorderExpanded(false);
-                        }}
-                      />
-                    ) : null}
-                  </div>
-                </>
-              )}
+              </div>
             </div>
+            {/* Safe area padding for mobile */}
+            <div className="h-safe-area-inset-bottom bg-card" />
           </div>
-          {/* Safe area padding for mobile */}
-          <div className="h-safe-area-inset-bottom bg-card" />
-        </div>
+        )}
       </div>
     </>
   );
