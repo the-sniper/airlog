@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
+import type React from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -522,6 +523,7 @@ export default function SessionDetailPage({
   const [noteCategoryFilter, setNoteCategoryFilter] = useState<string>("all");
   const [noteSceneFilter, setNoteSceneFilter] = useState<string>("all");
   const [noteTesterFilter, setNoteTesterFilter] = useState<string>("all");
+  const [noteGroupBy, setNoteGroupBy] = useState<"scene" | "tester" | "category">("scene");
   
   // AI Summary dialog state
   const [aiSummaryDialog, setAISummaryDialog] = useState(false);
@@ -646,6 +648,39 @@ export default function SessionDetailPage({
     setNoteSceneFilter("all");
     setNoteTesterFilter("all");
   }
+
+  // Group notes based on selection
+  const groupedNotes = useMemo(() => {
+    const groups: Record<string, { label: string; notes: NoteWithDetails[] }> = {};
+
+    filteredNotes.forEach((note) => {
+      let key: string;
+      let label: string;
+
+      switch (noteGroupBy) {
+        case "tester":
+          key = note.tester_id;
+          label = note.tester ? `${note.tester.first_name} ${note.tester.last_name}` : "Unknown Tester";
+          break;
+        case "category":
+          key = note.category;
+          label = getCategoryLabel(note.category);
+          break;
+        case "scene":
+        default:
+          key = note.scene_id;
+          label = note.scene?.name || "Unknown Scene";
+          break;
+      }
+
+      if (!groups[key]) {
+        groups[key] = { label, notes: [] };
+      }
+      groups[key].notes.push(note);
+    });
+
+    return groups;
+  }, [filteredNotes, noteGroupBy]);
 
   function handleNoteUpdated(updatedNote: NoteWithDetails) {
     if (!session) return;
@@ -843,7 +878,7 @@ export default function SessionDetailPage({
     startOnNewLine = false,
     ref: React.RefObject<HTMLTextAreaElement>,
     value: string,
-    setter: React.Dispatch<React.SetStateAction<string>>
+    setter: (value: SetStateAction<string>) => void
   ) {
     const textarea = ref.current;
     if (textarea) {
@@ -2226,6 +2261,20 @@ export default function SessionDetailPage({
                       </Button>
                     )}
                   </div>
+                  
+                  <div className="flex items-center gap-2 sm:ml-auto">
+                    <span className="text-sm text-muted-foreground">Group by:</span>
+                    <Select value={noteGroupBy} onValueChange={(v) => setNoteGroupBy(v as "scene" | "tester" | "category")}>
+                      <SelectTrigger className="h-8 w-[120px] text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="scene">Scene</SelectItem>
+                        <SelectItem value="tester">Tester</SelectItem>
+                        <SelectItem value="category">Category</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
             </CardHeader>
@@ -2246,79 +2295,101 @@ export default function SessionDetailPage({
                   <Button variant="link" size="sm" onClick={clearNoteFilters}>Clear filters</Button>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {filteredNotes.map((n: NoteWithDetails) => (
-                    <div
-                      key={n.id}
-                      className="p-3 sm:p-4 rounded-lg border border-border"
-                    >
-                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between mb-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge
-                            variant={
-                              n.category as
-                                | "bug"
-                                | "feature"
-                                | "ux"
-                                | "performance"
-                                | "secondary"
-                            }
-                          >
-                            {getCategoryLabel(n.category)}
-                          </Badge>
-                          {n.ai_summary && (
-                            <button
-                              onClick={() => setViewSummaryNote(n)}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                            >
-                              <Sparkles className="w-3 h-3" />
-                              AI Summary
-                            </button>
-                          )}
-                          <span className="text-sm text-muted-foreground">
-                            {n.scene?.name}
-                          </span>
-                        </div>
+                <div className="space-y-6">
+                  {Object.entries(groupedNotes).map(([key, { label, notes }]) => (
+                    <div key={key} className="space-y-3">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">
-                            {n.tester?.first_name} {n.tester?.last_name} • {formatDate(n.created_at)}
-                          </span>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 -mr-2">
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {(n.edited_transcript || n.raw_transcript) && (
-                                <DropdownMenuItem onClick={() => setNoteAISummaryNote(n)}>
-                                  <Sparkles className="w-4 h-4 mr-2" />
-                                  AI Summary
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem
-                                onClick={() => openDeleteNoteDialog(n)}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {noteGroupBy === "category" ? (
+                            <Badge variant={key as "bug" | "feature" | "ux" | "performance" | "secondary"}>{label}</Badge>
+                          ) : (
+                            <h4 className="text-sm sm:text-base font-semibold">{label}</h4>
+                          )}
+                          <Badge variant="secondary" className="text-xs">
+                            {notes.length} note{notes.length !== 1 ? "s" : ""}
+                          </Badge>
                         </div>
                       </div>
-                      <p className="text-sm">
-                        {n.edited_transcript ||
-                          n.raw_transcript ||
-                          "No transcript"}
-                      </p>
-                      {n.audio_url && (
-                        <audio
-                          src={n.audio_url}
-                          controls
-                          className="mt-2 w-full h-8"
-                        />
-                      )}
+                      <div className="space-y-3">
+                        {notes.map((n: NoteWithDetails) => (
+                          <div
+                            key={n.id}
+                            className="p-3 sm:p-4 rounded-lg border border-border"
+                          >
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between mb-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                {noteGroupBy !== "category" && (
+                                  <Badge
+                                    variant={
+                                      n.category as
+                                        | "bug"
+                                        | "feature"
+                                        | "ux"
+                                        | "performance"
+                                        | "secondary"
+                                    }
+                                  >
+                                    {getCategoryLabel(n.category)}
+                                  </Badge>
+                                )}
+                                {n.ai_summary && (
+                                  <button
+                                    onClick={() => setViewSummaryNote(n)}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                                  >
+                                    <Sparkles className="w-3 h-3" />
+                                    AI Summary
+                                  </button>
+                                )}
+                                {noteGroupBy !== "scene" && (
+                                  <span className="text-sm text-muted-foreground">
+                                    {n.scene?.name}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">
+                                  {noteGroupBy !== "tester" && `${n.tester?.first_name} ${n.tester?.last_name} • `}{formatDate(n.created_at)}
+                                </span>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 -mr-2">
+                                      <MoreVertical className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    {(n.edited_transcript || n.raw_transcript) && (
+                                      <DropdownMenuItem onClick={() => setNoteAISummaryNote(n)}>
+                                        <Sparkles className="w-4 h-4 mr-2" />
+                                        AI Summary
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem
+                                      onClick={() => openDeleteNoteDialog(n)}
+                                      className="text-destructive focus:text-destructive"
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                            <p className="text-sm">
+                              {n.edited_transcript ||
+                                n.raw_transcript ||
+                                "No transcript"}
+                            </p>
+                            {n.audio_url && (
+                              <audio
+                                src={n.audio_url}
+                                controls
+                                className="mt-2 w-full h-8"
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
