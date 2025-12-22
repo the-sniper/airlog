@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, Loader2, FileText, BarChart3, TrendingUp, Activity, AlertTriangle, ClipboardList, Filter, X, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Download, Loader2, FileText, BarChart3, TrendingUp, Activity, AlertTriangle, ClipboardList, Filter, X, CheckCircle, XCircle, Share2, Copy, Check, Link as LinkIcon, Unlink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,12 +14,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
 import { AnalyticsTab } from "@/components/analytics";
 import type { SessionWithDetails, NoteWithDetails, NoteCategory, PollResponse, PollQuestion, Scene, Tester } from "@/types";
 
 export default function ReportPage({ params }: { params: { id: string } }) {
   const { id } = params;
+  const { toast } = useToast();
   const [session, setSession] = useState<SessionWithDetails | null>(null);
   const [pollResponses, setPollResponses] = useState<PollResponse[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -30,6 +41,10 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [pollTesterFilter, setPollTesterFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [generatingShareLink, setGeneratingShareLink] = useState(false);
+  const [removingShareLink, setRemovingShareLink] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const fetchSession = useCallback(async function() {
     try {
@@ -84,6 +99,61 @@ export default function ReportPage({ params }: { params: { id: string } }) {
     const categoryBreakdown: Record<NoteCategory, number> = { bug: 0, feature: 0, ux: 0, performance: 0, other: 0 };
     session.notes.forEach((note: NoteWithDetails) => { categoryBreakdown[note.category]++; });
     return { total: session.notes.length, categoryBreakdown };
+  }
+
+  async function generateShareLink() {
+    setGeneratingShareLink(true);
+    try {
+      const response = await fetch(`/api/sessions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "generate_share_token" }),
+      });
+      if (response.ok) {
+        const updatedSession = await response.json();
+        setSession({ ...session!, share_token: updatedSession.share_token });
+        toast({ title: "Share link created", description: "Anyone with the link can view this report." });
+      }
+    } catch (error) {
+      console.error("Error creating share link:", error);
+      toast({ title: "Failed to create share link", variant: "destructive" });
+    } finally {
+      setGeneratingShareLink(false);
+    }
+  }
+
+  async function removeShareLink() {
+    setRemovingShareLink(true);
+    try {
+      const response = await fetch(`/api/sessions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "remove_share_token" }),
+      });
+      if (response.ok) {
+        setSession({ ...session!, share_token: null });
+        toast({ title: "Share link removed", description: "Public access disabled." });
+      }
+    } catch (error) {
+      console.error("Error removing share link:", error);
+      toast({ title: "Failed to remove share link", variant: "destructive" });
+    } finally {
+      setRemovingShareLink(false);
+    }
+  }
+
+  function copyShareLink() {
+    if (!session?.share_token) return;
+    const url = `${window.location.origin}/report/${session.share_token}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast({ title: "Link copied", description: "Public report link copied to clipboard." });
+  }
+
+  function getShareUrl() {
+    if (!session?.share_token) return "";
+    return `${window.location.origin}/report/${session.share_token}`;
   }
 
   const filteredNotes = useMemo(() => {
@@ -149,7 +219,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           <Link href={`/admin/sessions/${id}`}><Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button></Link>
           <div><h1 className="text-2xl font-bold">Session Report</h1><p className="text-muted-foreground">{session.name}</p></div>
         </div>
-        <Button onClick={generatePDF} disabled={generating}>{generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}Export PDF</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShareDialogOpen(true)}>
+            <Share2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Share</span>
+          </Button>
+          <Button onClick={generatePDF} disabled={generating}>{generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}Export PDF</Button>
+        </div>
       </div>
 
       <Tabs defaultValue="report" className="space-y-6">
@@ -568,6 +644,68 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           <AnalyticsTab session={session} pollResponses={pollResponses} sessionId={id} />
         </TabsContent>
       </Tabs>
+
+      {/* Share Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="w-5 h-5" />
+              Share Report
+            </DialogTitle>
+            <DialogDescription>Create a public link that anyone can use to view this report.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {session.share_token ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 relative">
+                    <Input readOnly value={getShareUrl()} className="pr-10 font-mono text-sm" />
+                  </div>
+                  <Button variant="outline" size="icon" onClick={copyShareLink}>
+                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <LinkIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <span className="text-sm text-green-600 dark:text-green-400">Public sharing is enabled</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50">
+                <Unlink className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">No public link created yet</span>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            {session.share_token ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={removeShareLink}
+                  disabled={removingShareLink}
+                  className="text-destructive hover:text-destructive"
+                >
+                  {removingShareLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
+                  Disable Link
+                </Button>
+                <Button onClick={copyShareLink}>
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  Copy Link
+                </Button>
+              </>
+            ) : (
+              <Button onClick={generateShareLink} disabled={generatingShareLink}>
+                {generatingShareLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+                Create Share Link
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

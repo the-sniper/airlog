@@ -24,6 +24,13 @@ export function TrendsThemesCard({ session }: TrendsThemesCardProps) {
   const sentiment = sentimentConfig[trends.sentimentIndicator];
   const SentimentIcon = sentiment.icon;
 
+  const sentimentChipClass: Record<typeof trends.sentimentIndicator, string> = {
+    positive: "bg-white text-emerald-600 border border-emerald-200 dark:bg-transparent dark:border-transparent",
+    negative: "bg-white text-[#fb7088] border border-[#fb7088]/30 dark:bg-transparent dark:border-transparent",
+    neutral: "bg-white text-slate-600 border border-slate-200 dark:bg-transparent dark:border-transparent",
+    mixed: "bg-white/80 text-amber-500 border border-amber-200 dark:bg-transparent dark:border-transparent",
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -42,11 +49,7 @@ export function TrendsThemesCard({ session }: TrendsThemesCardProps) {
           </div>
           <Badge
             variant="secondary"
-            className={`${sentiment.color} ${
-              trends.sentimentIndicator === "mixed"
-                ? "bg-white/80 border border-amber-200 dark:bg-transparent dark:border-transparent"
-                : ""
-            }`}
+            className={`${sentiment.color} ${sentimentChipClass[trends.sentimentIndicator]}`}
           >
             {sentiment.label}
           </Badge>
