@@ -48,7 +48,7 @@ export function Tooltip({
       {isVisible && (
         <div
           className={cn(
-            "absolute z-50 px-3 py-1.5 text-xs font-medium text-popover-foreground bg-popover border border-border rounded-md shadow-md whitespace-nowrap pointer-events-none animate-in fade-in-0 zoom-in-95",
+            "absolute z-50 px-3 py-1.5 text-xs font-medium text-popover-foreground bg-popover border border-border rounded-md shadow-md whitespace-nowrap pointer-events-none transition-opacity duration-100 ease-out max-w-xs overflow-hidden",
             positionClasses[side]
           )}
           role="tooltip"

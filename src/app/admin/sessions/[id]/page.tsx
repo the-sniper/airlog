@@ -7,6 +7,7 @@ import {
   Plus,
   Copy,
   Check,
+  ExternalLink,
   Play,
   Square,
   Users,
@@ -2078,20 +2079,20 @@ export default function SessionDetailPage({
                           </button>
                         )}
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <p className="font-medium">{t.first_name} {t.last_name}</p>
-                            {t.invite_sent_at && (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-600 dark:text-green-400">
-                                <Mail className="w-3 h-3" />
-                                Invited
-                              </span>
+                            {t.email && (
+                              <span className="text-xs text-muted-foreground truncate">{t.email}</span>
                             )}
-                          </div>
-                          {t.email && (
-                            <p className="text-xs text-muted-foreground truncate">{t.email}</p>
+                          {t.invite_sent_at && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-600 dark:text-green-400">
+                              <Mail className="w-3 h-3" />
+                              Invited
+                            </span>
                           )}
-                          {session.status !== "completed" && (
-                            <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate">
+                        </div>
+                        {session.status !== "completed" && (
+                            <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate mt-1">
                               /join/{t.invite_token}
                             </p>
                           )}
@@ -2099,34 +2100,52 @@ export default function SessionDetailPage({
                       </div>
                       {session.status !== "completed" && (
                         <div className="flex items-center gap-2 pl-8 sm:pl-0">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyInviteLink(t.invite_token)}
-                          >
-                            {copiedToken === t.invite_token ? (
-                              <Check className="w-4 h-4 text-green-500" />
-                            ) : (
-                              <Copy className="w-4 h-4" />
-                            )}
-                            Copy
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100"
-                            onClick={() => openEditTesterDialog(t)}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
-                            onClick={() => openDeleteTesterDialog(t)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <Tooltip content="Copy invite link" side="bottom">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => copyInviteLink(t.invite_token)}
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              {copiedToken === t.invite_token ? (
+                                <Check className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </Tooltip>
+                          <Tooltip content="Open invite link" side="bottom">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-foreground"
+                              asChild
+                            >
+                              <Link href={`/join/${t.invite_token}`} target="_blank">
+                                <ExternalLink className="w-4 h-4" />
+                              </Link>
+                            </Button>
+                          </Tooltip>
+                          <Tooltip content="Edit tester" side="bottom">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-foreground"
+                              onClick={() => openEditTesterDialog(t)}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip content="Delete tester" side="bottom">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-destructive"
+                              onClick={() => openDeleteTesterDialog(t)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </Tooltip>
                         </div>
                       )}
                     </div>
