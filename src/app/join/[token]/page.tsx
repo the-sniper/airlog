@@ -33,6 +33,7 @@ import { VoiceRecorder } from "@/components/voice-recorder";
 import { TextNoteInput } from "@/components/text-note-input";
 import { NotesList } from "@/components/notes-list";
 import { AdminMobileHeader } from "@/components/admin-sidebar";
+import { TesterNotifications } from "@/components/tester-notifications";
 import type { SessionWithScenes, Tester, Scene, Note, PollQuestion, PollResponse } from "@/types";
 
 interface JoinData {
@@ -398,6 +399,11 @@ export default function TesterSessionPage({
             <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="hidden dark:block" />
           </Link>
           <div className="flex items-center gap-2">
+            <TesterNotifications
+              session={session}
+              tester={tester}
+              onRealtimeUpdate={fetchSessionCallback}
+            />
             <ThemeToggle />
           </div>
         </div>

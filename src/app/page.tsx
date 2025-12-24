@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Image from "next/image";
+import { Bell } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
@@ -33,6 +34,13 @@ export default function Home() {
   return (
     <div className="min-h-screen gradient-mesh flex items-center justify-center p-4">
       <div className="absolute top-4 right-4">
+        <button
+          type="button"
+          className="inline-flex items-center justify-center w-10 h-10 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Notifications"
+        >
+          <Bell className="w-5 h-5" strokeWidth={1.75} />
+        </button>
         <ThemeToggle />
       </div>
       <div className="w-full max-w-md space-y-8">
