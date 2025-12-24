@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Activity,
   AlertTriangle,
@@ -294,6 +295,8 @@ export function TesterNotifications({
         description: "A session report was sent to your inbox.",
         createdAt: normalizeTimestamp(tester.report_sent_at, nowIso),
         kind: "report_sent",
+        actionUrl: session.share_token ? `/report/${session.share_token}` : `/report/${session.id}`,
+        actionLabel: "View report",
       });
     }
 
@@ -797,7 +800,7 @@ export function TesterNotifications({
           description: "A session report was sent to your inbox.",
           createdAt: normalizeTimestamp(testerObj.report_sent_at, nowIso),
           kind: "report_sent",
-          actionUrl: `/report/${sessionId || testerObj.session_id}`,
+          actionUrl: `/report/${sessionObj.share_token || sessionId || testerObj.session_id}`,
           actionLabel: "View report",
         });
       }
@@ -1177,7 +1180,7 @@ export function TesterNotifications({
               return (
                 <DropdownMenuItem
                   key={notification.id}
-                  className="flex items-start gap-3 px-4 py-3 cursor-default"
+                  className="flex items-start gap-3 px-4 py-3 cursor-default data-[highlighted]:bg-muted data-[highlighted]:text-foreground"
                 >
                   <div className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-muted/50 flex items-center justify-center">
                     {meta.icon}
@@ -1190,12 +1193,12 @@ export function TesterNotifications({
                       {/* <Badge variant={meta.badgeVariant}>{meta.label}</Badge> */}
                       {notification.kind === "report_sent" &&
                         notification.actionUrl && (
-                          <a
+                          <Link
                             href={notification.actionUrl}
                             className="text-[11px] font-semibold text-primary hover:underline ml-auto"
                           >
                             {notification.actionLabel || "View"}
-                          </a>
+                          </Link>
                         )}
                     </div>
                     <p className="text-xs text-muted-foreground leading-snug line-clamp-2">

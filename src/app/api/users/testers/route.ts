@@ -33,7 +33,8 @@ export async function GET() {
             ended_at,
             last_restarted_at,
             restart_count,
-            first_ended_at
+            first_ended_at,
+            share_token
           )
         `
       )

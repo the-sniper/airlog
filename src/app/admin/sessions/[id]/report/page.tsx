@@ -341,7 +341,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             ) : (
               <Download className="w-4 h-4" />
             )}
-            {/* Export PDF */}
+            <span className="hidden sm:inline">Export PDF</span>
           </Button>
         </div>
       </div>

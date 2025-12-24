@@ -15,7 +15,7 @@ export async function GET(
     const { token } = params;
     const supabase = createAdminClient();
 
-    // Find session by share token
+    // Find session by share token (report link)
     const { data: session, error } = await supabase
       .from("sessions")
       .select(`*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*))`)
