@@ -63,6 +63,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -529,6 +530,7 @@ export default function SessionDetailPage({
   const [noteSceneFilter, setNoteSceneFilter] = useState<string>("all");
   const [noteTesterFilter, setNoteTesterFilter] = useState<string>("all");
   const [noteGroupBy, setNoteGroupBy] = useState<"scene" | "tester" | "category">("scene");
+  const [noteFiltersOpen, setNoteFiltersOpen] = useState(false);
   
   // AI Summary dialog state
   const [aiSummaryDialog, setAISummaryDialog] = useState(false);
@@ -729,6 +731,12 @@ export default function SessionDetailPage({
 
     return groups;
   }, [filteredNotes, noteGroupBy]);
+
+  const canShowNoteFilters =
+    !!session &&
+    (session.status === "completed" || (session.status === "active" && showNotesWhileActive)) &&
+    !!session.notes &&
+    session.notes.length > 0;
 
   function handleNoteUpdated(updatedNote: NoteWithDetails) {
     if (!session) return;
@@ -1752,9 +1760,8 @@ export default function SessionDetailPage({
       <div className="space-y-3">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-4">
-            <div>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <h1 className="text-xl sm:text-2xl font-bold">{session.name}</h1>
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-2 sm:gap-3 mb-1">
                 <Badge
                   variant={session.status as "draft" | "active" | "completed"}
                 >
@@ -1765,10 +1772,12 @@ export default function SessionDetailPage({
                   size="icon"
                   className="h-8 w-8"
                   onClick={openEditSessionDialog}
+                  aria-label="Edit session"
                 >
                   <Edit2 className="w-4 h-4" />
                 </Button>
               </div>
+              <h1 className="text-xl sm:text-2xl font-bold">{session.name}</h1>
               {session.build_version && (
                 <p className="text-sm text-muted-foreground font-mono">
                   {session.build_version}
@@ -2171,28 +2180,30 @@ export default function SessionDetailPage({
                             )}
                           </button>
                         )}
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium">{t.first_name} {t.last_name}</p>
-                            {t.email && (
-                              <span className="text-xs text-muted-foreground truncate">{t.email}</span>
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                            <p className="font-medium leading-tight">{t.first_name} {t.last_name}</p>
+                            {session.status === "completed" ? (
+                              t.report_sent_at ? (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-600 dark:text-green-400">
+                                  <Mail className="w-3 h-3" />
+                                  Report emailed
+                                </span>
+                              ) : null
+                            ) : (
+                              t.invite_sent_at && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-600 dark:text-green-400">
+                                  <Mail className="w-3 h-3" />
+                                  Invited
+                                </span>
+                              )
                             )}
-                          {session.status === "completed" ? (
-                            t.report_sent_at ? (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-600 dark:text-green-400">
-                                <Mail className="w-3 h-3" />
-                                Report emailed
-                              </span>
-                            ) : null
-                          ) : (
-                            t.invite_sent_at && (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-600 dark:text-green-400">
-                                <Mail className="w-3 h-3" />
-                                Invited
-                              </span>
-                            )
+                          </div>
+                          {t.email && (
+                            <span className="block text-xs text-muted-foreground break-words">
+                              {t.email}
+                            </span>
                           )}
-                        </div>
                         {session.status !== "completed" && (
                             <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate mt-1">
                               /join/{t.invite_token}
@@ -2348,6 +2359,107 @@ export default function SessionDetailPage({
                       )}
                     </>
                   )}
+                  {canShowNoteFilters && (
+                    <Dialog open={noteFiltersOpen} onOpenChange={setNoteFiltersOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="sm:hidden"
+                          aria-label="Filters"
+                        >
+                          <Filter className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:hidden left-1/2 top-auto bottom-0 -translate-x-1/2 translate-y-0 w-full max-w-full rounded-t-2xl rounded-b-none p-5 pb-6 shadow-2xl border border-border/70 max-h-[85vh] min-h-[55vh] overflow-y-auto data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom">
+                        <DialogHeader className="text-left space-y-1">
+                          <DialogTitle>Filters & Grouping</DialogTitle>
+                          <DialogDescription>
+                            Refine the notes list or change how notes are grouped.
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-4">
+                          <div className="space-y-3">
+                            <p className="text-sm font-medium">Filter by</p>
+                            <div className="space-y-2">
+                              <Select value={noteCategoryFilter} onValueChange={setNoteCategoryFilter}>
+                                <SelectTrigger className="h-10 w-full text-sm">
+                                  <SelectValue placeholder="Category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">All Categories</SelectItem>
+                                  <SelectItem value="bug">Bug</SelectItem>
+                                  <SelectItem value="feature">Feature</SelectItem>
+                                  <SelectItem value="ux">UX Feedback</SelectItem>
+                                  <SelectItem value="performance">Performance</SelectItem>
+                                  <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              {session.scenes && session.scenes.length > 0 && (
+                                <Select value={noteSceneFilter} onValueChange={setNoteSceneFilter}>
+                                  <SelectTrigger className="h-10 w-full text-sm">
+                                    <SelectValue placeholder="Scene" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="all">All Scenes</SelectItem>
+                                    {session.scenes.map((scene) => (
+                                      <SelectItem key={scene.id} value={scene.id}>{scene.name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+
+                              {session.testers && session.testers.length > 0 && (
+                                <Select value={noteTesterFilter} onValueChange={setNoteTesterFilter}>
+                                  <SelectTrigger className="h-10 w-full text-sm">
+                                    <SelectValue placeholder="Tester" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="all">All Testers</SelectItem>
+                                    {session.testers.map((tester) => (
+                                      <SelectItem key={tester.id} value={tester.id}>
+                                        {tester.first_name} {tester.last_name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Group by</p>
+                            <Select value={noteGroupBy} onValueChange={(v) => setNoteGroupBy(v as "scene" | "tester" | "category")}>
+                              <SelectTrigger className="h-10 w-full text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="scene">Scene</SelectItem>
+                                <SelectItem value="tester">Tester</SelectItem>
+                                <SelectItem value="category">Category</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-3 pt-1">
+                            {hasActiveNoteFilters ? (
+                              <Button variant="ghost" size="sm" className="text-sm" onClick={clearNoteFilters}>
+                                <X className="w-4 h-4 mr-1" />
+                                Clear filters
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">No filters applied</span>
+                            )}
+                            <Button size="sm" className="min-w-[96px]" onClick={() => setNoteFiltersOpen(false)}>
+                              Done
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                   {session.status === "completed" && session.notes && session.notes.length > 0 && (
                     <Button
                       variant="outline"
@@ -2363,8 +2475,8 @@ export default function SessionDetailPage({
               </div>
               
               {/* Filters - show when notes are visible and has notes */}
-              {(session.status === "completed" || (session.status === "active" && showNotesWhileActive)) && session.notes && session.notes.length > 0 && (
-                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 pt-2 border-t border-border">
+              {canShowNoteFilters && (
+                <div className="hidden sm:flex sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 pt-2 border-t border-border">
                   <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">Filter by:</span>
@@ -2477,41 +2589,38 @@ export default function SessionDetailPage({
                             key={n.id}
                             className="p-3 sm:p-4 rounded-lg border border-border"
                           >
-                            <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between mb-2">
-                              <div className="flex flex-wrap items-center gap-2">
-                                {noteGroupBy !== "category" && (
-                                  <Badge
-                                    variant={
-                                      n.category as
-                                        | "bug"
-                                        | "feature"
-                                        | "ux"
-                                        | "performance"
-                                        | "secondary"
-                                    }
-                                  >
-                                    {getCategoryLabel(n.category)}
-                                  </Badge>
-                                )}
-                                {n.ai_summary && (
-                                  <button
-                                    onClick={() => setViewSummaryNote(n)}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                                  >
-                                    <Sparkles className="w-3 h-3" />
-                                    AI Summary
-                                  </button>
-                                )}
-                                {noteGroupBy !== "scene" && (
-                                  <span className="text-sm text-muted-foreground">
-                                    {n.scene?.name}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">
-                                  {noteGroupBy !== "tester" && `${n.tester?.first_name} ${n.tester?.last_name} • `}{formatDate(n.created_at)}
-                                </span>
+                            <div className="flex flex-col gap-2 mb-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {noteGroupBy !== "category" && (
+                                    <Badge
+                                      variant={
+                                        n.category as
+                                          | "bug"
+                                          | "feature"
+                                          | "ux"
+                                          | "performance"
+                                          | "secondary"
+                                      }
+                                    >
+                                      {getCategoryLabel(n.category)}
+                                    </Badge>
+                                  )}
+                                  {n.ai_summary && (
+                                    <button
+                                      onClick={() => setViewSummaryNote(n)}
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                                    >
+                                      <Sparkles className="w-3 h-3" />
+                                      AI Summary
+                                    </button>
+                                  )}
+                                  {noteGroupBy !== "scene" && (
+                                    <span className="text-sm text-muted-foreground">
+                                      {n.scene?.name}
+                                    </span>
+                                  )}
+                                </div>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="h-7 w-7 -mr-2">
@@ -2535,6 +2644,9 @@ export default function SessionDetailPage({
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
+                              <span className="text-xs text-muted-foreground">
+                                {noteGroupBy !== "tester" && `${n.tester?.first_name} ${n.tester?.last_name} • `}{formatDate(n.created_at)}
+                              </span>
                             </div>
                             <p className="text-sm">
                               {n.edited_transcript ||

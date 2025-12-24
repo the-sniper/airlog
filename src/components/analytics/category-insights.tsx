@@ -157,6 +157,8 @@ export function CategoryInsightsCard({ session }: CategoryInsightsCardProps) {
             <div className="text-sm font-medium text-muted-foreground">By Scene</div>
             {scenesWithNotes.map((scene) => {
               const sceneTotal = Object.values(scene.categories).reduce((a, b) => a + b, 0);
+              const segments = (Object.entries(scene.categories) as [NoteCategory, number][])
+                .filter(([, count]) => count > 0);
               return (
                 <div key={scene.sceneId} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
@@ -164,16 +166,22 @@ export function CategoryInsightsCard({ session }: CategoryInsightsCardProps) {
                     <span className="text-muted-foreground">{sceneTotal}</span>
                   </div>
                   <div className="flex h-2 rounded-full overflow-hidden bg-secondary">
-                    {(Object.entries(scene.categories) as [NoteCategory, number][])
-                      .filter(([, count]) => count > 0)
-                      .map(([category, count]) => (
+                    {segments.map(([category, count], index) => {
+                      const isFirst = index === 0;
+                      const isLast = index === segments.length - 1;
+                      return (
                         <div
                           key={category}
                           className={categoryColorClasses[category].bg}
-                          style={{ width: `${(count / sceneTotal) * 100}%` }}
+                          style={{
+                            width: `${(count / sceneTotal) * 100}%`,
+                            borderLeft: isFirst ? undefined : "1px solid #fff",
+                            borderRight: isLast ? undefined : "1px solid #fff",
+                          }}
                           title={`${getCategoryLabel(category)}: ${count}`}
                         />
-                      ))}
+                      );
+                    })}
                   </div>
                 </div>
               );

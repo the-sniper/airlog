@@ -21,6 +21,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -37,6 +38,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [sceneFilter, setSceneFilter] = useState<string>("all");
   const [testerFilter, setTesterFilter] = useState<string>("all");
   const [groupBy, setGroupBy] = useState<"scene" | "tester" | "category">("scene");
+  const [noteFiltersOpen, setNoteFiltersOpen] = useState(false);
   const [pollSceneFilter, setPollSceneFilter] = useState<string>("all");
   const [pollTesterFilter, setPollTesterFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
@@ -167,6 +169,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   }, [session?.notes, categoryFilter, sceneFilter, testerFilter]);
 
   const hasActiveFilters = categoryFilter !== "all" || sceneFilter !== "all" || testerFilter !== "all";
+  const canShowNoteFilters = !!session?.notes && session.notes.length > 0;
 
   function clearFilters() {
     setCategoryFilter("all");
@@ -216,15 +219,25 @@ export default function ReportPage({ params }: { params: { id: string } }) {
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <Link href={`/admin/sessions/${id}`}><Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button></Link>
-          <div><h1 className="text-2xl font-bold">Session Report</h1><p className="text-muted-foreground">{session.name}</p></div>
+          <Link href={`/admin/sessions/${id}`}>
+            <Button variant="ghost" size="icon" aria-label="Back to session">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold">Session Report</h1>
+            <p className="text-muted-foreground">{session.name}</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setShareDialogOpen(true)}>
             <Share2 className="w-4 h-4" />
             <span className="hidden sm:inline">Share</span>
           </Button>
-          <Button onClick={generatePDF} disabled={generating}>{generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}Export PDF</Button>
+          <Button onClick={generatePDF} disabled={generating}>
+            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            Export PDF
+          </Button>
         </div>
       </div>
 
@@ -509,78 +522,175 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <CardTitle>Notes ({filteredNotes.length}{hasActiveFilters ? ` of ${session.notes?.length || 0}` : ""})</CardTitle>
-                  {hasActiveFilters && (
-                    <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
-                      <X className="w-3 h-3 mr-1" />
-                      Clear filters
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {hasActiveFilters && (
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
+                        <X className="w-3 h-3 mr-1" />
+                        <span className="hidden sm:inline">Clear filters</span>
+                        <span className="sm:hidden">Clear</span>
+                      </Button>
+                    )}
+                    {canShowNoteFilters && (
+                      <Dialog open={noteFiltersOpen} onOpenChange={setNoteFiltersOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="icon" className="sm:hidden" aria-label="Filters">
+                            <Filter className="w-4 h-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:hidden left-1/2 top-auto bottom-0 -translate-x-1/2 translate-y-0 w-full max-w-full rounded-t-2xl rounded-b-none p-5 pb-6 shadow-2xl border border-border/70 max-h-[85vh] min-h-[55vh] overflow-y-auto data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom">
+                          <DialogHeader className="text-left space-y-1">
+                            <DialogTitle>Filters & Grouping</DialogTitle>
+                            <DialogDescription>Refine the notes list or change how notes are grouped.</DialogDescription>
+                          </DialogHeader>
+
+                          <div className="space-y-4">
+                            <div className="space-y-3">
+                              <p className="text-sm font-medium">Filter by</p>
+                              <div className="space-y-2">
+                                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                  <SelectTrigger className="h-10 w-full text-sm">
+                                    <SelectValue placeholder="Category" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="all">All Categories</SelectItem>
+                                    <SelectItem value="bug">Bug</SelectItem>
+                                    <SelectItem value="feature">Feature</SelectItem>
+                                    <SelectItem value="ux">UX</SelectItem>
+                                    <SelectItem value="performance">Performance</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+
+                                {session.scenes && session.scenes.length > 0 && (
+                                  <Select value={sceneFilter} onValueChange={setSceneFilter}>
+                                    <SelectTrigger className="h-10 w-full text-sm">
+                                      <SelectValue placeholder="Scene" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="all">All Scenes</SelectItem>
+                                      {session.scenes.map((scene: Scene) => (
+                                        <SelectItem key={scene.id} value={scene.id}>{scene.name}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                )}
+
+                                {session.testers && session.testers.length > 0 && (
+                                  <Select value={testerFilter} onValueChange={setTesterFilter}>
+                                    <SelectTrigger className="h-10 w-full text-sm">
+                                      <SelectValue placeholder="Tester" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="all">All Testers</SelectItem>
+                                      {session.testers.map((tester: Tester) => (
+                                        <SelectItem key={tester.id} value={tester.id}>{tester.first_name} {tester.last_name}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium">Group by</p>
+                              <Select value={groupBy} onValueChange={(v) => setGroupBy(v as "scene" | "tester" | "category")}>
+                                <SelectTrigger className="h-10 w-full text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="scene">Scene</SelectItem>
+                                  <SelectItem value="tester">Tester</SelectItem>
+                                  <SelectItem value="category">Category</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-3 pt-1">
+                              {hasActiveFilters ? (
+                                <Button variant="ghost" size="sm" className="text-sm" onClick={clearFilters}>
+                                  <X className="w-4 h-4 mr-1" />
+                                  Clear filters
+                                </Button>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">No filters applied</span>
+                              )}
+                              <Button size="sm" className="min-w-[96px]" onClick={() => setNoteFiltersOpen(false)}>
+                                Done
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Filter:</span>
-                  </div>
-                  
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="h-8 w-[130px] text-xs">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="bug">Bug</SelectItem>
-                      <SelectItem value="feature">Feature</SelectItem>
-                      <SelectItem value="ux">UX</SelectItem>
-                      <SelectItem value="performance">Performance</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  {session.scenes && session.scenes.length > 0 && (
-                    <Select value={sceneFilter} onValueChange={setSceneFilter}>
+                {canShowNoteFilters && (
+                  <div className="hidden sm:flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Filter:</span>
+                    </div>
+                    
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                       <SelectTrigger className="h-8 w-[130px] text-xs">
-                        <SelectValue placeholder="Scene" />
+                        <SelectValue placeholder="Category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Scenes</SelectItem>
-                        {session.scenes.map((scene: Scene) => (
-                          <SelectItem key={scene.id} value={scene.id}>{scene.name}</SelectItem>
-                        ))}
+                        <SelectItem value="all">All Categories</SelectItem>
+                        <SelectItem value="bug">Bug</SelectItem>
+                        <SelectItem value="feature">Feature</SelectItem>
+                        <SelectItem value="ux">UX</SelectItem>
+                        <SelectItem value="performance">Performance</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
-                  )}
 
-                  {session.testers && session.testers.length > 0 && (
-                    <Select value={testerFilter} onValueChange={setTesterFilter}>
-                      <SelectTrigger className="h-8 w-[150px] text-xs">
-                        <SelectValue placeholder="Tester" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Testers</SelectItem>
-                        {session.testers.map((tester: Tester) => (
-                          <SelectItem key={tester.id} value={tester.id}>{tester.first_name} {tester.last_name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                    {session.scenes && session.scenes.length > 0 && (
+                      <Select value={sceneFilter} onValueChange={setSceneFilter}>
+                        <SelectTrigger className="h-8 w-[130px] text-xs">
+                          <SelectValue placeholder="Scene" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Scenes</SelectItem>
+                          {session.scenes.map((scene: Scene) => (
+                            <SelectItem key={scene.id} value={scene.id}>{scene.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
 
-                  <div className="flex items-center gap-2 ml-auto">
-                    <span className="text-sm text-muted-foreground">Group by:</span>
-                    <Select value={groupBy} onValueChange={(v) => setGroupBy(v as "scene" | "tester" | "category")}>
-                      <SelectTrigger className="h-8 w-[120px] text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="scene">Scene</SelectItem>
-                        <SelectItem value="tester">Tester</SelectItem>
-                        <SelectItem value="category">Category</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {session.testers && session.testers.length > 0 && (
+                      <Select value={testerFilter} onValueChange={setTesterFilter}>
+                        <SelectTrigger className="h-8 w-[150px] text-xs">
+                          <SelectValue placeholder="Tester" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Testers</SelectItem>
+                          {session.testers.map((tester: Tester) => (
+                            <SelectItem key={tester.id} value={tester.id}>{tester.first_name} {tester.last_name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+
+                    <div className="flex items-center gap-2 ml-auto">
+                      <span className="text-sm text-muted-foreground">Group by:</span>
+                      <Select value={groupBy} onValueChange={(v) => setGroupBy(v as "scene" | "tester" | "category")}>
+                        <SelectTrigger className="h-8 w-[120px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="scene">Scene</SelectItem>
+                          <SelectItem value="tester">Tester</SelectItem>
+                          <SelectItem value="category">Category</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </CardHeader>
           </Card>
@@ -601,15 +711,17 @@ export default function ReportPage({ params }: { params: { id: string } }) {
               <CardContent className="space-y-4">
                 {notes.map((note) => (
                   <div key={note.id} className="p-4 rounded-lg border border-border">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        {groupBy !== "category" && (
-                          <Badge variant={note.category as "bug" | "feature" | "ux" | "performance" | "secondary"}>{getCategoryLabel(note.category)}</Badge>
-                        )}
-                        {groupBy !== "scene" && (
-                          <Badge variant="outline" className="text-xs">{note.scene?.name}</Badge>
-                        )}
-                        {note.auto_classified && <span className="text-xs text-muted-foreground">(auto)</span>}
+                    <div className="flex flex-col gap-2 mb-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {groupBy !== "category" && (
+                            <Badge variant={note.category as "bug" | "feature" | "ux" | "performance" | "secondary"}>{getCategoryLabel(note.category)}</Badge>
+                          )}
+                          {groupBy !== "scene" && (
+                            <Badge variant="outline" className="text-xs">{note.scene?.name}</Badge>
+                          )}
+                          {note.auto_classified && <span className="text-xs text-muted-foreground">(auto)</span>}
+                        </div>
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {groupBy !== "tester" && `${note.tester?.first_name} ${note.tester?.last_name} • `}
@@ -648,11 +760,31 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       {/* Share Dialog */}
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Share2 className="w-5 h-5" />
-              Share Report
-            </DialogTitle>
+          <DialogHeader className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <DialogTitle className="flex items-center gap-2">
+                <Share2 className="w-5 h-5" />
+                Share Report
+              </DialogTitle>
+              <div className="flex items-center gap-2">
+                <Button onClick={generatePDF} disabled={generating} variant="outline" size="sm" className="gap-2">
+                  {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                  <span className="hidden sm:inline">Export PDF</span>
+                  <span className="sm:hidden">Export</span>
+                </Button>
+                {session.share_token ? (
+                  <Button onClick={copyShareLink} size="sm" variant="default" className="gap-2">
+                    {copied ? <Check className="w-4 h-4" /> : <LinkIcon className="w-4 h-4" />}
+                    Copy Link
+                  </Button>
+                ) : (
+                  <Button onClick={generateShareLink} disabled={generatingShareLink} size="sm" className="gap-2">
+                    {generatingShareLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <LinkIcon className="h-4 w-4" />}
+                    Create Link
+                  </Button>
+                )}
+              </div>
+            </div>
             <DialogDescription>Create a public link that anyone can use to view this report.</DialogDescription>
           </DialogHeader>
 
@@ -680,23 +812,17 @@ export default function ReportPage({ params }: { params: { id: string } }) {
             )}
           </div>
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-end">
             {session.share_token ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={removeShareLink}
-                  disabled={removingShareLink}
-                  className="text-destructive hover:text-destructive"
-                >
-                  {removingShareLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
-                  Disable Link
-                </Button>
-                <Button onClick={copyShareLink}>
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  Copy Link
-                </Button>
-              </>
+              <Button
+                variant="outline"
+                onClick={removeShareLink}
+                disabled={removingShareLink}
+                className="text-destructive hover:text-destructive"
+              >
+                {removingShareLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
+                Disable Link
+              </Button>
             ) : (
               <Button onClick={generateShareLink} disabled={generatingShareLink}>
                 {generatingShareLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
