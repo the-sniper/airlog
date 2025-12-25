@@ -268,7 +268,7 @@ function FormattedDescription({ text, className }: { text: string; className?: s
   const lines = text.split('\n');
   const elements: React.ReactNode[] = [];
   let currentList: string[] = [];
-  
+
   const flushList = () => {
     if (currentList.length > 0) {
       elements.push(
@@ -284,12 +284,12 @@ function FormattedDescription({ text, className }: { text: string; className?: s
       currentList = [];
     }
   };
-  
+
   lines.forEach((line, index) => {
     const trimmed = line.trim();
     // Match bullet points: •, -, *, >, or numbered lists like "1." "2)"
     const bulletMatch = trimmed.match(/^(?:[•\-\*\>]|\d+[\.\)])\s*(.*)$/);
-    
+
     if (bulletMatch) {
       currentList.push(bulletMatch[1] || trimmed.slice(1).trim());
     } else if (trimmed === '') {
@@ -307,9 +307,9 @@ function FormattedDescription({ text, className }: { text: string; className?: s
       );
     }
   });
-  
+
   flushList();
-  
+
   return <div className={className || "text-sm text-muted-foreground space-y-2"}>{elements}</div>;
 }
 
@@ -320,14 +320,14 @@ function SessionSummaryContent({ summary }: { summary: string }) {
 
   lines.forEach((line, index) => {
     const trimmed = line.trim();
-    
+
     // Warning headers
     if (trimmed.startsWith("**") && (trimmed.includes("⚠️") || trimmed.toLowerCase().includes("requiring review"))) {
       const headerMatch = trimmed.match(/^\*\*(.+?):\*\*\s*(.*)?$/) || trimmed.match(/^\*\*(.+?)\*\*\s*(.*)?$/);
       if (headerMatch) {
         elements.push(
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="rounded-lg bg-yellow-500/10 border border-yellow-500/20"
             style={{ padding: "10px 15px", margin: "30px 0 10px" }}
           >
@@ -338,7 +338,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
         return;
       }
     }
-    
+
     // Bold headers like **Summary Overview:**
     if (trimmed.startsWith("**") && trimmed.includes(":**")) {
       const headerMatch = trimmed.match(/^\*\*(.+?):\*\*\s*(.*)?$/);
@@ -352,7 +352,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
         return;
       }
     }
-    
+
     // Bullet points with category tags like - **[Bug]** - Scene:
     if (trimmed.startsWith("- **[")) {
       const match = trimmed.match(/^-\s*\*\*\[(\w+)\]\*\*\s*(.+)$/);
@@ -367,15 +367,15 @@ function SessionSummaryContent({ summary }: { summary: string }) {
           OTHER: "bg-gray-500/20 text-gray-600 dark:text-gray-400",
         };
         const colorClass = categoryColor[category.toUpperCase()] || "bg-gray-500/20 text-gray-600";
-        
+
         elements.push(
           <div key={index} className="flex gap-3 mt-4 first:mt-0 p-3 rounded-lg bg-secondary/30">
             <span className={`shrink-0 px-2.5 py-1 rounded text-xs font-medium ${colorClass}`}>
               {category}
             </span>
-            <span 
+            <span
               className="text-sm flex-1"
-              dangerouslySetInnerHTML={{ 
+              dangerouslySetInnerHTML={{
                 __html: content.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
               }}
             />
@@ -384,7 +384,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
         return;
       }
     }
-    
+
     // Reported by line
     if (trimmed.startsWith("- *Reported by:") || trimmed.startsWith("*Reported by:")) {
       const reporter = trimmed.replace(/^-?\s*\*Reported by:\s*/, "").replace(/\*$/, "");
@@ -395,7 +395,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
       );
       return;
     }
-    
+
     // Issue line
     if (trimmed.startsWith("- *Issue:") || trimmed.startsWith("*Issue:")) {
       const issue = trimmed.replace(/^-?\s*\*Issue:\s*/, "").replace(/\*$/, "");
@@ -406,7 +406,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
       );
       return;
     }
-    
+
     // Regular bullet points
     if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
       const bulletContent = trimmed.slice(2);
@@ -417,7 +417,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
       elements.push(
         <div key={index} className="flex gap-2 ml-2 mt-2">
           <span className="text-primary shrink-0">•</span>
-          <span 
+          <span
             className="text-sm text-muted-foreground flex-1"
             dangerouslySetInnerHTML={{ __html: formattedContent }}
           />
@@ -425,20 +425,20 @@ function SessionSummaryContent({ summary }: { summary: string }) {
       );
       return;
     }
-    
+
     // Empty lines
     if (trimmed === "") {
       return;
     }
-    
+
     // Regular text
     const formattedText = trimmed.replace(
       /\*\*(.+?)\*\*/g,
       '<strong class="font-semibold">$1</strong>'
     );
     elements.push(
-      <p 
-        key={index} 
+      <p
+        key={index}
         className="text-sm text-muted-foreground mt-2"
         dangerouslySetInnerHTML={{ __html: formattedText }}
       />
@@ -461,20 +461,20 @@ export default function SessionDetailPage({
   const [testerTab, setTesterTab] = useState<"team" | "adhoc">("team");
   const [addingTester, setAddingTester] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
-  
+
   // Individual tester form
   const [newTesterFirstName, setNewTesterFirstName] = useState("");
   const [newTesterLastName, setNewTesterLastName] = useState("");
   const [newTesterEmail, setNewTesterEmail] = useState("");
   const [individualTesterError, setIndividualTesterError] = useState<string | null>(null);
-  
+
   // Team selection
   const [teams, setTeams] = useState<TeamWithCount[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<TeamWithMembers | null>(null);
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [loadingTeam, setLoadingTeam] = useState(false);
-  
+
   const [addSceneDialog, setAddSceneDialog] = useState(false);
   const [newSceneName, setNewSceneName] = useState("");
   const [newSceneDescription, setNewSceneDescription] = useState("");
@@ -531,13 +531,13 @@ export default function SessionDetailPage({
   const [noteTesterFilter, setNoteTesterFilter] = useState<string>("all");
   const [noteGroupBy, setNoteGroupBy] = useState<"scene" | "tester" | "category">("scene");
   const [noteFiltersOpen, setNoteFiltersOpen] = useState(false);
-  
+
   // AI Summary dialog state
   const [aiSummaryDialog, setAISummaryDialog] = useState(false);
-  
+
   // Toggle notes visibility during active session (hidden by default)
   const [showNotesWhileActive, setShowNotesWhileActive] = useState(false);
-  
+
   // Note-level AI Summary state
   const [noteAISummaryNote, setNoteAISummaryNote] = useState<NoteWithDetails | null>(null);
   const [viewSummaryNote, setViewSummaryNote] = useState<NoteWithDetails | null>(null);
@@ -630,14 +630,14 @@ export default function SessionDetailPage({
     }
 
     const startTime = new Date(session.started_at).getTime();
-    
+
     const updateElapsed = () => {
       setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
     };
-    
+
     updateElapsed();
     const interval = setInterval(updateElapsed, 1000);
-    
+
     return () => clearInterval(interval);
   }, [session?.status, session?.started_at]);
 
@@ -1186,13 +1186,13 @@ export default function SessionDetailPage({
 
   async function handleAddIndividualTester() {
     if (!newTesterFirstName.trim() || !newTesterLastName.trim()) return;
-    
+
     // Check for duplicate
     if (isIndividualTesterDuplicate(newTesterFirstName, newTesterLastName)) {
       setIndividualTesterError(`${newTesterFirstName.trim()} ${newTesterLastName.trim()} is already added as a tester`);
       return;
     }
-    
+
     setAddingTester(true);
     setIndividualTesterError(null);
     try {
@@ -1296,12 +1296,12 @@ export default function SessionDetailPage({
           options: q.options.filter(o => o.trim()),
           required: q.required,
         }));
-      
+
       await fetch(`/api/sessions/${id}/scenes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          name: newSceneName.trim(), 
+        body: JSON.stringify({
+          name: newSceneName.trim(),
           description: newSceneDescription.trim() || null,
           poll_questions: validPollQuestions.length > 0 ? validPollQuestions : undefined,
         }),
@@ -1343,13 +1343,13 @@ export default function SessionDetailPage({
           options: q.options.filter(o => o.trim()),
           required: q.required,
         }));
-      
+
       await fetch(`/api/sessions/${id}/scenes`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          sceneId: editingScene.id, 
-          name: editSceneName.trim(), 
+        body: JSON.stringify({
+          sceneId: editingScene.id,
+          name: editSceneName.trim(),
           description: editSceneDescription.trim() || null,
           poll_questions: validPollQuestions,
         }),
@@ -1468,11 +1468,11 @@ export default function SessionDetailPage({
   // Initiate email invite process
   function handleSendEmailInvites() {
     if (!session?.testers || selectedTesterIds.size === 0) return;
-    
+
     const selectedTesters = session.testers.filter((t) => selectedTesterIds.has(t.id));
     const withEmail = selectedTesters.filter((t) => t.email);
     const withoutEmail = selectedTesters.filter((t) => !t.email);
-    
+
     if (withoutEmail.length > 0) {
       setTestersWithEmail(withEmail);
       setTestersWithoutEmail(withoutEmail);
@@ -1485,18 +1485,18 @@ export default function SessionDetailPage({
   // Send email invites to testers
   async function sendEmailInvites(testers: Tester[]) {
     if (testers.length === 0) return;
-    
+
     setSendingInvites(true);
     try {
       const res = await fetch(`/api/sessions/${id}/invite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          testers, 
-          sessionName: session?.name 
+        body: JSON.stringify({
+          testers,
+          sessionName: session?.name
         }),
       });
-      
+
       if (res.ok) {
         const result = await res.json();
         // Clear selection after successful send
@@ -1682,7 +1682,7 @@ export default function SessionDetailPage({
   // Add selected testers to a team
   async function handleAddToTeam() {
     if (!selectedTeamForAdd || !session?.testers || selectedTesterIds.size === 0) return;
-    
+
     const selectedTesters = session.testers.filter((t) => selectedTesterIds.has(t.id));
     const testersToAdd = selectedTesters.filter((t) => !isTesterInTeam(t, selectedTeamForAdd));
 
@@ -1740,9 +1740,32 @@ export default function SessionDetailPage({
 
   if (loading)
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 w-48 bg-secondary rounded" />
-        <div className="h-64 bg-secondary rounded-xl" />
+      <div className="animate-pulse space-y-6">
+        {/* Header skeleton */}
+        <div className="h-20 rounded-xl bg-muted/30" />
+
+        {/* Tabs skeleton */}
+        <div className="h-12 rounded-lg bg-muted/30" />
+
+        {/* Content card skeleton */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <div className="h-6 w-1/4 bg-muted/40 rounded" />
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-24 rounded-lg bg-secondary/30" />
+            ))}
+          </div>
+        </div>
+
+        {/* Additional card skeleton */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <div className="h-6 w-1/5 bg-muted/40 rounded" />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-20 rounded-lg bg-secondary/30" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   if (!session)
@@ -1786,44 +1809,44 @@ export default function SessionDetailPage({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-          {session.status === "draft" && (
-            <Button onClick={handleStartSession} className="w-full sm:w-auto">
-              <Play className="w-4 h-4" />
-              Start Session
-            </Button>
-          )}
-          {session.status === "active" && (
-            <>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-md">
-                <Clock className="w-4 h-4" />
-                <span className="font-mono">{formattedElapsedTime}</span>
-              </div>
-              <Button variant="destructive" onClick={() => setEndSessionDialog(true)} className="flex-1 sm:flex-none">
-                <Square className="w-4 h-4" />
-                End Session
+            {session.status === "draft" && (
+              <Button onClick={handleStartSession} className="w-full sm:w-auto">
+                <Play className="w-4 h-4" />
+                Start Session
               </Button>
-            </>
-          )}
-          {session.status === "completed" && (
-            <>
-              <Button variant="outline" onClick={() => setRestartDialog(true)} className="flex-1 sm:flex-none">
-                <RotateCcw className="w-4 h-4" />
-                <span className="hidden sm:inline">Restart Session</span>
-                <span className="sm:hidden">Restart</span>
-              </Button>
-              <Link href={`/admin/sessions/${id}/report`} className="flex-1 sm:flex-none">
-                <Button className="w-full">View Report</Button>
-              </Link>
-            </>
-          )}
+            )}
+            {session.status === "active" && (
+              <>
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-md">
+                  <Clock className="w-4 h-4" />
+                  <span className="font-mono">{formattedElapsedTime}</span>
+                </div>
+                <Button variant="destructive" onClick={() => setEndSessionDialog(true)} className="flex-1 sm:flex-none">
+                  <Square className="w-4 h-4" />
+                  End Session
+                </Button>
+              </>
+            )}
+            {session.status === "completed" && (
+              <>
+                <Button variant="outline" onClick={() => setRestartDialog(true)} className="flex-1 sm:flex-none">
+                  <RotateCcw className="w-4 h-4" />
+                  <span className="hidden sm:inline">Restart Session</span>
+                  <span className="sm:hidden">Restart</span>
+                </Button>
+                <Link href={`/admin/sessions/${id}/report`} className="flex-1 sm:flex-none">
+                  <Button className="w-full">View Report</Button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
+        {session.description && (
+          <div className="pt-3">
+            <FormattedDescription text={session.description} className="text-sm text-muted-foreground space-y-2" />
+          </div>
+        )}
       </div>
-      {session.description && (
-        <div className="pt-3">
-          <FormattedDescription text={session.description} className="text-sm text-muted-foreground space-y-2" />
-        </div>
-      )}
-    </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="pt-6">
@@ -1852,7 +1875,7 @@ export default function SessionDetailPage({
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">
-              {session.testers?.reduce((total: number, tester: Tester) => 
+              {session.testers?.reduce((total: number, tester: Tester) =>
                 total + (tester.reported_issues?.length || 0), 0) || 0}
             </div>
             <p className="text-sm text-muted-foreground">Stability Issues</p>
@@ -1910,17 +1933,17 @@ export default function SessionDetailPage({
                   <span>Summary</span>
                 </TabsTrigger>
               ) : (
-                <Tooltip 
+                <Tooltip
                   content={
-                    session.status !== "completed" 
-                      ? "Complete the session first to generate a summary" 
+                    session.status !== "completed"
+                      ? "Complete the session first to generate a summary"
                       : "Generate a summary from the Notes tab"
                   }
                   side="bottom"
                 >
-                  <TabsTrigger 
-                    value="summary" 
-                    disabled 
+                  <TabsTrigger
+                    value="summary"
+                    disabled
                     className="gap-1.5 sm:gap-2 flex-none opacity-50 cursor-not-allowed"
                   >
                     <Sparkles className="w-4 h-4" />
@@ -2058,8 +2081,8 @@ export default function SessionDetailPage({
                   )}
                   {session.status !== "completed" && selectedTesterIds.size > 0 && (
                     <>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={openAddToTeamDialog}
                         disabled={teams.length === 0}
                         size="sm"
@@ -2070,8 +2093,8 @@ export default function SessionDetailPage({
                         <span className="sm:hidden">Team</span>
                         <span>({selectedTesterIds.size})</span>
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={handleSendEmailInvites}
                         disabled={sendingInvites}
                         size="sm"
@@ -2204,7 +2227,7 @@ export default function SessionDetailPage({
                               {t.email}
                             </span>
                           )}
-                        {session.status !== "completed" && (
+                          {session.status !== "completed" && (
                             <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate mt-1">
                               /join/{t.invite_token}
                             </p>
@@ -2316,12 +2339,12 @@ export default function SessionDetailPage({
                   <CardTitle>Notes</CardTitle>
                   <CardDescription>
                     {session.status === "completed"
-                      ? hasActiveNoteFilters 
+                      ? hasActiveNoteFilters
                         ? `${filteredNotes.length} of ${session.notes?.length || 0} notes`
                         : `${session.notes?.length || 0} notes`
                       : session.status === "active" && showNotesWhileActive
-                      ? `${session.notes?.length || 0} notes (live view)`
-                      : "Notes hidden by default during active sessions"}
+                        ? `${session.notes?.length || 0} notes (live view)`
+                        : "Notes hidden by default during active sessions"}
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
@@ -2473,7 +2496,7 @@ export default function SessionDetailPage({
                   )}
                 </div>
               </div>
-              
+
               {/* Filters - show when notes are visible and has notes */}
               {canShowNoteFilters && (
                 <div className="hidden sm:flex sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 pt-2 border-t border-border">
@@ -2481,7 +2504,7 @@ export default function SessionDetailPage({
                     <Filter className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">Filter by:</span>
                   </div>
-                  
+
                   <div className="flex flex-wrap items-center gap-2">
                     <Select value={noteCategoryFilter} onValueChange={setNoteCategoryFilter}>
                       <SelectTrigger className="h-8 w-[120px] sm:w-[140px] text-xs">
@@ -2496,7 +2519,7 @@ export default function SessionDetailPage({
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
-                    
+
                     {session.scenes && session.scenes.length > 0 && (
                       <Select value={noteSceneFilter} onValueChange={setNoteSceneFilter}>
                         <SelectTrigger className="h-8 w-[110px] sm:w-[130px] text-xs">
@@ -2510,7 +2533,7 @@ export default function SessionDetailPage({
                         </SelectContent>
                       </Select>
                     )}
-                    
+
                     {session.testers && session.testers.length > 0 && (
                       <Select value={noteTesterFilter} onValueChange={setNoteTesterFilter}>
                         <SelectTrigger className="h-8 w-[120px] sm:w-[150px] text-xs">
@@ -2526,7 +2549,7 @@ export default function SessionDetailPage({
                         </SelectContent>
                       </Select>
                     )}
-                    
+
                     {hasActiveNoteFilters && (
                       <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearNoteFilters}>
                         <X className="w-3 h-3 mr-1" />
@@ -2534,7 +2557,7 @@ export default function SessionDetailPage({
                       </Button>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center gap-2 sm:ml-auto">
                     <span className="text-sm text-muted-foreground">Group by:</span>
                     <Select value={noteGroupBy} onValueChange={(v) => setNoteGroupBy(v as "scene" | "tester" | "category")}>
@@ -2596,11 +2619,11 @@ export default function SessionDetailPage({
                                     <Badge
                                       variant={
                                         n.category as
-                                          | "bug"
-                                          | "feature"
-                                          | "ux"
-                                          | "performance"
-                                          | "secondary"
+                                        | "bug"
+                                        | "feature"
+                                        | "ux"
+                                        | "performance"
+                                        | "secondary"
                                       }
                                     >
                                       {getCategoryLabel(n.category)}
@@ -2670,7 +2693,7 @@ export default function SessionDetailPage({
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         {/* Summary Tab */}
         {session.ai_summary && (
           <TabsContent value="summary" className="mt-4">
@@ -2773,7 +2796,7 @@ export default function SessionDetailPage({
                             return { icon: "text-red-500", bar: "bg-red-500 dark:bg-red-400/60" };
                           };
                           const colors = getColorClasses();
-                          
+
                           // Icon based on severity
                           const getIcon = () => {
                             if (stats.count === 0) return <AlertTriangle className={`w-4 h-4 ${colors.icon}`} />;
@@ -2781,15 +2804,14 @@ export default function SessionDetailPage({
                             if (percentage <= 80) return <AlertTriangle className={`w-4 h-4 ${colors.icon}`} />;
                             return <XCircle className={`w-4 h-4 ${colors.icon}`} />;
                           };
-                          
+
                           return (
                             <div
                               key={issue}
-                              className={`p-3 rounded-lg border ${
-                                stats.count > 0
-                                  ? "bg-secondary/30 border-border"
-                                  : "bg-secondary/20 border-border/50"
-                              }`}
+                              className={`p-3 rounded-lg border ${stats.count > 0
+                                ? "bg-secondary/30 border-border"
+                                : "bg-secondary/20 border-border/50"
+                                }`}
                             >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -2883,13 +2905,13 @@ export default function SessionDetailPage({
                               const questionResponses = pollResponses.filter(
                                 (r) => r.poll_question_id === question.id
                               );
-                              
+
                               // Count responses for each option
                               const optionCounts: Record<string, { count: number; testers: string[] }> = {};
                               question.options.forEach((opt) => {
                                 optionCounts[opt] = { count: 0, testers: [] };
                               });
-                              
+
                               questionResponses.forEach((response) => {
                                 const tester = session.testers?.find((t: Tester) => t.id === response.tester_id);
                                 const testerName = tester ? `${tester.first_name} ${tester.last_name}` : "Unknown";
@@ -2925,7 +2947,7 @@ export default function SessionDetailPage({
                                       </div>
                                     </div>
                                   </div>
-                                  
+
                                   {!hasResponses ? (
                                     <div className="text-sm text-muted-foreground/70 py-2 pl-8">
                                       No responses yet
@@ -2934,18 +2956,17 @@ export default function SessionDetailPage({
                                     <div className="space-y-2 pl-8">
                                       {question.options.map((option, optIndex) => {
                                         const stats = optionCounts[option];
-                                        const percentage = respondentCount > 0 
-                                          ? Math.round((stats.count / respondentCount) * 100) 
+                                        const percentage = respondentCount > 0
+                                          ? Math.round((stats.count / respondentCount) * 100)
                                           : 0;
-                                        
+
                                         return (
                                           <div
                                             key={optIndex}
-                                            className={`p-2.5 rounded-lg border ${
-                                              stats.count > 0
-                                                ? "bg-secondary/30 border-border"
-                                                : "bg-secondary/10 border-border/50"
-                                            }`}
+                                            className={`p-2.5 rounded-lg border ${stats.count > 0
+                                              ? "bg-secondary/30 border-border"
+                                              : "bg-secondary/10 border-border/50"
+                                              }`}
                                           >
                                             <div className="flex items-center justify-between gap-3">
                                               <span className={`text-sm flex-1 ${stats.count > 0 ? "" : "text-muted-foreground"}`}>
@@ -2995,7 +3016,7 @@ export default function SessionDetailPage({
               Add testers from a team or create individual testers
             </DialogDescription>
           </DialogHeader>
-          
+
           {/* Tab Buttons */}
           <div className="flex gap-2 border-b border-border pb-4">
             <Button
@@ -3043,11 +3064,10 @@ export default function SessionDetailPage({
                         <button
                           key={team.id}
                           type="button"
-                          className={`p-3 rounded-lg border text-left transition-colors ${
-                            selectedTeamId === team.id
-                              ? "border-primary bg-primary/10"
-                              : "border-border hover:border-primary/50"
-                          }`}
+                          className={`p-3 rounded-lg border text-left transition-colors ${selectedTeamId === team.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                            }`}
                           onClick={() => handleTeamSelect(team.id)}
                         >
                           <p className="font-medium text-sm">{team.name}</p>
@@ -3077,10 +3097,18 @@ export default function SessionDetailPage({
                           </Button>
                         )}
                       </div>
-                      
+
                       {loadingTeam ? (
-                        <div className="flex items-center justify-center py-6">
-                          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                        <div className="space-y-2 animate-pulse">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-secondary/30">
+                              <div className="w-5 h-5 bg-muted/40 rounded" />
+                              <div className="flex-1 space-y-1">
+                                <div className="h-4 w-28 bg-muted/40 rounded" />
+                                <div className="h-3 w-36 bg-muted/30 rounded" />
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       ) : selectedTeam?.members.length === 0 ? (
                         <div className="text-center py-6 text-muted-foreground">
@@ -3100,13 +3128,12 @@ export default function SessionDetailPage({
                                 key={member.id}
                                 type="button"
                                 disabled={isAlreadyAdded}
-                                className={`w-full flex items-center gap-3 p-2 rounded-md text-left transition-colors ${
-                                  isAlreadyAdded
-                                    ? "opacity-50 cursor-not-allowed bg-secondary/30"
-                                    : selectedMembers.has(member.id)
+                                className={`w-full flex items-center gap-3 p-2 rounded-md text-left transition-colors ${isAlreadyAdded
+                                  ? "opacity-50 cursor-not-allowed bg-secondary/30"
+                                  : selectedMembers.has(member.id)
                                     ? "bg-primary/10"
                                     : "hover:bg-secondary"
-                                }`}
+                                  }`}
                                 onClick={() => toggleMember(member.id)}
                               >
                                 {isAlreadyAdded ? (
@@ -3259,7 +3286,7 @@ export default function SessionDetailPage({
               />
               <p className="text-xs text-muted-foreground">Tip: Use • or - for bullet points</p>
             </div>
-            
+
             {/* Poll Questions Section */}
             <div className="space-y-3 py-4 border-t border-border/40">
               <div className="flex items-center justify-between">
@@ -3281,13 +3308,13 @@ export default function SessionDetailPage({
                   </Button>
                 )}
               </div>
-              
+
               {newScenePollQuestions.length === 0 && (
                 <p className="text-sm text-muted-foreground py-2">
                   No poll questions added. Click &quot;Add Question&quot; to create a poll for testers.
                 </p>
               )}
-              
+
               {newScenePollQuestions.map((q, qIndex) => (
                 <div key={q.id} className="p-4 rounded-lg border border-border/40 bg-secondary/30 space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -3312,7 +3339,7 @@ export default function SessionDetailPage({
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     <Select
                       value={q.question_type}
@@ -3344,7 +3371,7 @@ export default function SessionDetailPage({
                       Required
                     </label>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Options</Label>
                     {q.options.map((opt, optIndex) => (
@@ -3399,7 +3426,7 @@ export default function SessionDetailPage({
                   </div>
                 </div>
               ))}
-              
+
               {newScenePollQuestions.length > 0 && (
                 <Button
                   type="button"
@@ -3469,7 +3496,7 @@ export default function SessionDetailPage({
               />
               <p className="text-xs text-muted-foreground">Tip: Use • or - for bullet points</p>
             </div>
-            
+
             {/* Poll Questions Section */}
             <div className="space-y-3 py-4 border-t border-border/40">
               <div className="flex items-center justify-between">
@@ -3491,13 +3518,13 @@ export default function SessionDetailPage({
                   </Button>
                 )}
               </div>
-              
+
               {editScenePollQuestions.length === 0 && (
                 <p className="text-sm text-muted-foreground py-2">
                   No poll questions added. Click &quot;Add Question&quot; to create a poll for testers.
                 </p>
               )}
-              
+
               {editScenePollQuestions.map((q, qIndex) => (
                 <div key={q.id} className="p-4 rounded-lg border border-border/40 bg-secondary/30 space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -3522,7 +3549,7 @@ export default function SessionDetailPage({
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     <Select
                       value={q.question_type}
@@ -3554,7 +3581,7 @@ export default function SessionDetailPage({
                       Required
                     </label>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Options</Label>
                     {q.options.map((opt, optIndex) => (
@@ -3609,7 +3636,7 @@ export default function SessionDetailPage({
                   </div>
                 </div>
               ))}
-              
+
               {editScenePollQuestions.length > 0 && (
                 <Button
                   type="button"
@@ -3855,7 +3882,7 @@ export default function SessionDetailPage({
           </div>
         </DialogContent>
       </Dialog>
-      
+
       {/* Edit Tester Dialog */}
       <Dialog open={editTesterDialog} onOpenChange={setEditTesterDialog}>
         <DialogContent>
@@ -3947,7 +3974,7 @@ export default function SessionDetailPage({
             <Button variant="ghost" onClick={() => setSkipEmailDialog(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={() => sendEmailInvites(testersWithEmail)}
               disabled={sendingInvites || testersWithEmail.length === 0}
             >
@@ -3956,8 +3983,8 @@ export default function SessionDetailPage({
               ) : (
                 <Mail className="w-4 h-4" />
               )}
-              {testersWithEmail.length > 0 
-                ? `Send to ${testersWithEmail.length} tester${testersWithEmail.length !== 1 ? 's' : ''}` 
+              {testersWithEmail.length > 0
+                ? `Send to ${testersWithEmail.length} tester${testersWithEmail.length !== 1 ? 's' : ''}`
                 : 'No emails to send'}
             </Button>
           </DialogFooter>
@@ -4059,11 +4086,19 @@ export default function SessionDetailPage({
               Add {selectedTesterIds.size} selected tester{selectedTesterIds.size !== 1 ? "s" : ""} to an existing team
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
             {addToTeamLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <div className="space-y-2 animate-pulse">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/20">
+                    <div className="w-5 h-5 bg-muted/40 rounded" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-4 w-24 bg-muted/40 rounded" />
+                      <div className="h-3 w-20 bg-muted/30 rounded" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : teams.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -4083,19 +4118,18 @@ export default function SessionDetailPage({
                   {teams.map((team) => {
                     const allInTeam = areAllSelectedTestersInTeam(team.id);
                     const toAddCount = getTestersToAddCount(team.id);
-                    
+
                     return (
                       <button
                         key={team.id}
                         type="button"
                         disabled={allInTeam}
-                        className={`w-full p-3 rounded-lg border text-left transition-colors ${
-                          allInTeam
-                            ? "opacity-50 cursor-not-allowed bg-secondary/30 border-border"
-                            : selectedTeamForAdd === team.id
+                        className={`w-full p-3 rounded-lg border text-left transition-colors ${allInTeam
+                          ? "opacity-50 cursor-not-allowed bg-secondary/30 border-border"
+                          : selectedTeamForAdd === team.id
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50"
-                        }`}
+                          }`}
                         onClick={() => !allInTeam && setSelectedTeamForAdd(team.id)}
                       >
                         <div className="flex items-center justify-between">

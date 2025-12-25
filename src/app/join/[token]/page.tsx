@@ -292,12 +292,43 @@ export default function TesterSessionPage({
 
   if (loading)
     return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-            <Mic className="w-8 h-8 text-primary" />
+      <div className="min-h-screen gradient-mesh flex flex-col">
+        {/* Header skeleton */}
+        <div className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-sm" />
+
+        {/* Session info bar skeleton */}
+        <div className="h-14 border-b border-border bg-card/80 backdrop-blur-sm animate-pulse" />
+
+        {/* Main content skeleton */}
+        <main className="flex-1 overflow-y-auto pb-36">
+          <div className="container mx-auto px-4 py-6 max-w-xl space-y-6 animate-pulse">
+            {/* Scene selector skeleton */}
+            <div className="h-16 rounded-lg bg-muted/30" />
+
+            {/* What to test card skeleton */}
+            <div className="h-20 rounded-xl bg-muted/30" />
+
+            {/* Notes section skeleton */}
+            <div className="space-y-3">
+              <div className="h-6 rounded bg-muted/30" />
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-24 rounded-xl bg-secondary/30" />
+              ))}
+            </div>
           </div>
-          <p className="text-muted-foreground">Loading...</p>
+        </main>
+
+        {/* FAB skeleton */}
+        <div className="fixed bottom-0 left-0 right-0 z-40">
+          <div className="container mx-auto px-4 max-w-xl">
+            <div className="bg-card border border-border rounded-t-2xl shadow-2xl">
+              <div className="p-5 flex items-center justify-center gap-4 animate-pulse">
+                <div className="w-12 h-12 rounded-full bg-muted/40" />
+                <div className="w-16 h-16 rounded-full bg-muted/40" />
+                <div className="w-12 h-12 rounded-full bg-muted/40" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -529,8 +560,8 @@ export default function TesterSessionPage({
                               type="button"
                               onClick={() => toggleIssue(issue)}
                               className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${isChecked
-                                  ? "text-white [background:hsl(32deg_81.1%_41.69%)] dark:[background:hsl(32.15deg_33.04%_56.82%/80%)]"
-                                  : "bg-secondary hover:bg-secondary/80"
+                                ? "text-white [background:hsl(32deg_81.1%_41.69%)] dark:[background:hsl(32.15deg_33.04%_56.82%/80%)]"
+                                : "bg-secondary hover:bg-secondary/80"
                                 }`}
                             >
                               {isChecked && <Check className="w-3 h-3" />}
@@ -582,8 +613,8 @@ export default function TesterSessionPage({
                 <div className="flex items-center gap-3">
                   {hasPollQuestions && (
                     <span className={`text-sm px-2 py-0.5 rounded-full ${hasUnansweredRequired
-                        ? "bg-red-500/10 text-red-600 dark:text-red-400"
-                        : "bg-muted text-muted-foreground"
+                      ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                      : "bg-muted text-muted-foreground"
                       }`}>
                       {answeredPollCount}/{pollQuestions.length}
                     </span>
@@ -608,8 +639,8 @@ export default function TesterSessionPage({
                         <div
                           key={q.id}
                           className={`space-y-2 p-2 rounded-lg transition-colors ${isRequiredUnanswered
-                              ? "bg-red-500/5 border border-red-500/20"
-                              : ""
+                            ? "bg-red-500/5 border border-red-500/20"
+                            : ""
                             }`}
                         >
                           <p className="text-sm font-medium">
@@ -633,8 +664,8 @@ export default function TesterSessionPage({
                                   onClick={() => handlePollResponse(q.id, q.question_type, option)}
                                   disabled={isSaving}
                                   className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${isSelected
-                                      ? "bg-primary text-primary-foreground"
-                                      : "bg-secondary hover:bg-secondary/80"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-secondary hover:bg-secondary/80"
                                     } ${isSaving ? "opacity-50" : ""}`}
                                 >
                                   {q.question_type === "radio" ? (
@@ -686,8 +717,8 @@ export default function TesterSessionPage({
                     <button
                       onClick={() => setInputMode("voice")}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${inputMode === "voice"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-secondary"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-secondary"
                         }`}
                     >
                       <Mic className="w-4 h-4" />
@@ -696,8 +727,8 @@ export default function TesterSessionPage({
                     <button
                       onClick={() => setInputMode("text")}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${inputMode === "text"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-secondary"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-secondary"
                         }`}
                     >
                       <Keyboard className="w-4 h-4" />
@@ -782,8 +813,8 @@ export default function TesterSessionPage({
                   <button
                     onClick={() => setPollPanelOpen(true)}
                     className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-colors ${hasUnansweredRequired
-                        ? "bg-red-500/10 hover:bg-red-500/20"
-                        : "bg-secondary hover:bg-secondary/80"
+                      ? "bg-red-500/10 hover:bg-red-500/20"
+                      : "bg-secondary hover:bg-secondary/80"
                       }`}
                     title="Scene Poll"
                   >

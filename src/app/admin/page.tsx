@@ -24,9 +24,13 @@ export default function AdminDashboard() {
 
   if (loading) return (
     <div className="animate-pulse space-y-6">
-      <div className="h-8 w-48 bg-secondary rounded-lg" />
+      {/* Header skeleton */}
+      <div className="h-16 rounded-lg bg-muted/30" />
+      {/* Session cards skeleton */}
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {[1,2,3].map(i => <div key={i} className="h-52 bg-secondary/50 rounded-2xl" />)}
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-52 rounded-2xl bg-secondary/30" />
+        ))}
       </div>
     </div>
   );
@@ -45,7 +49,7 @@ export default function AdminDashboard() {
           </Button>
         </Link>
       </div>
-      
+
       {sessions.length === 0 ? (
         <Card className="border-dashed border-border/60">
           <CardContent className="flex flex-col items-center justify-center py-20 text-center">
@@ -115,10 +119,10 @@ export default function AdminDashboard() {
                       <Button variant="outline" size="sm">View Report</Button>
                     </Link>
                   )}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-muted-foreground hover:text-destructive" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
                     onClick={() => setDeleteDialog({ open: true, session: s })}
                   >
                     <Trash2 className="w-4 h-4" strokeWidth={1.75} />
@@ -129,7 +133,7 @@ export default function AdminDashboard() {
           ))}
         </div>
       )}
-      
+
       <Dialog open={deleteDialog.open} onOpenChange={(o) => setDeleteDialog({ open: o, session: null })}>
         <DialogContent>
           <DialogHeader>

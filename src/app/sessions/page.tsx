@@ -149,8 +149,19 @@ export default function SessionsPage() {
         return (
             <div className="min-h-screen gradient-mesh flex flex-col">
                 <div className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-sm" />
-                <main className="flex-1 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-5xl mx-auto w-full">
+                    <div className="space-y-6 animate-pulse">
+                        {/* Header skeleton */}
+                        <div className="h-16 rounded-lg bg-muted/30" />
+                        {/* Filter tabs skeleton */}
+                        <div className="h-12 rounded-lg bg-muted/30" />
+                        {/* Sessions list skeleton */}
+                        <div className="rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-3">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className="h-20 rounded-xl bg-secondary/30" />
+                            ))}
+                        </div>
+                    </div>
                 </main>
             </div>
         );

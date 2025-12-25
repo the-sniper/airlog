@@ -151,8 +151,15 @@ export default function ProfilePage() {
         return (
             <div className="min-h-screen gradient-mesh flex flex-col">
                 <div className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-sm" />
-                <main className="flex-1 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-2xl mx-auto w-full">
+                    <div className="space-y-6 animate-pulse">
+                        {/* Header skeleton */}
+                        <div className="h-16 rounded-lg bg-muted/30" />
+                        {/* Personal Information Card skeleton */}
+                        <div className="h-64 rounded-xl bg-muted/30" />
+                        {/* Change Password Card skeleton */}
+                        <div className="h-80 rounded-xl bg-muted/30" />
+                    </div>
                 </main>
             </div>
         );

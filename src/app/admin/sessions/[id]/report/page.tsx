@@ -288,9 +288,42 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
   if (loading)
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 w-48 bg-secondary rounded" />
-        <div className="h-64 bg-secondary rounded-xl" />
+      <div className="animate-pulse space-y-6 max-w-4xl mx-auto">
+        {/* Header skeleton */}
+        <div className="h-14 rounded-lg bg-muted/30" />
+
+        {/* Tabs skeleton */}
+        <div className="h-12 rounded-lg bg-muted/30" />
+
+        {/* Summary card skeleton */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <div className="h-6 w-1/4 bg-muted/40 rounded" />
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-20 rounded-lg bg-secondary/30" />
+            ))}
+          </div>
+        </div>
+
+        {/* Category breakdown skeleton */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <div className="h-6 w-1/3 bg-muted/40 rounded" />
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-8 rounded bg-secondary/30" />
+            ))}
+          </div>
+        </div>
+
+        {/* Notes section skeleton */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <div className="h-6 w-1/5 bg-muted/40 rounded" />
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-24 rounded-lg bg-secondary/30" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   if (!session)
@@ -427,11 +460,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       <Badge
                         variant={
                           category as
-                            | "bug"
-                            | "feature"
-                            | "ux"
-                            | "performance"
-                            | "secondary"
+                          | "bug"
+                          | "feature"
+                          | "ux"
+                          | "performance"
+                          | "secondary"
                         }
                         className="w-32 justify-center"
                       >
@@ -441,9 +474,8 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                         <div
                           className="h-full bg-primary rounded-full transition-all duration-500"
                           style={{
-                            width: `${
-                              stats?.total ? (count / stats.total) * 100 : 0
-                            }%`,
+                            width: `${stats?.total ? (count / stats.total) * 100 : 0
+                              }%`,
                           }}
                         />
                       </div>
@@ -1091,11 +1123,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       <Badge
                         variant={
                           key as
-                            | "bug"
-                            | "feature"
-                            | "ux"
-                            | "performance"
-                            | "secondary"
+                          | "bug"
+                          | "feature"
+                          | "ux"
+                          | "performance"
+                          | "secondary"
                         }
                       >
                         {label}
@@ -1121,11 +1153,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                             <Badge
                               variant={
                                 note.category as
-                                  | "bug"
-                                  | "feature"
-                                  | "ux"
-                                  | "performance"
-                                  | "secondary"
+                                | "bug"
+                                | "feature"
+                                | "ux"
+                                | "performance"
+                                | "secondary"
                               }
                             >
                               {getCategoryLabel(note.category)}

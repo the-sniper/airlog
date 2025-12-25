@@ -141,10 +141,17 @@ html {
   overflow-x: hidden;
 }
 
+/* Ensure skeleton elements don't overflow their containers */
+.animate-pulse,
+.animate-pulse * {
+  max-width: 100%;
+}
+
 /* Prevent layout shift when Radix UI locked-scroll is active */
 body[data-scroll-locked] {
   padding-right: 0px !important;
 }
+
 
 /* Gradient mesh - Light mode */
 .gradient-mesh {

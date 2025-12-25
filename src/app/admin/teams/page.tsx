@@ -183,11 +183,12 @@ export default function TeamsPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 w-48 bg-secondary rounded" />
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="h-64 bg-secondary rounded-xl" />
-          <div className="h-64 bg-secondary rounded-xl" />
+      <div className="animate-pulse space-y-6">
+        {/* Header skeleton */}
+        <div className="h-16 rounded-lg bg-muted/30" />
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="h-80 rounded-xl bg-secondary/30" />
+          <div className="h-80 rounded-xl bg-secondary/30" />
         </div>
       </div>
     );
@@ -230,11 +231,10 @@ export default function TeamsPage() {
                 {teams.map((team) => (
                   <div
                     key={team.id}
-                    className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors group ${
-                      selectedTeam?.id === team.id
-                        ? "bg-primary/10 border border-primary/30"
-                        : "bg-secondary/50 hover:bg-secondary"
-                    }`}
+                    className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors group ${selectedTeam?.id === team.id
+                      ? "bg-primary/10 border border-primary/30"
+                      : "bg-secondary/50 hover:bg-secondary"
+                      }`}
                     onClick={() => fetchTeamDetails(team.id)}
                   >
                     <div className="flex items-center gap-3">
@@ -383,8 +383,19 @@ export default function TeamsPage() {
           </CardHeader>
           <CardContent>
             {loadingTeam ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <div className="space-y-2 animate-pulse">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                    <div className="space-y-2">
+                      <div className="h-4 w-32 bg-muted/40 rounded" />
+                      <div className="h-3 w-40 bg-muted/30 rounded" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-8 h-8 bg-muted/30 rounded-lg" />
+                      <div className="w-8 h-8 bg-muted/30 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : !selectedTeam ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
