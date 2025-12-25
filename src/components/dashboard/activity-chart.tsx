@@ -86,7 +86,7 @@ export function ActivityChart({ data }: ActivityChartProps) {
                                         borderRadius: "8px",
                                         boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                                     }}
-                                    formatter={(value: number) => [value, "Notes"]}
+                                    formatter={(value: number | undefined) => `${value ?? 0} Notes`}
                                     labelFormatter={(label) => `${label}`}
                                 />
                                 <Area
