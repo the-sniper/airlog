@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
@@ -9,9 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { useEffect } from "react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
@@ -65,6 +65,110 @@ export default function LoginPage() {
   };
 
   return (
+    <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
+      <CardHeader className="text-center pb-2">
+        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center mb-3 shadow-lg shadow-primary/20">
+          <LogIn className="w-7 h-7 text-primary-foreground" strokeWidth={1.75} />
+        </div>
+        <CardTitle className="text-2xl font-bold">Log in</CardTitle>
+        <CardDescription className="text-muted-foreground">
+          Access your tester workspace.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="pt-4 space-y-5">
+        <form className="space-y-4" onSubmit={onSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="pl-9 h-11"
+                required
+                autoComplete="email"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="pl-9 pr-10 h-11"
+                required
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <Button type="submit" className="w-full h-11" disabled={loading}>
+            {loading ? "Logging in..." : "Log in"}
+          </Button>
+        </form>
+
+        <div className="flex flex-col gap-2 text-sm text-center text-muted-foreground">
+          <button
+            type="button"
+            className="text-primary hover:underline"
+            onClick={() => router.push("/reset-password")}
+          >
+            Forgot password?
+          </button>
+          <span>
+            Don&apos;t have an account?{" "}
+            <Button variant="link" className="px-1" onClick={() => router.push("/signup")}>
+              Sign up
+            </Button>
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function LoginFormFallback() {
+  return (
+    <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
+      <CardHeader className="text-center pb-2">
+        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center mb-3 shadow-lg shadow-primary/20">
+          <LogIn className="w-7 h-7 text-primary-foreground" strokeWidth={1.75} />
+        </div>
+        <CardTitle className="text-2xl font-bold">Log in</CardTitle>
+        <CardDescription className="text-muted-foreground">
+          Access your tester workspace.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-4">
+        <div className="h-48 flex items-center justify-center">
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
     <div className="min-h-screen flex items-center justify-center p-4 gradient-mesh relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
@@ -77,84 +181,9 @@ export default function LoginPage() {
           <Image src="/logo-dark.svg" alt="AirLog" width={120} height={32} className="hidden dark:block" />
         </div>
 
-        <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
-          <CardHeader className="text-center pb-2">
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center mb-3 shadow-lg shadow-primary/20">
-              <LogIn className="w-7 h-7 text-primary-foreground" strokeWidth={1.75} />
-            </div>
-            <CardTitle className="text-2xl font-bold">Log in</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Access your tester workspace.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="pt-4 space-y-5">
-            <form className="space-y-4" onSubmit={onSubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="pl-9 h-11"
-                    required
-                    autoComplete="email"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="pl-9 pr-10 h-11"
-                    required
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {error && <p className="text-sm text-destructive">{error}</p>}
-
-              <Button type="submit" className="w-full h-11" disabled={loading}>
-                {loading ? "Logging in..." : "Log in"}
-              </Button>
-            </form>
-
-            <div className="flex flex-col gap-2 text-sm text-center text-muted-foreground">
-              <button
-                type="button"
-                className="text-primary hover:underline"
-                onClick={() => router.push("/reset-password")}
-              >
-                Forgot password?
-              </button>
-              <span>
-                Don&apos;t have an account?{" "}
-                <Button variant="link" className="px-1" onClick={() => router.push("/signup")}>
-                  Sign up
-                </Button>
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <Suspense fallback={<LoginFormFallback />}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );
