@@ -164,7 +164,7 @@ export function StatsCards({ sessions, notes }: StatsCardsProps) {
                                                     ))}
                                                 </Pie>
                                                 <Tooltip
-                                                    formatter={(value: number) => [value, "Notes"]}
+                                                    formatter={(value: number | undefined) => `${value ?? 0} Notes`}
                                                     contentStyle={{
                                                         backgroundColor: "hsl(var(--card))",
                                                         border: "1px solid hsl(var(--border))",
