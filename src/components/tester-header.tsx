@@ -75,7 +75,7 @@ export function TesterHeader({ user }: TesterHeaderProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="flex h-10 items-center justify-between gap-2 px-3 py-2 data-[highlighted]:bg-muted data-[highlighted]:text-foreground cursor-pointer"
                   onSelect={(e) => {
                     e.preventDefault();
@@ -110,22 +110,19 @@ export function TesterHeader({ user }: TesterHeaderProps) {
 
       {/* Mobile drawer */}
       <div
-        className={`fixed inset-0 z-50 transition-all duration-300 sm:hidden ${
-          drawerOpen ? "pointer-events-auto" : "pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-50 transition-all duration-300 sm:hidden ${drawerOpen ? "pointer-events-auto" : "pointer-events-none"
+          }`}
       >
         <div
-          className={`absolute inset-0 bg-background/70 backdrop-blur-md transition-opacity duration-300 ${
-            drawerOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-background/70 backdrop-blur-md transition-opacity duration-300 ${drawerOpen ? "opacity-100" : "opacity-0"
+            }`}
           onClick={() => setDrawerOpen(false)}
         />
         <div
           role="dialog"
           aria-modal="true"
-          className={`absolute inset-y-0 right-0 w-[86%] max-w-sm bg-card shadow-2xl border-l border-border/60 rounded-l-3xl flex flex-col transition-transform duration-300 ease-in-out ${
-            drawerOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute inset-y-0 right-0 w-[86%] max-w-sm bg-card shadow-2xl border-l border-border/60 rounded-l-3xl flex flex-col transition-transform duration-300 ease-in-out ${drawerOpen ? "translate-x-0" : "translate-x-full"
+            }`}
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
             <div className="flex items-center gap-3">
@@ -188,7 +185,7 @@ export function TesterHeader({ user }: TesterHeaderProps) {
             <div className="flex-1" />
 
             <div className="space-y-3">
-              <div 
+              <div
                 className="rounded-xl border border-border/60 bg-muted/10 px-4 py-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-all"
                 onClick={cycleTheme}
               >

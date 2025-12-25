@@ -21,7 +21,7 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  
+
   // Check if a nav item is active
   const isActive = (href: string) => {
     if (href === "/admin") {
@@ -47,24 +47,22 @@ export function AdminSidebar() {
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
-          <Link 
-            href="/admin" 
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin") 
-                ? "bg-primary/10 text-primary" 
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
+          <Link
+            href="/admin"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/admin")
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
           >
             <LayoutGrid className="w-4 h-4" strokeWidth={1.75} />
             Sessions
           </Link>
-          <Link 
-            href="/admin/teams" 
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/teams") 
-                ? "bg-primary/10 text-primary" 
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
+          <Link
+            href="/admin/teams"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/admin/teams")
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
           >
             <Users2 className="w-4 h-4" strokeWidth={1.75} />
             Teams
@@ -75,9 +73,9 @@ export function AdminSidebar() {
             <p className="text-xs text-muted-foreground">Admin Dashboard</p>
             <ThemeToggle />
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             onClick={() => setShowLogoutDialog(true)}
           >
@@ -109,7 +107,7 @@ export function AdminSidebar() {
   );
 }
 
-export function AdminMobileHeader({ hideBottomNav = false }: { hideBottomNav?: boolean } = {}) {
+export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false }: { hideBottomNav?: boolean; hideTopHeader?: boolean } = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -153,56 +151,55 @@ export function AdminMobileHeader({ hideBottomNav = false }: { hideBottomNav?: b
 
   return (
     <>
-      {/* Top Header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50">
-        <div className="flex items-center justify-between h-full px-4">
-          <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.svg" alt="AirLog" width={90} height={24} className="dark:hidden" />
-            <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="hidden dark:block" />
-          </Link>
-          <div className="flex items-center gap-1">
-            {/* Notifications */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Bell className="w-5 h-5" strokeWidth={1.75} />
-            </Button>
-            
-            {/* Hamburger Menu */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => setDrawerOpen(true)}
-              aria-label="Open menu"
-            >
-              <Menu className="w-5 h-5" strokeWidth={1.75} />
-            </Button>
+      {/* Top Header - hidden when hideTopHeader is true (e.g., on tester pages where TesterHeader is shown) */}
+      {!hideTopHeader && (
+        <header className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50">
+          <div className="flex items-center justify-between h-full px-4">
+            <Link href="/" className="flex items-center gap-3">
+              <Image src="/logo.svg" alt="AirLog" width={90} height={24} className="dark:hidden" />
+              <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="hidden dark:block" />
+            </Link>
+            <div className="flex items-center gap-1">
+              {/* Notifications */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Bell className="w-5 h-5" strokeWidth={1.75} />
+              </Button>
+
+              {/* Hamburger Menu */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => setDrawerOpen(true)}
+                aria-label="Open menu"
+              >
+                <Menu className="w-5 h-5" strokeWidth={1.75} />
+              </Button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Mobile Drawer */}
       <div
-        className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${
-          drawerOpen ? "pointer-events-auto" : "pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${drawerOpen ? "pointer-events-auto" : "pointer-events-none"
+          }`}
         aria-hidden={!drawerOpen}
       >
         <div
-          className={`absolute inset-0 bg-background/70 backdrop-blur-md transition-opacity duration-300 ${
-            drawerOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-background/70 backdrop-blur-md transition-opacity duration-300 ${drawerOpen ? "opacity-100" : "opacity-0"
+            }`}
           onClick={() => setDrawerOpen(false)}
         />
         <div
           role="dialog"
           aria-modal="true"
-          className={`absolute inset-y-0 right-0 w-[86%] max-w-sm bg-card shadow-2xl border-l border-border/60 rounded-l-3xl flex flex-col transition-transform duration-300 ease-in-out ${
-            drawerOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute inset-y-0 right-0 w-[86%] max-w-sm bg-card shadow-2xl border-l border-border/60 rounded-l-3xl flex flex-col transition-transform duration-300 ease-in-out ${drawerOpen ? "translate-x-0" : "translate-x-full"
+            }`}
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
             <div className="flex items-center gap-3">
@@ -225,11 +222,10 @@ export function AdminMobileHeader({ hideBottomNav = false }: { hideBottomNav?: b
               <Link
                 href="/admin"
                 onClick={() => setDrawerOpen(false)}
-                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/admin")
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
-                }`}
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${isActive("/admin")
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}>
@@ -246,11 +242,10 @@ export function AdminMobileHeader({ hideBottomNav = false }: { hideBottomNav?: b
               <Link
                 href="/admin/teams"
                 onClick={() => setDrawerOpen(false)}
-                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/admin/teams")
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
-                }`}
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${isActive("/admin/teams")
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin/teams") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}>
@@ -315,23 +310,22 @@ export function AdminMobileHeader({ hideBottomNav = false }: { hideBottomNav?: b
         <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 z-40">
           {/* Background with notch cutout effect */}
           <div className="absolute inset-0 bg-card/95 backdrop-blur-xl border-t border-border/50" />
-          
+
           <div className="relative flex items-center justify-around h-full px-6">
-            <Link 
-              href="/admin" 
-              className={`flex flex-col items-center gap-1 py-2 transition-all ${
-                isActive("/admin") 
-                  ? "text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+            <Link
+              href="/admin"
+              className={`flex flex-col items-center gap-1 py-2 transition-all ${isActive("/admin")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               <LayoutGrid className="w-6 h-6" strokeWidth={1.5} />
               <span className="text-[10px] font-medium">Sessions</span>
             </Link>
-            
+
             {/* Prominent Join Button */}
-            <Link 
-              href="/join" 
+            <Link
+              href="/join"
               className="flex flex-col items-center -mt-8"
             >
               <div className="relative group">
@@ -347,14 +341,13 @@ export function AdminMobileHeader({ hideBottomNav = false }: { hideBottomNav?: b
               </div>
               <span className="text-[10px] font-semibold text-primary mt-1">Join</span>
             </Link>
-            
-            <Link 
-              href="/admin/teams" 
-              className={`flex flex-col items-center gap-1 py-2 transition-all ${
-                isActive("/admin/teams") 
-                  ? "text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+
+            <Link
+              href="/admin/teams"
+              className={`flex flex-col items-center gap-1 py-2 transition-all ${isActive("/admin/teams")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               <Users2 className="w-6 h-6" strokeWidth={1.5} />
               <span className="text-[10px] font-medium">Teams</span>

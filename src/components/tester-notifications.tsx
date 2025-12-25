@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import {
   Activity,
   AlertTriangle,
@@ -9,13 +10,13 @@ import {
   CheckCircle2,
   FileCheck2,
   Play,
+  X,
 } from "lucide-react";
 import { SessionWithScenes, Tester } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
@@ -38,48 +39,38 @@ const kindMeta: Record<
     label: string;
     icon: JSX.Element;
     badgeVariant:
-      | "default"
-      | "secondary"
-      | "destructive"
-      | "outline"
-      | "active"
-      | "completed";
-    toastVariant?: "default" | "success" | "warning" | "destructive";
+    | "default"
+    | "secondary"
+    | "destructive"
+    | "outline"
+    | "active"
+    | "completed";
   }
 > = {
   session_added: {
     label: "New Session",
     icon: <Play className="w-4 h-4 text-primary" strokeWidth={1.75} />,
     badgeVariant: "outline",
-    toastVariant: "default",
   },
   session_started: {
     label: "Live",
-    icon: (
-      <CheckCircle2 className="w-4 h-4 text-emerald-500" strokeWidth={1.75} />
-    ),
+    icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" strokeWidth={1.75} />,
     badgeVariant: "active",
-    toastVariant: "success",
   },
   report_sent: {
     label: "Report",
     icon: <FileCheck2 className="w-4 h-4 text-blue-500" strokeWidth={1.75} />,
     badgeVariant: "secondary",
-    toastVariant: "default",
   },
   session_completed: {
     label: "Ended",
-    icon: (
-      <AlertTriangle className="w-4 h-4 text-amber-500" strokeWidth={1.75} />
-    ),
+    icon: <AlertTriangle className="w-4 h-4 text-amber-500" strokeWidth={1.75} />,
     badgeVariant: "destructive",
-    toastVariant: "warning",
   },
   session_restarted: {
     label: "Restarted",
     icon: <Activity className="w-4 h-4 text-sky-500" strokeWidth={1.75} />,
     badgeVariant: "default",
-    toastVariant: "default",
   },
 };
 
@@ -94,13 +85,15 @@ export function TesterNotifications({
   userId?: string | null;
   onRealtimeUpdate?: () => void;
 }) {
-  const [open, setOpenState] = useState(false);
-  
-  const { 
-    notifications, 
-    unreadCount, 
-    clearNotifications, 
-    setOpen: markRead 
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  const {
+    notifications,
+    unreadCount,
+    clearNotifications,
+    setOpen: markRead
   } = useTesterNotifications({
     session,
     tester,
@@ -108,13 +101,175 @@ export function TesterNotifications({
     onRealtimeUpdate
   });
 
-  const handleOpenChange = (isOpen: boolean) => {
-    setOpenState(isOpen);
-    markRead(isOpen);
+  // Client-side only: detect mobile and mark as mounted
+  useEffect(() => {
+    setHasMounted(true);
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Lock body scroll when mobile sheet is open
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isMobile, isOpen]);
+
+  const openNotifications = () => {
+    setIsOpen(true);
+    markRead(true);
   };
 
+  const closeNotifications = () => {
+    setIsOpen(false);
+  };
+
+  // Notification content - reused for both mobile and desktop
+  const renderNotificationContent = () => (
+    <>
+      <div className="px-4 sm:px-3 py-3 sm:py-2 border-b border-border/60 flex items-center justify-between bg-muted/30">
+        <div>
+          <p className="text-sm font-semibold">Notifications</p>
+          <p className="text-xs text-muted-foreground">Updates and alerts</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 && <Badge variant="secondary">Unread {unreadCount}</Badge>}
+          {notifications.length > 0 && (
+            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={clearNotifications}>
+              Clear
+            </Button>
+          )}
+        </div>
+      </div>
+      <div className="max-h-[50vh] sm:max-h-72 overflow-y-auto overscroll-contain">
+        {notifications.length === 0 ? (
+          <div className="px-4 py-8 sm:py-6 text-sm text-muted-foreground text-center">
+            You&apos;re all caught up!
+          </div>
+        ) : (
+          notifications.map((notification) => {
+            const meta = kindMeta[notification.kind];
+            return (
+              <div
+                key={notification.id}
+                className="flex items-start gap-3 px-4 py-4 sm:py-3 border-b last:border-b-0 border-border/40 hover:bg-muted/50 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center shrink-0">
+                  {meta.icon}
+                </div>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-semibold leading-tight">{notification.title}</p>
+                    {notification.kind === "report_sent" && notification.actionUrl && (
+                      <Link
+                        href={notification.actionUrl}
+                        className="text-[11px] font-semibold text-primary hover:underline ml-auto"
+                        onClick={closeNotifications}
+                      >
+                        {notification.actionLabel || "View"}
+                      </Link>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug line-clamp-2">
+                    {notification.description}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/80">
+                    {formatTimestamp(notification.createdAt)}
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </>
+  );
+
+  // Before mounting, show a simple non-interactive button
+  if (!hasMounted) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative text-muted-foreground hover:text-foreground"
+        aria-label="Open notifications"
+      >
+        <Bell className="w-5 h-5" strokeWidth={1.75} />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground flex items-center justify-center leading-none shadow-sm">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </Button>
+    );
+  }
+
+  // MOBILE VIEW
+  if (isMobile) {
+    return (
+      <>
+        {/* Bell Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative text-muted-foreground hover:text-foreground"
+          aria-label="Open notifications"
+          onClick={openNotifications}
+        >
+          <Bell className="w-5 h-5" strokeWidth={1.75} />
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground flex items-center justify-center leading-none shadow-sm">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </Button>
+
+        {/* Bottom Sheet Portal */}
+        {createPortal(
+          <div
+            className={`fixed inset-0 z-[9999] transition-all duration-300 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+              }`}
+          >
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={closeNotifications}
+            />
+            {/* Sheet */}
+            <div
+              role="dialog"
+              aria-modal="true"
+              className={`absolute bottom-0 left-0 right-0 bg-card shadow-2xl border-t border-border/60 rounded-t-3xl flex flex-col max-h-[85vh] overflow-hidden transition-transform duration-300 ease-out ${isOpen ? "translate-y-0" : "translate-y-full"
+                }`}
+            >
+              {/* Drag handle */}
+              <div className="flex items-center justify-center py-3 cursor-pointer" onClick={closeNotifications}>
+                <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+              </div>
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 pb-2">
+                <h2 className="text-lg font-semibold">Notifications</h2>
+                <Button variant="ghost" size="icon" onClick={closeNotifications}>
+                  <X className="w-5 h-5" strokeWidth={1.75} />
+                </Button>
+              </div>
+              {renderNotificationContent()}
+            </div>
+          </div>,
+          document.body
+        )}
+      </>
+    );
+  }
+
+  // DESKTOP VIEW
   return (
-    <DropdownMenu open={open} onOpenChange={handleOpenChange} modal={false}>
+    <DropdownMenu open={isOpen} onOpenChange={(open) => { setIsOpen(open); markRead(open); }} modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -133,74 +288,9 @@ export function TesterNotifications({
       <DropdownMenuContent
         align="end"
         className="w-[320px] p-0 overflow-hidden rounded-xl border-border/60"
+        sideOffset={8}
       >
-        <div className="px-3 py-2 border-b border-border/60 flex items-center justify-between bg-muted/30">
-          <div>
-            <p className="text-sm font-semibold">Notifications</p>
-            <p className="text-xs text-muted-foreground">
-              Tester updates and critical alerts
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {unreadCount > 0 && (
-              <Badge variant="secondary">Unread {unreadCount}</Badge>
-            )}
-            {notifications.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2 text-xs"
-                onClick={clearNotifications}
-              >
-                Clear
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="max-h-80 overflow-y-auto">
-          {notifications.length === 0 ? (
-            <div className="px-4 py-6 text-sm text-muted-foreground text-center">
-              You&apos;re all caught up!
-            </div>
-          ) : (
-            notifications.map((notification) => {
-              const meta = kindMeta[notification.kind];
-              return (
-                <DropdownMenuItem
-                  key={notification.id}
-                  className="flex items-start gap-3 px-4 py-3 cursor-default data-[highlighted]:bg-muted data-[highlighted]:text-foreground"
-                >
-                  <div className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-muted/50 flex items-center justify-center">
-                    {meta.icon}
-                  </div>
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold leading-tight">
-                        {notification.title}
-                      </p>
-                      {notification.kind === "report_sent" &&
-                        notification.actionUrl && (
-                          <Link
-                            href={notification.actionUrl}
-                            className="text-[11px] font-semibold text-primary hover:underline ml-auto"
-                          >
-                            {notification.actionLabel || "View"}
-                          </Link>
-                        )}
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-snug line-clamp-2">
-                      {notification.description}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground/80">
-                      {formatTimestamp(notification.createdAt)}
-                    </p>
-                  </div>
-                </DropdownMenuItem>
-              );
-            })
-          )}
-        </div>
+        {renderNotificationContent()}
       </DropdownMenuContent>
     </DropdownMenu>
   );

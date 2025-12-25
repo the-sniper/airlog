@@ -217,7 +217,7 @@ export default function TesterSessionPage({
         `/api/sessions/${sessionId}/notes?testerId=${testerId}`
       );
       if (res.ok) setNotes(await res.json());
-    } catch {}
+    } catch { }
   }
   function handleNoteCreated(note: Note) {
     setNotes((prev) => [...prev, note]);
@@ -237,7 +237,7 @@ export default function TesterSessionPage({
       ? reportedIssues.filter((i) => i !== issue)
       : [...reportedIssues, issue];
     setReportedIssues(newIssues);
-    
+
     // Save to server
     try {
       await fetch(`/api/sessions/${data.session.id}/testers/${data.tester.id}`, {
@@ -252,10 +252,10 @@ export default function TesterSessionPage({
 
   async function handlePollResponse(questionId: string, questionType: string, option: string) {
     if (!data) return;
-    
+
     let newSelected: string[];
     const currentSelected = pollResponses[questionId] || [];
-    
+
     if (questionType === "radio") {
       // Radio: single selection
       newSelected = [option];
@@ -267,11 +267,11 @@ export default function TesterSessionPage({
         newSelected = [...currentSelected, option];
       }
     }
-    
+
     // Update local state immediately
     setPollResponses(prev => ({ ...prev, [questionId]: newSelected }));
     setSavingPollResponse(questionId);
-    
+
     // Save to server
     try {
       await fetch(`/api/sessions/${data.session.id}/poll-responses`, {
@@ -394,12 +394,12 @@ export default function TesterSessionPage({
 
   return (
     <>
-      {/* Show admin mobile navigation when logged in as admin (hide bottom nav to not overlap with tester FAB) */}
-      {isAdmin && <AdminMobileHeader hideBottomNav />}
-      
+      {/* Show admin mobile navigation when logged in as admin (hide bottom nav and top header to not overlap with tester UI) */}
+      {isAdmin && <AdminMobileHeader hideBottomNav hideTopHeader />}
+
       {/* Tester Header */}
       <TesterHeader user={user} />
-      
+
       <div className="min-h-screen gradient-mesh flex flex-col">
         {/* Session Info Bar */}
         <div className="border-b border-border bg-card/80 glass sticky top-16 z-40 h-14 flex items-center justify-between px-4">
@@ -415,7 +415,7 @@ export default function TesterSessionPage({
               </p>
             </div>
           </div>
-          
+
           {/* Right: Status + Actions */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500/10">
@@ -437,7 +437,7 @@ export default function TesterSessionPage({
         {/* Main content area */}
         <main className="flex-1 overflow-y-auto pb-36">
           <div className="container mx-auto px-4 py-6 max-w-xl space-y-6">
-            
+
             {/* Scene Selector - Full width, prominent */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground">Current Scene</label>
@@ -528,11 +528,10 @@ export default function TesterSessionPage({
                               key={issue}
                               type="button"
                               onClick={() => toggleIssue(issue)}
-                              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                                isChecked
+                              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${isChecked
                                   ? "text-white [background:hsl(32deg_81.1%_41.69%)] dark:[background:hsl(32.15deg_33.04%_56.82%/80%)]"
                                   : "bg-secondary hover:bg-secondary/80"
-                              }`}
+                                }`}
                             >
                               {isChecked && <Check className="w-3 h-3" />}
                               {issue}
@@ -567,8 +566,8 @@ export default function TesterSessionPage({
         {pollPanelOpen && (
           <div className="fixed inset-0 z-50 flex items-end justify-center">
             {/* Backdrop */}
-            <div 
-              className="absolute inset-0" 
+            <div
+              className="absolute inset-0"
               style={{ backdropFilter: 'blur(5px)' }}
               onClick={() => setPollPanelOpen(false)}
             />
@@ -582,11 +581,10 @@ export default function TesterSessionPage({
                 </div>
                 <div className="flex items-center gap-3">
                   {hasPollQuestions && (
-                    <span className={`text-sm px-2 py-0.5 rounded-full ${
-                      hasUnansweredRequired 
-                        ? "bg-red-500/10 text-red-600 dark:text-red-400" 
+                    <span className={`text-sm px-2 py-0.5 rounded-full ${hasUnansweredRequired
+                        ? "bg-red-500/10 text-red-600 dark:text-red-400"
                         : "bg-muted text-muted-foreground"
-                    }`}>
+                      }`}>
                       {answeredPollCount}/{pollQuestions.length}
                     </span>
                   )}
@@ -605,15 +603,14 @@ export default function TesterSessionPage({
                     {pollQuestions.map((q: PollQuestion, qIndex: number) => {
                       const isAnswered = (pollResponses[q.id] || []).length > 0;
                       const isRequiredUnanswered = q.required && !isAnswered;
-                      
+
                       return (
-                        <div 
-                          key={q.id} 
-                          className={`space-y-2 p-2 rounded-lg transition-colors ${
-                            isRequiredUnanswered 
-                              ? "bg-red-500/5 border border-red-500/20" 
+                        <div
+                          key={q.id}
+                          className={`space-y-2 p-2 rounded-lg transition-colors ${isRequiredUnanswered
+                              ? "bg-red-500/5 border border-red-500/20"
                               : ""
-                          }`}
+                            }`}
                         >
                           <p className="text-sm font-medium">
                             <span className="text-muted-foreground mr-1.5">{qIndex + 1}.</span>
@@ -635,22 +632,19 @@ export default function TesterSessionPage({
                                   type="button"
                                   onClick={() => handlePollResponse(q.id, q.question_type, option)}
                                   disabled={isSaving}
-                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
-                                    isSelected
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${isSelected
                                       ? "bg-primary text-primary-foreground"
                                       : "bg-secondary hover:bg-secondary/80"
-                                  } ${isSaving ? "opacity-50" : ""}`}
+                                    } ${isSaving ? "opacity-50" : ""}`}
                                 >
                                   {q.question_type === "radio" ? (
-                                    <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${
-                                      isSelected ? "border-primary-foreground" : "border-current opacity-60"
-                                    }`}>
+                                    <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${isSelected ? "border-primary-foreground" : "border-current opacity-60"
+                                      }`}>
                                       {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
                                     </div>
                                   ) : (
-                                    <div className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center ${
-                                      isSelected ? "border-primary-foreground bg-primary-foreground/20" : "border-current opacity-60"
-                                    }`}>
+                                    <div className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center ${isSelected ? "border-primary-foreground bg-primary-foreground/20" : "border-current opacity-60"
+                                      }`}>
                                       {isSelected && <Check className="w-2.5 h-2.5" />}
                                     </div>
                                   )}
@@ -678,8 +672,8 @@ export default function TesterSessionPage({
         {recorderExpanded ? (
           <div className="fixed inset-0 z-40 flex items-end justify-center">
             {/* Backdrop */}
-            <div 
-              className="absolute inset-0" 
+            <div
+              className="absolute inset-0"
               style={{ backdropFilter: 'blur(5px)' }}
               onClick={() => setRecorderExpanded(false)}
             />
@@ -691,22 +685,20 @@ export default function TesterSessionPage({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setInputMode("voice")}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                        inputMode === "voice" 
-                          ? "bg-primary text-primary-foreground" 
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${inputMode === "voice"
+                          ? "bg-primary text-primary-foreground"
                           : "text-muted-foreground hover:bg-secondary"
-                      }`}
+                        }`}
                     >
                       <Mic className="w-4 h-4" />
                       Voice
                     </button>
                     <button
                       onClick={() => setInputMode("text")}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                        inputMode === "text" 
-                          ? "bg-primary text-primary-foreground" 
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${inputMode === "text"
+                          ? "bg-primary text-primary-foreground"
                           : "text-muted-foreground hover:bg-secondary"
-                      }`}
+                        }`}
                     >
                       <Keyboard className="w-4 h-4" />
                       Text
@@ -719,7 +711,7 @@ export default function TesterSessionPage({
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                
+
                 {/* Recorder content */}
                 <div className="p-4 pb-4 overflow-y-auto flex-1 min-h-0 flex flex-col">
                   <div className="mb-4">
@@ -773,7 +765,7 @@ export default function TesterSessionPage({
                   >
                     <Keyboard className="w-5 h-5 text-muted-foreground" />
                   </button>
-                  
+
                   {/* Voice note button (primary) */}
                   <button
                     onClick={() => {
@@ -785,15 +777,14 @@ export default function TesterSessionPage({
                   >
                     <Mic className="w-7 h-7 text-primary-foreground" />
                   </button>
-                  
+
                   {/* Poll button (always visible for consistent UI) */}
                   <button
                     onClick={() => setPollPanelOpen(true)}
-                    className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                      hasUnansweredRequired 
-                        ? "bg-red-500/10 hover:bg-red-500/20" 
+                    className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-colors ${hasUnansweredRequired
+                        ? "bg-red-500/10 hover:bg-red-500/20"
                         : "bg-secondary hover:bg-secondary/80"
-                    }`}
+                      }`}
                     title="Scene Poll"
                   >
                     <ClipboardList className={`w-5 h-5 ${hasUnansweredRequired ? "text-red-500" : "text-muted-foreground"}`} />
