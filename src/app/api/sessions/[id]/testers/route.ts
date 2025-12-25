@@ -20,12 +20,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       session_id: id,
       first_name: member.first_name,
       last_name: member.last_name,
-      email: member.email || null,
+      email: member.email?.toLowerCase() || null,
       invite_token: generateInviteToken(),
     }));
 
     const { data, error } = await supabase.from("testers").insert(testersToInsert).select();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error("[API POST /testers] Bulk insert error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
     return NextResponse.json(data, { status: 201 });
   }
 
@@ -41,13 +44,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       session_id: id,
       first_name: first_name.trim(),
       last_name: last_name.trim(),
-      email: email?.trim() || null,
+      email: email?.trim().toLowerCase() || null,
       invite_token: generateInviteToken(),
     })
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[API POST /testers] Insert error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
   return NextResponse.json(data, { status: 201 });
 }
 

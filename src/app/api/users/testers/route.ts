@@ -11,7 +11,9 @@ export async function GET() {
 
     const supabase = createAdminClient();
     const normalizedEmail = user.email.toLowerCase();
-    const { data, error } = await supabase
+
+    // Query for testers by user_id
+    const { data: byUserId, error: error1 } = await supabase
       .from("testers")
       .select(
         `
@@ -38,14 +40,56 @@ export async function GET() {
           )
         `
       )
-      .or(`user_id.eq.${user.id},email.eq.${normalizedEmail}`)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
-    if (error) {
+    // Query for testers by email (case-insensitive)
+    const { data: byEmail, error: error2 } = await supabase
+      .from("testers")
+      .select(
+        `
+          id,
+          session_id,
+          invite_token,
+          invite_sent_at,
+          report_sent_at,
+          created_at,
+          user_id,
+          email,
+          first_name,
+          last_name,
+          session:sessions(
+            id,
+            name,
+            status,
+            started_at,
+            ended_at,
+            last_restarted_at,
+            restart_count,
+            first_ended_at,
+            share_token
+          )
+        `
+      )
+      .ilike("email", normalizedEmail)
+      .order("created_at", { ascending: false });
+
+    if (error1 || error2) {
+      console.error("[API /users/testers] Query error:", error1 || error2);
       return NextResponse.json({ error: "Failed to load testers" }, { status: 500 });
     }
 
-    const testers = data || [];
+    // Merge and dedupe results
+    const allTesters = [...(byUserId || []), ...(byEmail || [])];
+    const seen = new Set<string>();
+    const testers = allTesters.filter((t: any) => {
+      if (seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+
+    // Sort by created_at descending
+    testers.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     // Backfill missing user_id where email matches
     const missingLinks = testers
@@ -56,7 +100,8 @@ export async function GET() {
     }
 
     return NextResponse.json({ testers });
-  } catch {
+  } catch (err) {
+    console.error("[API /users/testers] Unexpected error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
