@@ -2,55 +2,128 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const JWT_SECRET = new TextEncoder().encode(
+// Admin authentication
+const ADMIN_JWT_SECRET = new TextEncoder().encode(
   process.env.ADMIN_JWT_SECRET || "your-secret-key-change-in-production"
 );
+const ADMIN_COOKIE_NAME = "admin_session";
 
-const COOKIE_NAME = "admin_session";
+// Tester authentication
+const USER_JWT_SECRET = new TextEncoder().encode(
+  process.env.USER_JWT_SECRET || "user-session-secret-change-me"
+);
+const USER_COOKIE_NAME = "user_session";
 
-// Routes that require authentication
-const PROTECTED_ROUTES = ["/admin"];
-// Routes that should redirect if already authenticated
-const AUTH_ROUTES = ["/admin/login"];
+// Admin routes
+const ADMIN_PROTECTED_ROUTES = ["/admin"];
+const ADMIN_AUTH_ROUTES = ["/admin/login"];
+
+// Tester routes that require authentication
+const TESTER_PROTECTED_ROUTES = ["/dashboard", "/sessions", "/profile", "/teams", "/report"];
+// Tester auth routes (should redirect to dashboard if already authenticated)
+const TESTER_AUTH_ROUTES = ["/login", "/signup", "/reset-password"];
+
+// Public routes (no auth required)
+const PUBLIC_ROUTES = ["/", "/join"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  // Check if it's an admin route
-  const isProtectedRoute = PROTECTED_ROUTES.some(
+
+  // === ADMIN ROUTE HANDLING ===
+  const isAdminProtectedRoute = ADMIN_PROTECTED_ROUTES.some(
     (route) => pathname.startsWith(route) && !pathname.startsWith("/admin/login")
   );
-  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+  const isAdminAuthRoute = ADMIN_AUTH_ROUTES.some((route) => pathname.startsWith(route));
 
-  const token = request.cookies.get(COOKIE_NAME)?.value;
-  let isAuthenticated = false;
+  if (isAdminProtectedRoute || isAdminAuthRoute) {
+    const adminToken = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    let isAdminAuthenticated = false;
 
-  if (token) {
-    try {
-      await jwtVerify(token, JWT_SECRET);
-      isAuthenticated = true;
-    } catch {
-      // Token invalid or expired
-      isAuthenticated = false;
+    if (adminToken) {
+      try {
+        await jwtVerify(adminToken, ADMIN_JWT_SECRET);
+        isAdminAuthenticated = true;
+      } catch {
+        isAdminAuthenticated = false;
+      }
     }
+
+    // Unauthenticated access to protected admin route -> redirect to admin login
+    if (isAdminProtectedRoute && !isAdminAuthenticated) {
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Authenticated access to admin auth route -> redirect to admin dashboard
+    if (isAdminAuthRoute && isAdminAuthenticated) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+
+    return NextResponse.next();
   }
 
-  // If trying to access protected route without auth, redirect to login
-  if (isProtectedRoute && !isAuthenticated) {
-    const loginUrl = new URL("/admin/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+  // === TESTER ROUTE HANDLING ===
+  const isTesterProtectedRoute = TESTER_PROTECTED_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+  const isTesterAuthRoute = TESTER_AUTH_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+
+  if (isTesterProtectedRoute || isTesterAuthRoute) {
+    const userToken = request.cookies.get(USER_COOKIE_NAME)?.value;
+    let isUserAuthenticated = false;
+
+    if (userToken) {
+      try {
+        await jwtVerify(userToken, USER_JWT_SECRET);
+        isUserAuthenticated = true;
+      } catch {
+        isUserAuthenticated = false;
+      }
+    }
+
+    // Unauthenticated access to protected tester route -> redirect to login
+    if (isTesterProtectedRoute && !isUserAuthenticated) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Authenticated access to tester auth route -> redirect to dashboard
+    if (isTesterAuthRoute && isUserAuthenticated) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    return NextResponse.next();
   }
 
-  // If trying to access auth route while already authenticated, redirect to admin
-  if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL("/admin", request.url));
-  }
-
+  // === PUBLIC ROUTES - no authentication required ===
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    // Admin routes
+    "/admin/:path*",
+    // Tester protected routes - need both exact and subpath matches
+    "/dashboard",
+    "/dashboard/:path*",
+    "/sessions",
+    "/sessions/:path*",
+    "/profile",
+    "/profile/:path*",
+    "/teams",
+    "/teams/:path*",
+    "/report",
+    "/report/:path*",
+    // Auth routes
+    "/login",
+    "/login/:path*",
+    "/signup",
+    "/signup/:path*",
+    "/reset-password",
+    "/reset-password/:path*",
+  ],
 };
-

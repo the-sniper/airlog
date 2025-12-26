@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { AdminSidebar, AdminMobileHeader } from "@/components/admin-sidebar";
+import { AdminSidebar, AdminMobileHeader } from "@/components/admin/admin-sidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

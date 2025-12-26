@@ -5,8 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutGrid, Users2, LogOut, UserPlus, Menu, Bell, Settings, X, ChevronRight, Sun, Moon, Clock } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { useTheme } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/common/theme-toggle";
+import { useTheme } from "@/components/common/theme-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

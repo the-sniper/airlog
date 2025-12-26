@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
-import { AnalyticsTab } from "@/components/analytics";
+import { AnalyticsTab } from "@/components/admin/analytics";
 import type { SessionWithDetails, NoteWithDetails, NoteCategory, Tester, PollQuestion, PollResponse, Scene } from "@/types";
 import React from "react";
 

@@ -27,11 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { VoiceRecorder } from "@/components/voice-recorder";
-import { TextNoteInput } from "@/components/text-note-input";
-import { NotesList } from "@/components/notes-list";
-import { AdminMobileHeader } from "@/components/admin-sidebar";
-import { TesterHeader } from "@/components/tester-header";
+import { VoiceRecorder } from "@/components/tester/voice-recorder";
+import { TextNoteInput } from "@/components/tester/text-note-input";
+import { NotesList } from "@/components/tester/notes-list";
+import { AdminMobileHeader } from "@/components/admin/admin-sidebar";
+import { TesterHeader } from "@/components/tester/tester-header";
 import type { SessionWithScenes, Tester, Scene, Note, PollQuestion, PollResponse } from "@/types";
 
 interface JoinData {
@@ -108,6 +108,7 @@ export default function TesterSessionPage({
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [issuesExpanded, setIssuesExpanded] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<{ id: string; first_name: string; last_name: string; email: string } | null>(null);
   const [reportedIssues, setReportedIssues] = useState<string[]>([]);
   const [pollResponses, setPollResponses] = useState<Record<string, string[]>>({});
   const [savingPollResponse, setSavingPollResponse] = useState<string | null>(null);
@@ -132,6 +133,20 @@ export default function TesterSessionPage({
       }
     }
     checkAdmin();
+
+    // Check if user is logged in as a tester user
+    async function checkLoggedInUser() {
+      try {
+        const res = await fetch("/api/users/me", { cache: "no-store" });
+        if (res.ok) {
+          const userData = await res.json();
+          setLoggedInUser(userData);
+        }
+      } catch {
+        // Not logged in
+      }
+    }
+    checkLoggedInUser();
   }, []);
 
 
@@ -364,8 +379,8 @@ export default function TesterSessionPage({
                 <p className="text-muted-foreground mb-4">{error.message}</p>
               </>
             )}
-            <Link href="/join">
-              <Button variant="outline">Try Another Code</Button>
+            <Link href="/dashboard">
+              <Button variant="outline">Go to Dashboard</Button>
             </Link>
           </CardContent>
         </Card>
@@ -409,12 +424,13 @@ export default function TesterSessionPage({
   );
 
   // Convert tester data to user format for the header
-  const user = tester ? {
-    id: tester.user_id || tester.id,
+  // Use the actual logged-in user ID if available, otherwise fallback to tester data
+  const user = loggedInUser || (tester ? {
+    id: tester.user_id || "", // Use empty string if no user_id - notifications won't work without a real user
     first_name: tester.first_name,
     last_name: tester.last_name,
     email: tester.email || "",
-  } : null;
+  } : null);
 
   // Calculate poll status for current scene
   const pollQuestions = currentScene?.poll_questions || [];

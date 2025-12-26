@@ -56,8 +56,8 @@ function LoginForm() {
       }
 
       toast({ title: "Logged in", description: "Welcome back to AirLog." });
-      router.push(callbackUrl || "/dashboard");
-      router.refresh();
+      // Use window.location for full page navigation to ensure cookie is read
+      window.location.href = callbackUrl || "/dashboard";
     } catch {
       setError("Login is not available yet. Please try again later.");
       setLoading(false);

@@ -75,6 +75,9 @@ export function useTesterNotifications({
     userId,
     onRealtimeUpdate,
 }: UseTesterNotificationsProps) {
+    // CRITICAL DEBUG: Log hook initialization
+    console.log("[TesterNotifications] ========== HOOK CALLED ==========", { userId, hasSession: !!session, hasTester: !!tester });
+
     const { toast } = useToast();
 
     // -- State Initialization --
@@ -375,7 +378,18 @@ export function useTesterNotifications({
             // Check invite sent (email invite received)
             // Only notify if we already knew about this tester (not first time seeing them)
             // AND invite_sent_at just got set/changed
+            if (process.env.NODE_ENV !== "production") {
+                console.log(`[TesterNotifications] Checking invite for tester ${testerObj.id}:`, {
+                    hasPrevTester: !!prevTester,
+                    prevInviteSentAt: prevTester?.invite_sent_at,
+                    currentInviteSentAt: testerObj.invite_sent_at,
+                    changed: prevTester && testerObj.invite_sent_at !== prevTester.invite_sent_at
+                });
+            }
             if (prevTester && testerObj.invite_sent_at && testerObj.invite_sent_at !== prevTester.invite_sent_at) {
+                if (process.env.NODE_ENV !== "production") {
+                    console.log("[TesterNotifications] TRIGGERING invite notification!");
+                }
                 addNotification({
                     title: "Invite received",
                     description: `You've received an invite for ${sessionObj.name || "a testing session"}.`,
@@ -408,9 +422,18 @@ export function useTesterNotifications({
                 const res = await fetch("/api/users/testers", { cache: "no-store" });
                 const data = await res.json();
                 if (res.ok && Array.isArray(data.testers)) {
+                    if (process.env.NODE_ENV !== "production") {
+                        console.log("[TesterNotifications] Loaded testers:", data.testers.length, "testers");
+                        data.testers.forEach((t: any) => {
+                            console.log(`[TesterNotifications] Tester ${t.id}: invite_sent_at=${t.invite_sent_at}, email=${t.email}`);
+                        });
+                    }
                     const firstWithEmail = data.testers.find((t: any) => t.email);
                     if (firstWithEmail?.email) {
                         const email = (firstWithEmail.email as string).toLowerCase();
+                        if (process.env.NODE_ENV !== "production" && email) {
+                            console.log("[TesterNotifications] User email for realtime:", email);
+                        }
                         setUserEmail(prev => prev !== email ? email : prev);
                     }
                     setUserTesters(data.testers.map((t: any) => ({
@@ -419,7 +442,11 @@ export function useTesterNotifications({
                     })));
                     data.testers.forEach(processTesterSnapshot);
                 }
-            } catch { }
+            } catch (e) {
+                if (process.env.NODE_ENV !== "production") {
+                    console.error("[TesterNotifications] Error loading testers:", e);
+                }
+            }
         };
 
         loadTesters();
@@ -455,6 +482,31 @@ export function useTesterNotifications({
                         createdAt: normalizeTimestamp(newTester.invite_sent_at, newTester.created_at || new Date().toISOString()),
                         kind: "session_added",
                     });
+                } else if (payload.eventType === 'UPDATE') {
+                    // Handle email invite being sent to existing tester
+                    const oldTester = payload.old as any;
+                    const newTester = payload.new as any;
+
+                    // Check if invite_sent_at was just set/updated
+                    if (newTester.invite_sent_at && newTester.invite_sent_at !== oldTester.invite_sent_at) {
+                        let sessionName = "a testing session";
+                        try {
+                            if (newTester.invite_token) {
+                                const res = await fetch(`/api/join/${newTester.invite_token}?t=${Date.now()}`, { cache: "no-store" });
+                                if (res.ok) {
+                                    const data = await res.json();
+                                    sessionName = data?.session?.name || sessionName;
+                                }
+                            }
+                        } catch { }
+
+                        addNotification({
+                            title: "Invite received",
+                            description: `You've received an invite for ${sessionName}.`,
+                            createdAt: normalizeTimestamp(newTester.invite_sent_at, new Date().toISOString()),
+                            kind: "session_added",
+                        });
+                    }
                 }
                 // Reload all to sync state
                 await loadTesters();
@@ -513,6 +565,31 @@ export function useTesterNotifications({
                             createdAt: normalizeTimestamp(newTester.invite_sent_at, newTester.created_at || new Date().toISOString()),
                             kind: "session_added",
                         });
+                    } else if (payload.eventType === 'UPDATE') {
+                        // Handle email invite being sent to existing tester
+                        const oldTester = payload.old;
+                        const newTester = payload.new;
+
+                        // Check if invite_sent_at was just set/updated
+                        if (newTester.invite_sent_at && newTester.invite_sent_at !== oldTester.invite_sent_at) {
+                            let sessionName = "a testing session";
+                            try {
+                                if (newTester.invite_token) {
+                                    const res = await fetch(`/api/join/${newTester.invite_token}?t=${Date.now()}`, { cache: "no-store" });
+                                    if (res.ok) {
+                                        const data = await res.json();
+                                        sessionName = data?.session?.name || sessionName;
+                                    }
+                                }
+                            } catch { }
+
+                            addNotification({
+                                title: "Invite received",
+                                description: `You've received an invite for ${sessionName}.`,
+                                createdAt: normalizeTimestamp(newTester.invite_sent_at, new Date().toISOString()),
+                                kind: "session_added",
+                            });
+                        }
                     }
 
                     // Always reload data to ensure state is consistent

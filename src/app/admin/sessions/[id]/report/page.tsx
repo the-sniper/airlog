@@ -51,7 +51,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
-import { AnalyticsTab } from "@/components/analytics";
+import { AnalyticsTab } from "@/components/admin/analytics";
 import type {
   SessionWithDetails,
   NoteWithDetails,

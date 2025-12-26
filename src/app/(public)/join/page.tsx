@@ -14,8 +14,8 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { AdminMobileHeader } from "@/components/admin-sidebar";
+import { ThemeToggle } from "@/components/common/theme-toggle";
+import { AdminMobileHeader } from "@/components/admin/admin-sidebar";
 
 export default function JoinPage() {
   const router = useRouter();
@@ -65,7 +65,7 @@ export default function JoinPage() {
     <>
       {/* Show admin mobile header/nav when logged in */}
       {isAdmin && <AdminMobileHeader />}
-      
+
       <div className={`min-h-screen gradient-mesh flex items-center justify-center p-4 ${isAdmin ? "pt-20 pb-20 md:pt-4 md:pb-4" : ""}`}>
         {/* Only show theme toggle when not admin (admin has it in header) */}
         {!isAdmin && (

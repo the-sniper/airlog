@@ -1,7 +1,7 @@
 "use client";
 
 import { Moon, Sun, Clock } from "lucide-react";
-import { useTheme } from "@/components/theme-provider";
+import { useTheme } from "./theme-provider";
 import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
@@ -33,19 +33,19 @@ export function ThemeToggle() {
       title={getLabel()}
     >
       {/* Clock icon for auto mode */}
-      <Clock 
+      <Clock
         className={`h-4 w-4 transition-all ${theme === "auto" ? "scale-100 rotate-0" : "scale-0 rotate-90 absolute"}`}
         strokeWidth={1.75}
       />
       {/* Sun icon for light mode */}
-      <Sun 
+      <Sun
         className={`h-4 w-4 transition-all ${theme === "light" ? "scale-100 rotate-0" : "scale-0 -rotate-90 absolute"}`}
-        strokeWidth={1.75} 
+        strokeWidth={1.75}
       />
       {/* Moon icon for dark mode */}
-      <Moon 
+      <Moon
         className={`h-4 w-4 transition-all ${theme === "dark" ? "scale-100 rotate-0" : "scale-0 rotate-90 absolute"}`}
-        strokeWidth={1.75} 
+        strokeWidth={1.75}
       />
       <span className="sr-only">Toggle theme</span>
     </Button>

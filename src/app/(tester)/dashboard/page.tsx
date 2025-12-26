@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TesterHeader } from "@/components/tester-header";
 import {
   DashboardWelcome,
   StatsCards,
   ActivityChart,
   SessionCards,
-} from "@/components/dashboard";
+} from "@/components/tester/dashboard";
 import { Loader2 } from "lucide-react";
 
 interface DashboardData {
@@ -147,56 +146,49 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen gradient-mesh flex flex-col">
-        <TesterHeader user={user} />
-        <main className="flex-1 flex items-center justify-center p-6">
-          <div className="text-center">
-            <p className="text-destructive mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="text-primary underline"
-            >
-              Try again
-            </button>
-          </div>
-        </main>
-      </div>
+      <main className="flex-1 flex items-center justify-center p-6 gradient-mesh">
+        <div className="text-center">
+          <p className="text-destructive mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-primary underline"
+          >
+            Try again
+          </button>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen gradient-mesh flex flex-col">
-      <TesterHeader user={user} />
+    <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full gradient-mesh">
+      <div className="space-y-6">
+        {/* Welcome Section */}
+        {dashboardData && (
+          <DashboardWelcome
+            firstName={dashboardData.user.firstName}
+            lastName={dashboardData.user.lastName}
+          />
+        )}
 
-      <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-        <div className="space-y-6">
-          {/* Welcome Section */}
+        {/* Stats Cards */}
+        {dashboardData && (
+          <StatsCards
+            sessions={dashboardData.sessions}
+            notes={dashboardData.notes}
+          />
+        )}
+
+        {/* Activity Chart & Sessions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {dashboardData && (
-            <DashboardWelcome
-              firstName={dashboardData.user.firstName}
-              lastName={dashboardData.user.lastName}
-            />
+            <>
+              <ActivityChart data={dashboardData.recentActivity} />
+              <SessionCards sessions={dashboardData.recentSessions} />
+            </>
           )}
-
-          {/* Stats Cards */}
-          {dashboardData && (
-            <StatsCards
-              sessions={dashboardData.sessions}
-              notes={dashboardData.notes}
-            />
-          )}
-
-          {/* Activity Chart & Sessions */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {dashboardData && (
-              <>
-                <ActivityChart data={dashboardData.recentActivity} />
-                <SessionCards sessions={dashboardData.recentSessions} />
-              </>
-            )}
-          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }

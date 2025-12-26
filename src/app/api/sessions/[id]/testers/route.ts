@@ -14,15 +14,47 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const body = await req.json();
   const supabase = createAdminClient();
 
+  // Helper to find user by email (case-insensitive)
+  async function findUserByEmail(email: string | null | undefined): Promise<string | null> {
+    if (!email) return null;
+    const { data } = await supabase
+      .from("users")
+      .select("id")
+      .ilike("email", email.toLowerCase())
+      .single();
+    return data?.id || null;
+  }
+
   // Handle bulk add from team members
   if (body.members && Array.isArray(body.members)) {
-    const testersToInsert = body.members.map((member: { first_name: string; last_name: string; email?: string }) => ({
-      session_id: id,
-      first_name: member.first_name,
-      last_name: member.last_name,
-      email: member.email?.toLowerCase() || null,
-      invite_token: generateInviteToken(),
-    }));
+    // Collect all emails to batch lookup users
+    const emails = body.members
+      .map((m: { email?: string }) => m.email?.toLowerCase())
+      .filter(Boolean) as string[];
+
+    // Batch lookup users by email
+    const userMap = new Map<string, string>();
+    if (emails.length > 0) {
+      const { data: users } = await supabase
+        .from("users")
+        .select("id, email")
+        .in("email", emails);
+      users?.forEach((u: { id: string; email: string }) => {
+        userMap.set(u.email.toLowerCase(), u.id);
+      });
+    }
+
+    const testersToInsert = body.members.map((member: { first_name: string; last_name: string; email?: string }) => {
+      const normalizedEmail = member.email?.toLowerCase() || null;
+      return {
+        session_id: id,
+        first_name: member.first_name,
+        last_name: member.last_name,
+        email: normalizedEmail,
+        invite_token: generateInviteToken(),
+        user_id: normalizedEmail ? userMap.get(normalizedEmail) || null : null,
+      };
+    });
 
     const { data, error } = await supabase.from("testers").insert(testersToInsert).select();
     if (error) {
@@ -38,14 +70,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "First name and last name are required" }, { status: 400 });
   }
 
+  const normalizedEmail = email?.trim().toLowerCase() || null;
+  const userId = await findUserByEmail(normalizedEmail);
+
   const { data, error } = await supabase
     .from("testers")
     .insert({
       session_id: id,
       first_name: first_name.trim(),
       last_name: last_name.trim(),
-      email: email?.trim().toLowerCase() || null,
+      email: normalizedEmail,
       invite_token: generateInviteToken(),
+      user_id: userId,
     })
     .select()
     .single();

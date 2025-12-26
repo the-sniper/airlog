@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { TesterNotifications } from "@/components/tester-notifications";
-import { Menu, X, LayoutGrid, ChevronRight, Settings, Users2, LogOut, ChevronDown, User } from "lucide-react";
-import { useTheme } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/common/theme-toggle";
+import { Menu, X, LayoutGrid, ChevronRight, Settings, Users2, LogOut, ChevronDown, Bell } from "lucide-react";
+import { useTheme } from "@/components/common/theme-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,17 +23,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-interface TesterHeaderProps {
-  user?: {
+interface AdminHeaderProps {
+  admin?: {
     id: string;
-    first_name: string;
-    last_name: string;
     email: string;
+    name?: string;
   } | null;
 }
 
-export function TesterHeader({ user }: TesterHeaderProps) {
+export function AdminHeader({ admin }: AdminHeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -45,70 +44,80 @@ export function TesterHeader({ user }: TesterHeaderProps) {
     else setTheme("auto");
   };
 
-  const fullName = user ? `${user.first_name} ${user.last_name}` : "";
+  const isActive = (href: string) => {
+    if (href === "/admin") {
+      return pathname === "/admin" || pathname.startsWith("/admin/sessions");
+    }
+    return pathname.startsWith(href);
+  };
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/admin/login");
+    router.refresh();
+  };
 
   return (
     <>
       <header className="h-16 border-b border-border/50 bg-card/80 glass flex items-center justify-between px-4 z-40">
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/admin" className="flex items-center gap-3">
             <Image src="/logo.svg" alt="AirLog" width={110} height={28} className="dark:hidden" />
             <Image src="/logo-dark.svg" alt="AirLog" width={110} height={28} className="hidden dark:block" />
           </Link>
         </div>
         <div className="flex items-center gap-3">
           <nav className="hidden md:flex items-center gap-3 mr-4">
-            <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
-              Dashboard
+            <Link
+              href="/admin"
+              className={`text-sm transition-colors ${isActive("/admin")
+                ? "text-primary font-medium"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+              Sessions
+            </Link>
+            <Link
+              href="/admin/teams"
+              className={`text-sm transition-colors ${isActive("/admin/teams")
+                ? "text-primary font-medium"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+              Teams
             </Link>
           </nav>
-          <TesterNotifications userId={user?.id} />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground hidden md:flex"
+          >
+            <Bell className="w-5 h-5" strokeWidth={1.75} />
+          </Button>
           <div className="hidden md:block">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <span>{user?.first_name ? `Hey ${user.first_name}` : "Account"}</span>
+                  <span>{admin?.name || admin?.email || "Admin"}</span>
                   <ChevronDown className="w-4 h-4 transition-transform data-[state=open]:rotate-180" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/sessions"
-                    className="flex h-10 items-center gap-3 px-3 py-2 hover:bg-muted data-[highlighted]:bg-muted data-[highlighted]:text-foreground"
-                  >
-                    <Users2 className="w-4 h-4" />
-                    <span className="text-sm">Sessions</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/profile"
-                    className="flex h-10 items-center gap-3 px-3 py-2 hover:bg-muted data-[highlighted]:bg-muted data-[highlighted]:text-foreground"
-                  >
-                    <User className="w-4 h-4" />
-                    <span className="text-sm">Profile</span>
-                  </Link>
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
-                  className="flex h-10 items-center justify-between gap-3 px-3 py-2 cursor-pointer hover:bg-muted data-[highlighted]:bg-muted data-[highlighted]:text-foreground"
+                  className="flex h-10 items-center justify-between gap-2 px-3 py-2 data-[highlighted]:bg-muted data-[highlighted]:text-foreground cursor-pointer"
                   onSelect={(e) => {
                     e.preventDefault();
                     cycleTheme();
                   }}
                 >
-                  <div className="flex items-center gap-3">
-                    <Settings className="w-4 h-4" />
-                    <span className="text-sm">Theme</span>
-                  </div>
+                  <span className="text-sm">Theme</span>
                   <ThemeToggle />
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="flex h-10 items-center gap-3 px-3 py-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                  className="flex h-10 items-center px-3 py-2 data-[highlighted]:bg-muted data-[highlighted]:text-foreground"
                   onClick={() => setShowLogoutDialog(true)}
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span className="text-sm">Logout</span>
+                  Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -160,35 +169,24 @@ export function TesterHeader({ user }: TesterHeaderProps) {
           <div className="px-5 py-6 space-y-6 flex-1 overflow-y-auto flex flex-col">
             <div className="space-y-3">
               <div className="rounded-xl">
-                <p className="text-xs text-muted-foreground">You are logged in as</p>
-                <p className="font-semibold">{fullName || "User"}</p>
+                <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+                <p className="font-semibold">{admin?.name || admin?.email || "Administrator"}</p>
               </div>
 
               <Link
-                href="/dashboard"
-                className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors border-border/60 bg-muted/20 hover:border-border"
+                href="/admin"
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${isActive("/admin")
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border/60 bg-muted/20 hover:border-border"
+                  }`}
                 onClick={() => setDrawerOpen(false)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isActive("/admin")
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/40 text-muted-foreground"
+                    }`}>
                     <LayoutGrid className="w-6 h-6" strokeWidth={1.75} />
-                  </div>
-                  <div>
-                    <p className="font-medium">Dashboard</p>
-                    <p className="text-xs text-muted-foreground">Your workspace</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </Link>
-
-              <Link
-                href="/sessions"
-                className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors border-border/60 bg-muted/20 hover:border-border"
-                onClick={() => setDrawerOpen(false)}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-muted/40 text-muted-foreground flex items-center justify-center">
-                    <Users2 className="w-6 h-6" strokeWidth={1.75} />
                   </div>
                   <div>
                     <p className="font-medium">Sessions</p>
@@ -199,17 +197,23 @@ export function TesterHeader({ user }: TesterHeaderProps) {
               </Link>
 
               <Link
-                href="/profile"
-                className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors border-border/60 bg-muted/20 hover:border-border"
+                href="/admin/teams"
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${isActive("/admin/teams")
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border/60 bg-muted/20 hover:border-border"
+                  }`}
                 onClick={() => setDrawerOpen(false)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-muted/40 text-muted-foreground flex items-center justify-center">
-                    <User className="w-6 h-6" strokeWidth={1.75} />
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isActive("/admin/teams")
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/40 text-muted-foreground"
+                    }`}>
+                    <Users2 className="w-6 h-6" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-medium">Profile</p>
-                    <p className="text-xs text-muted-foreground">Manage your account</p>
+                    <p className="font-medium">Teams</p>
+                    <p className="text-xs text-muted-foreground">Invite and collaborate</p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -238,10 +242,9 @@ export function TesterHeader({ user }: TesterHeaderProps) {
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={async () => {
-                  await fetch("/api/users/logout", { method: "POST" });
+                onClick={() => {
                   setDrawerOpen(false);
-                  router.push("/login");
+                  setShowLogoutDialog(true);
                 }}
               >
                 <LogOut className="w-5 h-5" strokeWidth={1.75} />
@@ -267,15 +270,7 @@ export function TesterHeader({ user }: TesterHeaderProps) {
             <Button variant="outline" onClick={() => setShowLogoutDialog(false)}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={async () => {
-                await fetch("/api/users/logout", { method: "POST" });
-                setShowLogoutDialog(false);
-                router.push("/login");
-                router.refresh();
-              }}
-            >
+            <Button variant="destructive" onClick={handleLogout}>
               Sign Out
             </Button>
           </DialogFooter>

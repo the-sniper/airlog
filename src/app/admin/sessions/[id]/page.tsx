@@ -72,9 +72,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDate, getStatusLabel, getCategoryLabel } from "@/lib/utils";
-import { AISummaryDialog, SummaryFilters, FilterLabels } from "@/components/ai-summary-dialog";
-import { NoteAISummaryDialog } from "@/components/note-ai-summary-dialog";
-import { AISummaryViewDialog } from "@/components/ai-summary-view-dialog";
+import { AISummaryDialog, SummaryFilters, FilterLabels } from "@/components/admin/ai-summary-dialog";
+import { NoteAISummaryDialog } from "@/components/admin/note-ai-summary-dialog";
+import { AISummaryViewDialog } from "@/components/admin/ai-summary-view-dialog";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
   DndContext,

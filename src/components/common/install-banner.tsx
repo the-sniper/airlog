@@ -2,7 +2,7 @@
 
 import { usePWA } from "./pwa-provider";
 import { X, Download, Share, Plus } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -15,7 +15,7 @@ export function InstallBanner() {
     triggerInstall,
     dismissInstallBanner,
   } = usePWA();
-  
+
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   // Don't show if already installed or in standalone mode
@@ -39,7 +39,7 @@ export function InstallBanner() {
               <X className="h-4 w-4" />
             </Button>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
@@ -51,7 +51,7 @@ export function InstallBanner() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
                 2
@@ -62,7 +62,7 @@ export function InstallBanner() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
                 3
@@ -74,7 +74,7 @@ export function InstallBanner() {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-4 pt-4 border-t border-border">
             <Button
               className="w-full"

@@ -15,21 +15,21 @@ const transporter = nodemailer.createTransport({
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+
   try {
     const { testers, sessionName } = await req.json();
-    
+
     if (!testers || !Array.isArray(testers) || testers.length === 0) {
       return NextResponse.json({ error: "No testers provided" }, { status: 400 });
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.headers.get("origin") || "http://localhost:3000";
     const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER;
-    
+
     const results = await Promise.allSettled(
       testers.map(async (tester: { id: string; first_name: string; last_name: string; email: string; invite_token: string }) => {
         const inviteUrl = `${baseUrl}/join/${tester.invite_token}`;
-        
+
         await transporter.sendMail({
           from: fromEmail,
           to: tester.email,
@@ -67,14 +67,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             </div>
           `,
         });
-        
+
         return { testerId: tester.id, success: true };
       })
     );
 
     const successful = results.filter(r => r.status === "fulfilled").length;
     const failed = results.filter(r => r.status === "rejected");
-    
+
     // Log failures for debugging
     failed.forEach((f, i) => {
       if (f.status === "rejected") {
@@ -88,18 +88,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const successfulTesterIds = testers
         .filter((_: { id: string }, index: number) => results[index].status === "fulfilled")
         .map((t: { id: string }) => t.id);
-      
-      await supabase
+
+      console.log("[Invite API] Updating invite_sent_at for testers:", successfulTesterIds);
+
+      const { error: updateError } = await supabase
         .from("testers")
         .update({ invite_sent_at: new Date().toISOString() })
         .in("id", successfulTesterIds);
+
+      if (updateError) {
+        console.error("[Invite API] Error updating invite_sent_at:", updateError);
+      } else {
+        console.log("[Invite API] Successfully updated invite_sent_at for", successfulTesterIds.length, "testers");
+      }
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      sent: successful, 
+    return NextResponse.json({
+      success: true,
+      sent: successful,
       failed: failed.length,
-      sessionId: id 
+      sessionId: id
     });
   } catch (error) {
     console.error("Error sending invite emails:", error);
