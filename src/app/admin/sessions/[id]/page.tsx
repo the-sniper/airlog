@@ -105,7 +105,9 @@ import type {
   PollQuestion,
   PollQuestionType,
   PollResponse,
+  User,
 } from "@/types";
+import { UserSelect, type UserOption } from "@/components/ui/user-select";
 
 interface PollQuestionInput {
   id: string;
@@ -459,15 +461,18 @@ export default function SessionDetailPage({
   const [session, setSession] = useState<SessionWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [addTesterDialog, setAddTesterDialog] = useState(false);
-  const [testerTab, setTesterTab] = useState<"team" | "adhoc">("team");
+  const [testerTab, setTesterTab] = useState<"team" | "users" | "invite">("team");
   const [addingTester, setAddingTester] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
-  // Individual tester form
+  // Individual tester form (now used for invite by email)
   const [newTesterFirstName, setNewTesterFirstName] = useState("");
   const [newTesterLastName, setNewTesterLastName] = useState("");
   const [newTesterEmail, setNewTesterEmail] = useState("");
   const [individualTesterError, setIndividualTesterError] = useState<string | null>(null);
+
+  // User selection (From Users tab)
+  const [selectedUsersForAdd, setSelectedUsersForAdd] = useState<UserOption[]>([]);
 
   // Team selection
   const [teams, setTeams] = useState<TeamWithCount[]>([]);
@@ -1198,30 +1203,145 @@ export default function SessionDetailPage({
       setAddingTester(false);
     }
   }
+  // Handle adding users from the "From Users" tab
+  async function handleAddUsersAsTester() {
+    if (selectedUsersForAdd.length === 0) return;
+    setAddingTester(true);
+    try {
+      // Add each selected user as a tester
+      const membersToAdd = selectedUsersForAdd.map((user) => ({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        user_id: user.id,
+      }));
 
-  async function handleAddIndividualTester() {
-    if (!newTesterFirstName.trim() || !newTesterLastName.trim()) return;
+      const res = await fetch(`/api/sessions/${id}/testers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ members: membersToAdd }),
+      });
 
-    // Check for duplicate
-    if (isIndividualTesterDuplicate(newTesterFirstName, newTesterLastName)) {
-      setIndividualTesterError(`${newTesterFirstName.trim()} ${newTesterLastName.trim()} is already added as a tester`);
+      if (res.ok) {
+        // Send notification email to added users
+        const addedTesters = await res.json();
+        if (addedTesters && addedTesters.length > 0) {
+          await fetch(`/api/sessions/${id}/invite`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              testers: addedTesters.filter((t: Tester) => t.email),
+              sessionName: session?.name,
+            }),
+          });
+        }
+        toast({
+          title: "Testers added!",
+          description: `Successfully added ${selectedUsersForAdd.length} tester${selectedUsersForAdd.length > 1 ? "s" : ""}.`,
+          variant: "success",
+        });
+        resetTesterDialog();
+        fetchSession();
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add testers. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setAddingTester(false);
+    }
+  }
+
+  // Handle inviting unregistered user by email
+  async function handleInviteByEmail() {
+    if (!newTesterEmail.trim()) {
+      setIndividualTesterError("Email is required");
+      return;
+    }
+
+    const normalizedEmail = newTesterEmail.trim().toLowerCase();
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      setIndividualTesterError("Please enter a valid email address");
       return;
     }
 
     setAddingTester(true);
     setIndividualTesterError(null);
+
     try {
-      await fetch(`/api/sessions/${id}/testers`, {
+      // Check if user is already registered via the pending invites API
+      const res = await fetch("/api/admin/pending-invites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          first_name: newTesterFirstName.trim(),
-          last_name: newTesterLastName.trim(),
-          email: newTesterEmail.trim() || null,
+          email: normalizedEmail,
+          invite_type: "session",
+          target_id: id,
         }),
       });
-      resetTesterDialog();
-      fetchSession();
+
+      const result = await res.json();
+
+      if (result.already_registered) {
+        // User is registered - add them directly as a tester
+        const addRes = await fetch(`/api/sessions/${id}/testers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            members: [{
+              first_name: result.user.first_name,
+              last_name: result.user.last_name,
+              email: result.user.email,
+              user_id: result.user.id,
+            }],
+          }),
+        });
+
+        if (addRes.ok) {
+          // Send invite email
+          const addedTesters = await addRes.json();
+          if (addedTesters && addedTesters.length > 0) {
+            await fetch(`/api/sessions/${id}/invite`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                testers: addedTesters,
+                sessionName: session?.name,
+              }),
+            });
+          }
+          toast({
+            title: "Tester added!",
+            description: `${result.user.first_name} ${result.user.last_name} has been added and notified.`,
+            variant: "success",
+          });
+          resetTesterDialog();
+          fetchSession();
+        } else {
+          setIndividualTesterError("Failed to add tester. They may already be in this session.");
+        }
+      } else if (res.status === 409) {
+        // Invite already pending
+        setIndividualTesterError("An invite is already pending for this email");
+      } else if (res.ok) {
+        // Pending invite created successfully
+        toast({
+          title: "Invite sent!",
+          description: `Signup invitation sent to ${normalizedEmail}. They will be added when they register.`,
+          variant: "success",
+        });
+        resetTesterDialog();
+      } else {
+        setIndividualTesterError(result.error || "Failed to send invite");
+      }
+    } catch (error) {
+      console.error("Error inviting by email:", error);
+      setIndividualTesterError("An error occurred. Please try again.");
     } finally {
       setAddingTester(false);
     }
@@ -1237,6 +1357,7 @@ export default function SessionDetailPage({
     setSelectedTeamId(null);
     setSelectedTeam(null);
     setSelectedMembers(new Set());
+    setSelectedUsersForAdd([]);
   }
   function openDeleteTesterDialog(tester: Tester) {
     setTesterToDelete(tester);
@@ -2092,24 +2213,13 @@ export default function SessionDetailPage({
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2">
-                  <div>
-                    <CardTitle>Testers</CardTitle>
-                    <CardDescription>
-                      {session.status === "completed"
-                        ? "Testers who participated"
-                        : "Manage session testers"}
-                    </CardDescription>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={refreshSession}
-                    disabled={loading || refreshingSession}
-                  >
-                    <RefreshCw className={`w-4 h-4 ${refreshingSession ? "animate-spin" : ""}`} />
-                  </Button>
+                <div>
+                  <CardTitle>Testers</CardTitle>
+                  <CardDescription>
+                    {session.status === "completed"
+                      ? "Testers who participated"
+                      : "Manage session testers"}
+                  </CardDescription>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {session.status === "completed" && selectedReportTesterIds.size > 0 && (
@@ -2162,11 +2272,22 @@ export default function SessionDetailPage({
                     </>
                   )}
                   {session.status !== "completed" && (
-                    <Button onClick={() => setAddTesterDialog(true)} size="sm" className="flex-1 sm:flex-none">
-                      <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">Add Tester</span>
-                      <span className="sm:hidden">Add</span>
-                    </Button>
+                    <>
+                      <Button onClick={() => setAddTesterDialog(true)} size="sm" className="flex-1 sm:flex-none">
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">Add Tester</span>
+                        <span className="sm:hidden">Add</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={refreshSession}
+                        disabled={loading || refreshingSession}
+                      >
+                        <RefreshCw className={`w-4 h-4 ${refreshingSession ? "animate-spin" : ""}`} />
+                        <span className="hidden sm:inline">Refresh</span>
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -2296,6 +2417,7 @@ export default function SessionDetailPage({
                       {session.status !== "completed" && (
                         <div className="flex items-start sm:items-center gap-2 sm:gap-3 ml-auto shrink-0 pt-0.5">
                           <div className="hidden sm:flex items-center gap-2">
+                            {/* Edit button commented out - no need to edit names
                             <Tooltip content="Edit tester" side="bottom">
                               <Button
                                 variant="ghost"
@@ -2306,6 +2428,7 @@ export default function SessionDetailPage({
                                 <Edit2 className="w-4 h-4" />
                               </Button>
                             </Tooltip>
+                            */}
                             <Tooltip content="Delete tester" side="bottom">
                               <Button
                                 variant="ghost"
@@ -2328,10 +2451,12 @@ export default function SessionDetailPage({
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              {/* Edit option commented out - no need to edit names
                               <DropdownMenuItem onClick={() => openEditTesterDialog(t)}>
                                 <Edit2 className="w-4 h-4 mr-2" />
                                 Edit tester
                               </DropdownMenuItem>
+                              */}
                               <DropdownMenuItem
                                 onClick={() => openDeleteTesterDialog(t)}
                                 className="text-destructive focus:text-destructive"
@@ -3032,7 +3157,7 @@ export default function SessionDetailPage({
           <DialogHeader>
             <DialogTitle>Add Testers</DialogTitle>
             <DialogDescription>
-              Add testers from a team or create individual testers
+              Add testers from a team, select registered users, or invite by email
             </DialogDescription>
           </DialogHeader>
 
@@ -3049,14 +3174,24 @@ export default function SessionDetailPage({
               <span className="sm:hidden">Team</span>
             </Button>
             <Button
-              variant={testerTab === "adhoc" ? "default" : "ghost"}
+              variant={testerTab === "users" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setTesterTab("adhoc")}
+              onClick={() => setTesterTab("users")}
               className="gap-1.5 sm:gap-2 flex-1 sm:flex-none"
             >
-              <UserPlus className="w-4 h-4" />
-              <span className="hidden sm:inline">Individual Tester</span>
-              <span className="sm:hidden">Individual</span>
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">From Users</span>
+              <span className="sm:hidden">Users</span>
+            </Button>
+            <Button
+              variant={testerTab === "invite" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setTesterTab("invite")}
+              className="gap-1.5 sm:gap-2 flex-1 sm:flex-none"
+            >
+              <Mail className="w-4 h-4" />
+              <span className="hidden sm:inline">Invite by Email</span>
+              <span className="sm:hidden">Invite</span>
             </Button>
           </div>
 
@@ -3191,49 +3326,46 @@ export default function SessionDetailPage({
             </div>
           )}
 
-          {/* Individual Tester Tab */}
-          {testerTab === "adhoc" && (
+          {/* From Users Tab */}
+          {testerTab === "users" && (
             <div className="space-y-4 py-2">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="testerFirstName">First Name *</Label>
-                  <Input
-                    id="testerFirstName"
-                    value={newTesterFirstName}
-                    onChange={(e) => {
-                      setNewTesterFirstName(e.target.value);
-                      setIndividualTesterError(null);
-                    }}
-                    placeholder="John"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="testerLastName">Last Name *</Label>
-                  <Input
-                    id="testerLastName"
-                    value={newTesterLastName}
-                    onChange={(e) => {
-                      setNewTesterLastName(e.target.value);
-                      setIndividualTesterError(null);
-                    }}
-                    placeholder="Doe"
-                  />
-                </div>
+              <UserSelect
+                multiple
+                selectedUsers={selectedUsersForAdd}
+                onSelect={setSelectedUsersForAdd}
+                excludeIds={session?.testers?.map((t) => t.user_id).filter(Boolean) as string[] || []}
+                excludeEmails={session?.testers?.map((t) => t.email?.toLowerCase()).filter(Boolean) as string[] || []}
+                placeholder="Search registered users..."
+                maxResults={20}
+              />
+            </div>
+          )}
+
+          {/* Invite by Email Tab */}
+          {testerTab === "invite" && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-lg bg-secondary/30 p-4 text-sm text-muted-foreground">
+                <p>
+                  Enter an email address to invite someone. If they're already registered,
+                  they'll be added immediately. Otherwise, they'll receive a signup invitation
+                  and will be added once they register.
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="testerEmail">
-                  Email <span className="text-muted-foreground font-normal">(optional)</span>
-                </Label>
+                <Label htmlFor="inviteEmail">Email Address *</Label>
                 <Input
-                  id="testerEmail"
+                  id="inviteEmail"
                   type="email"
                   value={newTesterEmail}
-                  onChange={(e) => setNewTesterEmail(e.target.value)}
-                  placeholder="john.doe@example.com"
+                  onChange={(e) => {
+                    setNewTesterEmail(e.target.value);
+                    setIndividualTesterError(null);
+                  }}
+                  placeholder="someone@example.com"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      handleAddIndividualTester();
+                      handleInviteByEmail();
                     }
                   }}
                 />
@@ -3248,7 +3380,7 @@ export default function SessionDetailPage({
             <Button variant="ghost" onClick={resetTesterDialog}>
               Cancel
             </Button>
-            {testerTab === "team" ? (
+            {testerTab === "team" && (
               <Button
                 onClick={handleAddTesterFromTeam}
                 disabled={addingTester || selectedMembers.size === 0}
@@ -3256,13 +3388,23 @@ export default function SessionDetailPage({
                 {addingTester && <Loader2 className="w-4 h-4 animate-spin" />}
                 Add {selectedMembers.size > 0 ? `${selectedMembers.size} Tester${selectedMembers.size > 1 ? "s" : ""}` : "Testers"}
               </Button>
-            ) : (
+            )}
+            {testerTab === "users" && (
               <Button
-                onClick={handleAddIndividualTester}
-                disabled={addingTester || !newTesterFirstName.trim() || !newTesterLastName.trim()}
+                onClick={handleAddUsersAsTester}
+                disabled={addingTester || selectedUsersForAdd.length === 0}
               >
                 {addingTester && <Loader2 className="w-4 h-4 animate-spin" />}
-                Add Tester
+                Add {selectedUsersForAdd.length > 0 ? `${selectedUsersForAdd.length} Tester${selectedUsersForAdd.length > 1 ? "s" : ""}` : "Testers"}
+              </Button>
+            )}
+            {testerTab === "invite" && (
+              <Button
+                onClick={handleInviteByEmail}
+                disabled={addingTester || !newTesterEmail.trim()}
+              >
+                {addingTester && <Loader2 className="w-4 h-4 animate-spin" />}
+                Send Invite
               </Button>
             )}
           </DialogFooter>
@@ -3934,7 +4076,12 @@ export default function SessionDetailPage({
             </div>
             <div className="space-y-2">
               <Label htmlFor="editTesterEmail">
-                Email <span className="text-muted-foreground font-normal">(optional)</span>
+                Email
+                {editingTester?.user_id ? (
+                  <span className="text-muted-foreground font-normal ml-1">(linked to user account)</span>
+                ) : (
+                  <span className="text-muted-foreground font-normal ml-1">(optional)</span>
+                )}
               </Label>
               <Input
                 id="editTesterEmail"
@@ -3942,7 +4089,14 @@ export default function SessionDetailPage({
                 value={editTesterEmail}
                 onChange={(e) => setEditTesterEmail(e.target.value)}
                 placeholder="john.doe@example.com"
+                disabled={!!editingTester?.user_id}
+                className={editingTester?.user_id ? "bg-muted cursor-not-allowed" : ""}
               />
+              {editingTester?.user_id && (
+                <p className="text-xs text-muted-foreground">
+                  Email cannot be changed for testers linked to a user account.
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>

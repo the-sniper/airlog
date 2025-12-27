@@ -18,3 +18,6 @@ export interface TeamMember { id: string; team_id: string; user_id?: string | nu
 export interface TeamWithMembers extends Team { members: TeamMember[]; }
 
 export interface User { id: string; first_name: string; last_name: string; email: string; password_hash: string; created_at: string; }
+
+export type InviteType = "session" | "team";
+export interface PendingInvite { id: string; email: string; invite_type: InviteType; target_id: string; invited_by: string | null; created_at: string; expires_at: string; claimed_at: string | null; }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { hashPassword, createUserToken, setUserAuthCookie } from "@/lib/user-auth";
+import { generateInviteToken } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -68,6 +69,50 @@ export async function POST(req: Request) {
       .eq("email", normalizedEmail)
       .is("user_id", null);
 
+    // Claim pending invites for this email
+    const { data: pendingInvites } = await supabase
+      .from("pending_invites")
+      .select("*")
+      .eq("email", normalizedEmail)
+      .is("claimed_at", null)
+      .gt("expires_at", new Date().toISOString());
+
+    if (pendingInvites && pendingInvites.length > 0) {
+      for (const invite of pendingInvites) {
+        try {
+          if (invite.invite_type === "session") {
+            // Create tester record for the session
+            await supabase.from("testers").insert({
+              session_id: invite.target_id,
+              user_id: created.id,
+              first_name: first_name.trim(),
+              last_name: last_name.trim(),
+              email: normalizedEmail,
+              invite_token: generateInviteToken(),
+            });
+          } else if (invite.invite_type === "team") {
+            // Create team member record
+            await supabase.from("team_members").insert({
+              team_id: invite.target_id,
+              user_id: created.id,
+              first_name: first_name.trim(),
+              last_name: last_name.trim(),
+              email: normalizedEmail,
+            });
+          }
+
+          // Mark invite as claimed
+          await supabase
+            .from("pending_invites")
+            .update({ claimed_at: new Date().toISOString() })
+            .eq("id", invite.id);
+        } catch (inviteError) {
+          console.error("[Signup] Error claiming invite:", inviteError);
+          // Continue with other invites even if one fails
+        }
+      }
+    }
+
     // Auto-login: create token and set auth cookie
     const token = await createUserToken(created.id);
     await setUserAuthCookie(token);
@@ -77,3 +122,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+

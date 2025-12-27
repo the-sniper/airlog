@@ -8,36 +8,51 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const body = await request.json();
     const supabase = await createClient();
 
-    // Handle bulk add from testers
+    // Handle bulk add from testers or users
     if (body.testers && Array.isArray(body.testers)) {
       // First, get existing members in this team to avoid duplicates
       const { data: existingMembers } = await supabase
         .from("team_members")
-        .select("first_name, last_name")
+        .select("user_id, email")
         .eq("team_id", team_id);
 
-      const existingSet = new Set(
-        (existingMembers || []).map(m => 
-          `${m.first_name.toLowerCase()}_${m.last_name.toLowerCase()}`
-        )
+      // Create sets for duplicate checking (by user_id and email)
+      const existingUserIds = new Set(
+        (existingMembers || [])
+          .filter(m => m.user_id)
+          .map(m => m.user_id)
+      );
+      const existingEmails = new Set(
+        (existingMembers || [])
+          .filter(m => m.email)
+          .map(m => m.email.toLowerCase())
       );
 
-      // Filter out testers that are already team members
+      // Filter out members that already exist (by user_id or email)
       const newMembers = body.testers
-        .filter((t: { first_name: string; last_name: string }) => 
-          !existingSet.has(`${t.first_name.toLowerCase()}_${t.last_name.toLowerCase()}`)
-        )
-        .map((t: { first_name: string; last_name: string; email?: string }) => ({
+        .filter((t: { user_id?: string; email?: string }) => {
+          // If user_id is provided and exists, skip
+          if (t.user_id && existingUserIds.has(t.user_id)) {
+            return false;
+          }
+          // If email is provided and exists, skip
+          if (t.email && existingEmails.has(t.email.toLowerCase())) {
+            return false;
+          }
+          return true;
+        })
+        .map((t: { first_name: string; last_name: string; email?: string; user_id?: string }) => ({
           team_id,
           first_name: t.first_name.trim(),
           last_name: t.last_name.trim(),
           email: t.email?.trim()?.toLowerCase() || null,
+          user_id: t.user_id || null,
         }));
 
       if (newMembers.length === 0) {
-        return NextResponse.json({ 
-          data: [], 
-          message: "All testers are already members of this team" 
+        return NextResponse.json({
+          data: [],
+          message: "All selected users are already members of this team"
         });
       }
 
@@ -52,7 +67,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     // Handle single member addition
     const { first_name, last_name, email } = body;
-    
+
     if (!first_name?.trim() || !last_name?.trim()) {
       return NextResponse.json({ error: "First name and last name are required" }, { status: 400 });
     }
@@ -81,7 +96,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id: team_id } = await params;
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
       .from("team_members")
       .select("first_name, last_name, email")
