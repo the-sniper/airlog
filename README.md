@@ -111,7 +111,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Project Structure
 
 ```
-echo_test/
+airlog/
 ├── src/
 │   ├── app/                    # Next.js App Router pages
 │   │   ├── admin/              # Admin dashboard pages

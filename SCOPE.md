@@ -402,7 +402,7 @@ This document details what's included in the MVP, what's partially implemented, 
 ## File Structure Reference
 
 ```
-echo_test/
+airlog/
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx                    # Landing page

@@ -230,17 +230,17 @@ Join the session:
 {join_url}
 
 Best,
-The Echo Team
+The Airlog Team
 ```
 
 ### 4.2 Signup Invite Email (Unregistered User)
 
-**Subject**: You're invited to join Echo
+**Subject**: You're invited to join Airlog
 
 ```
 Hi,
 
-You've been invited to join a testing session on Echo.
+You've been invited to join a testing session on Airlog.
 
 To participate, please create an account:
 {signup_url}?email={encoded_email}
@@ -251,7 +251,7 @@ Once registered, you'll automatically be added to:
 This invitation expires on {expiry_date}.
 
 Best,
-The Echo Team
+The Airlog Team
 ```
 
 ---
