@@ -1,4 +1,4 @@
-# 🎤 AirLog - Voice-Based User Testing Platform
+# AirLog - Voice-Based User Testing Platform
 
 A modern, full-stack Next.js web application for capturing and organizing tester feedback during user testing sessions using voice recordings, automatic transcription, and AI-powered analysis.
 
