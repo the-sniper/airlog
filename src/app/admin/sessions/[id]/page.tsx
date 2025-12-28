@@ -2418,7 +2418,7 @@ export default function SessionDetailPage({
                                     Invited
                                   </span>
                                 )}
-                                {t.user_id && !t.left_at && (
+                                {t.joined_at && !t.left_at && (
                                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium ml-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400">
                                     <CheckCircle className="w-3 h-3" />
                                     Joined

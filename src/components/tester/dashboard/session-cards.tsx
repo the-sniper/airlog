@@ -16,7 +16,7 @@ interface Session {
     id: string;
     name: string;
     status: string;
-    inviteToken: string;
+    joinCode: string;
     createdAt: string;
     startedAt: string | null;
     endedAt: string | null;
@@ -103,7 +103,7 @@ export function SessionCards({ sessions }: SessionCardsProps) {
                                         </div>
                                     </div>
 
-                                    <Link href={`/join/${session.inviteToken}`}>
+                                    <Link href={`/join/${session.joinCode}`}>
                                         <Button size="sm" className="gap-1.5">
                                             Join
                                             <ChevronRight className="w-4 h-4" />

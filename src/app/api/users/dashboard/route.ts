@@ -33,7 +33,7 @@ interface DashboardStats {
         id: string;
         name: string;
         status: string;
-        inviteToken: string;
+        joinCode: string;
         createdAt: string;
         startedAt: string | null;
         endedAt: string | null;
@@ -58,12 +58,12 @@ export async function GET() {
             .select(`
         id,
         session_id,
-        invite_token,
         created_at,
         session:sessions(
           id,
           name,
           status,
+          join_code,
           started_at,
           ended_at,
           share_token
@@ -76,12 +76,12 @@ export async function GET() {
             .select(`
         id,
         session_id,
-        invite_token,
         created_at,
         session:sessions(
           id,
           name,
           status,
+          join_code,
           started_at,
           ended_at,
           share_token
@@ -134,7 +134,7 @@ export async function GET() {
                 id: session.id,
                 name: session.name,
                 status: session.status,
-                inviteToken: t.invite_token,
+                joinCode: session.join_code,
                 createdAt: t.created_at,
                 startedAt: session.started_at,
                 endedAt: session.ended_at,

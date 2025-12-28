@@ -22,7 +22,7 @@ interface Session {
     id: string;
     name: string;
     status: string;
-    inviteToken: string;
+    joinCode: string;
     createdAt: string;
     startedAt: string | null;
     endedAt: string | null;
@@ -271,7 +271,7 @@ export default function SessionsPage() {
 
                                                 <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                                     {session.status === "active" && (
-                                                        <Link href={`/join/${session.inviteToken}`} className="w-full sm:w-auto">
+                                                        <Link href={`/join/${session.joinCode}`} className="w-full sm:w-auto">
                                                             <Button size="sm" className="gap-1.5 w-full sm:w-auto">
                                                                 Join Session
                                                                 <ChevronRight className="w-4 h-4" />

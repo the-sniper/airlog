@@ -41,7 +41,7 @@ interface DashboardData {
     id: string;
     name: string;
     status: string;
-    inviteToken: string;
+    joinCode: string;
     createdAt: string;
     startedAt: string | null;
     endedAt: string | null;

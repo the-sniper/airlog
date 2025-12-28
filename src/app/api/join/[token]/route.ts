@@ -85,10 +85,21 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
   if (session.status === "draft") return NextResponse.json({ error: "Session not started" }, { status: 425 });
 
   // If the tester had previously left (left_at is set), clear it since they're rejoining
+  // Also set joined_at if not already set
+  const updateFields: Record<string, unknown> = {};
+
   if (tester.left_at) {
+    updateFields.left_at = null;
+  }
+
+  if (!tester.joined_at) {
+    updateFields.joined_at = new Date().toISOString();
+  }
+
+  if (Object.keys(updateFields).length > 0) {
     const { data: updatedTester } = await supabase
       .from("testers")
-      .update({ left_at: null })
+      .update(updateFields)
       .eq("id", tester.id)
       .select()
       .single();

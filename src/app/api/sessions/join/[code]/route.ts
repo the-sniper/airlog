@@ -81,7 +81,7 @@ export async function POST(
         .single();
 
     if (!tester) {
-        // Create new tester entry for this user
+        // Create new tester entry for this user - they are joining now
         const { data: newTester, error: createError } = await supabase
             .from("testers")
             .insert({
@@ -92,6 +92,7 @@ export async function POST(
                 email: normalizedEmail,
                 invite_token: crypto.randomUUID(), // Still need a token for internal tracking
                 reported_issues: [],
+                joined_at: new Date().toISOString(), // They are joining now
             })
             .select()
             .single();
@@ -103,21 +104,29 @@ export async function POST(
 
         tester = newTester;
     } else {
-        // Update existing tester with user_id if not set
+        // Update existing tester
+        const updateFields: Record<string, unknown> = {};
+
+        // Set user_id if not set
         if (!tester.user_id) {
-            await supabase
-                .from("testers")
-                .update({ user_id: user.id })
-                .eq("id", tester.id);
+            updateFields.user_id = user.id;
+        }
+
+        // Set joined_at if not set (first time actually joining)
+        if (!tester.joined_at) {
+            updateFields.joined_at = new Date().toISOString();
         }
 
         // Clear left_at if rejoining explicitly
         const shouldRejoin = req.nextUrl.searchParams.get("rejoin") === "true";
-
         if (tester.left_at && shouldRejoin) {
+            updateFields.left_at = null;
+        }
+
+        if (Object.keys(updateFields).length > 0) {
             const { data: updatedTester } = await supabase
                 .from("testers")
-                .update({ left_at: null })
+                .update(updateFields)
                 .eq("id", tester.id)
                 .select()
                 .single();

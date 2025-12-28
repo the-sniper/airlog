@@ -6,7 +6,7 @@ export interface Session { id: string; name: string; description: string | null;
 export interface Scene { id: string; session_id: string; name: string; description: string | null; order_index: number; poll_questions?: PollQuestion[]; }
 export interface PollQuestion { id: string; scene_id: string; question: string; question_type: PollQuestionType; options: string[]; order_index: number; required: boolean; created_at: string; }
 export interface PollResponse { id: string; poll_question_id: string; tester_id: string; selected_options: string[]; created_at: string; }
-export interface Tester { id: string; session_id: string; user_id?: string | null; first_name: string; last_name: string; email: string | null; invite_token: string; invite_sent_at: string | null; report_sent_at: string | null; reported_issues: string[]; left_at: string | null; created_at: string; }
+export interface Tester { id: string; session_id: string; user_id?: string | null; first_name: string; last_name: string; email: string | null; invite_token: string; invite_sent_at: string | null; report_sent_at: string | null; reported_issues: string[]; joined_at: string | null; left_at: string | null; created_at: string; }
 export interface Note { id: string; session_id: string; scene_id: string; tester_id: string; audio_url: string | null; raw_transcript: string | null; edited_transcript: string | null; category: NoteCategory; auto_classified: boolean; ai_summary: string | null; created_at: string; }
 export interface SessionWithScenes extends Session { scenes: Scene[]; }
 export interface SessionWithDetails extends Session { scenes: Scene[]; testers: Tester[]; notes: NoteWithDetails[]; }
