@@ -7,18 +7,18 @@ import * as path from "path";
 
 // Load environment variables manually from .env.local
 function loadEnv() {
-    const envPath = path.resolve(process.cwd(), ".env.local");
-    const envContent = fs.readFileSync(envPath, "utf-8");
-    const lines = envContent.split("\n");
-    for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith("#")) continue;
-        const eqIndex = trimmed.indexOf("=");
-        if (eqIndex === -1) continue;
-        const key = trimmed.slice(0, eqIndex);
-        const value = trimmed.slice(eqIndex + 1).replace(/^["']|["']$/g, "");
-        process.env[key] = value;
-    }
+  const envPath = path.resolve(process.cwd(), ".env.local");
+  const envContent = fs.readFileSync(envPath, "utf-8");
+  const lines = envContent.split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eqIndex = trimmed.indexOf("=");
+    if (eqIndex === -1) continue;
+    const key = trimmed.slice(0, eqIndex);
+    const value = trimmed.slice(eqIndex + 1).replace(/^["']|["']$/g, "");
+    process.env[key] = value;
+  }
 }
 
 loadEnv();
@@ -27,30 +27,33 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-    console.error("❌ Missing SUPABASE environment variables");
-    console.error("   NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "✓" : "✗");
-    console.error("   SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "✓" : "✗");
-    process.exit(1);
+  console.error("❌ Missing SUPABASE environment variables");
+  console.error("   NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "✓" : "✗");
+  console.error(
+    "   SUPABASE_SERVICE_ROLE_KEY:",
+    supabaseServiceKey ? "✓" : "✗",
+  );
+  process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function runMigration() {
-    console.log("🚀 Running migration 022: Create pending_invites table...\n");
+  console.log("🚀 Running migration 022: Create pending_invites table...\n");
 
-    // First check if table already exists
-    const { error: checkError } = await supabase
-        .from("pending_invites")
-        .select("id")
-        .limit(1);
+  // First check if table already exists
+  const { error: checkError } = await supabase
+    .from("pending_invites")
+    .select("id")
+    .limit(1);
 
-    if (!checkError) {
-        console.log("✅ Table pending_invites already exists. Migration skipped.");
-        return;
-    }
+  if (!checkError) {
+    console.log("✅ Table pending_invites already exists. Migration skipped.");
+    return;
+  }
 
-    // If table doesn't exist, print instructions
-    const migrationSQL = `
+  // If table doesn't exist, print instructions
+  const migrationSQL = `
 -- Create pending_invites table for tracking invitations to unregistered users
 CREATE TABLE IF NOT EXISTS pending_invites (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -85,12 +88,16 @@ CREATE POLICY "Pending invites can be deleted by anyone" ON pending_invites
     FOR DELETE USING (true);
 `;
 
-    console.log("⚠️  The pending_invites table does not exist.");
-    console.log("   Please run the following SQL in Supabase Dashboard → SQL Editor:\n");
-    console.log("─".repeat(60));
-    console.log(migrationSQL);
-    console.log("─".repeat(60));
-    console.log("\n   File location: supabase/migrations/022_pending_invites.sql\n");
+  console.log("⚠️  The pending_invites table does not exist.");
+  console.log(
+    "   Please run the following SQL in Supabase Dashboard → SQL Editor:\n",
+  );
+  console.log("─".repeat(60));
+  console.log(migrationSQL);
+  console.log("─".repeat(60));
+  console.log(
+    "\n   File location: supabase/migrations/022_pending_invites.sql\n",
+  );
 }
 
 runMigration().catch(console.error);

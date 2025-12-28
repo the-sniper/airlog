@@ -38,20 +38,20 @@ docker run -d -p 9000:9000 --name whisper whisper-service
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `WHISPER_MODEL` | `base` | Whisper model size (tiny, base, small, medium, large) |
-| `PORT` | `9000` | Port to run the service on |
+| Variable        | Default | Description                                           |
+| --------------- | ------- | ----------------------------------------------------- |
+| `WHISPER_MODEL` | `base`  | Whisper model size (tiny, base, small, medium, large) |
+| `PORT`          | `9000`  | Port to run the service on                            |
 
 ### Model Sizes
 
-| Model | Parameters | Speed | Accuracy | VRAM Required |
-|-------|------------|-------|----------|---------------|
-| `tiny` | 39M | Fastest | Lower | ~1 GB |
-| `base` | 74M | Fast | Good | ~1 GB |
-| `small` | 244M | Medium | Better | ~2 GB |
-| `medium` | 769M | Slow | High | ~5 GB |
-| `large` | 1550M | Slowest | Highest | ~10 GB |
+| Model    | Parameters | Speed   | Accuracy | VRAM Required |
+| -------- | ---------- | ------- | -------- | ------------- |
+| `tiny`   | 39M        | Fastest | Lower    | ~1 GB         |
+| `base`   | 74M        | Fast    | Good     | ~1 GB         |
+| `small`  | 244M       | Medium  | Better   | ~2 GB         |
+| `medium` | 769M       | Slow    | High     | ~5 GB         |
+| `large`  | 1550M      | Slowest | Highest  | ~10 GB        |
 
 To use a different model, update the `docker-compose.yml`:
 
@@ -69,6 +69,7 @@ GET /health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -89,22 +90,25 @@ Content-Type: multipart/form-data
 | `audio_file` | File | Yes | Audio file (wav, mp3, m4a, webm, etc.) |
 
 **Example Request:**
+
 ```bash
 curl -X POST http://localhost:9000/asr \
   -F "audio_file=@recording.wav"
 ```
 
 **Success Response (200):**
+
 ```json
 {
   "text": "This is the transcribed text from the audio file.",
   "language": "en",
   "confidence": 0.95,
-  "words": [{"word": "This", "start": 0.0, "end": 0.5, "confidence": 0.98}]
+  "words": [{ "word": "This", "start": 0.0, "end": 0.5, "confidence": 0.98 }]
 }
 ```
 
 **Error Response (400):**
+
 ```json
 {
   "error": "No file provided"
@@ -112,6 +116,7 @@ curl -X POST http://localhost:9000/asr \
 ```
 
 **Error Response (500):**
+
 ```json
 {
   "error": "Transcription failed: <error message>"
@@ -141,6 +146,7 @@ The `/api/transcribe` route in the Next.js app forwards audio files to this serv
 ## Performance Tips
 
 1. **Use GPU acceleration**: For faster transcription, use NVIDIA GPU with CUDA support:
+
    ```yaml
    # docker-compose.yml
    services:
@@ -155,6 +161,7 @@ The `/api/transcribe` route in the Next.js app forwards audio files to this serv
    ```
 
 2. **Increase memory**: For larger models, increase Docker memory limits:
+
    ```yaml
    deploy:
      resources:
@@ -171,20 +178,24 @@ The `/api/transcribe` route in the Next.js app forwards audio files to this serv
 ## Troubleshooting
 
 ### Service won't start
+
 - Check Docker logs: `docker-compose logs`
 - Ensure port 9000 is not in use: `lsof -i :9000`
 
 ### Transcription is slow
+
 - Consider using a smaller model (`tiny` or `base`)
 - Enable GPU acceleration if available
 - Ensure adequate CPU/memory resources
 
 ### Out of memory errors
+
 - Use a smaller Whisper model
 - Increase Docker memory limits
 - Process shorter audio clips
 
 ### Audio format not supported
+
 - Convert audio to WAV format before uploading
 - Ensure the audio file is not corrupted
 
@@ -209,4 +220,3 @@ Note: You'll need FFmpeg installed on your system for audio processing.
 ## License
 
 MIT
-

@@ -14,7 +14,10 @@ export async function GET() {
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching teams:", error);
-    return NextResponse.json({ error: "Failed to fetch teams" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch teams" },
+      { status: 500 },
+    );
   }
 }
 
@@ -32,15 +35,18 @@ function generateInviteToken(): string {
 export async function POST(request: Request) {
   try {
     const { name } = await request.json();
-    
+
     if (!name?.trim()) {
-      return NextResponse.json({ error: "Team name is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Team name is required" },
+        { status: 400 },
+      );
     }
 
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("teams")
-      .insert({ 
+      .insert({
         name: name.trim(),
         invite_token: generateInviteToken(),
       })
@@ -51,6 +57,9 @@ export async function POST(request: Request) {
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error creating team:", error);
-    return NextResponse.json({ error: "Failed to create team" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create team" },
+      { status: 500 },
+    );
   }
 }

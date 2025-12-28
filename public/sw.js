@@ -1,56 +1,56 @@
-const CACHE_NAME = 'echo-test-v1';
+const CACHE_NAME = "echo-test-v1";
 const STATIC_ASSETS = [
-  '/',
-  '/manifest.json',
-  '/icons/icon-192x192.svg',
-  '/icons/icon-512x512.svg',
+  "/",
+  "/manifest.json",
+  "/icons/icon-192x192.svg",
+  "/icons/icon-512x512.svg",
 ];
 
 // Install event - cache static assets
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
-    })
+    }),
   );
   self.skipWaiting();
 });
 
 // Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .map((name) => caches.delete(name)),
       );
-    })
+    }),
   );
   self.clients.claim();
 });
 
 // Fetch event - network first, fallback to cache
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
+  if (event.request.method !== "GET") return;
 
   // Skip API requests - always go to network
-  if (event.request.url.includes('/api/')) return;
+  if (event.request.url.includes("/api/")) return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
         // Clone the response before caching
         const responseClone = response.clone();
-        
+
         // Cache successful responses
         if (response.status === 200) {
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
           });
         }
-        
+
         return response;
       })
       .catch(() => {
@@ -59,26 +59,26 @@ self.addEventListener('fetch', (event) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          
+
           // Return offline page for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match('/');
+          if (event.request.mode === "navigate") {
+            return caches.match("/");
           }
-          
-          return new Response('Offline', { status: 503 });
+
+          return new Response("Offline", { status: 503 });
         });
-      })
+      }),
   );
 });
 
 // Handle push notifications (for future use)
-self.addEventListener('push', (event) => {
+self.addEventListener("push", (event) => {
   if (event.data) {
     const data = event.data.json();
     const options = {
       body: data.body,
-      icon: '/icons/icon-192x192.svg',
-      badge: '/icons/icon-72x72.svg',
+      icon: "/icons/icon-192x192.svg",
+      badge: "/icons/icon-72x72.svg",
       vibrate: [100, 50, 100],
       data: {
         dateOfArrival: Date.now(),
@@ -90,7 +90,7 @@ self.addEventListener('push', (event) => {
 });
 
 // Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  event.waitUntil(clients.openWindow('/'));
+  event.waitUntil(clients.openWindow("/"));
 });

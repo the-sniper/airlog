@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles, Loader2, RefreshCw, Check, Edit2, Copy, X } from "lucide-react";
+import {
+  Sparkles,
+  Loader2,
+  RefreshCw,
+  Check,
+  Edit2,
+  Copy,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,14 +43,16 @@ export function NoteAISummaryDialog({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [summary, setSummary] = useState<string | null>(note.ai_summary || null);
+  const [summary, setSummary] = useState<string | null>(
+    note.ai_summary || null,
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [editedSummary, setEditedSummary] = useState(note.ai_summary || "");
   const [approved, setApproved] = useState(!!note.ai_summary);
   const [copied, setCopied] = useState(false);
 
   const transcript = note.edited_transcript || note.raw_transcript || "";
-  
+
   // Reset state when note changes or dialog opens
   useEffect(() => {
     if (open) {
@@ -63,7 +73,7 @@ export function NoteAISummaryDialog({
     try {
       const response = await fetch(
         `/api/sessions/${sessionId}/notes/${note.id}/summarize`,
-        { method: "POST" }
+        { method: "POST" },
       );
 
       if (!response.ok) {
@@ -105,7 +115,7 @@ export function NoteAISummaryDialog({
   async function handleApprove() {
     const summaryToSave = summary || "";
     setSaving(true);
-    
+
     try {
       // Save to database
       const response = await fetch(
@@ -114,7 +124,7 @@ export function NoteAISummaryDialog({
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ai_summary: summaryToSave }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -123,12 +133,12 @@ export function NoteAISummaryDialog({
 
       const updatedNote = await response.json();
       setApproved(true);
-      
+
       // Notify parent component
       if (onNoteUpdated) {
         onNoteUpdated(updatedNote);
       }
-      
+
       toast({
         title: "Summary Approved",
         description: "The actionable items have been saved.",
@@ -170,7 +180,9 @@ export function NoteAISummaryDialog({
             AI Summary
           </DialogTitle>
           <DialogDescription>
-            {note.ai_summary ? "View or regenerate actionable items" : "Generate actionable items from this note"}
+            {note.ai_summary
+              ? "View or regenerate actionable items"
+              : "Generate actionable items from this note"}
           </DialogDescription>
         </DialogHeader>
 
@@ -290,7 +302,12 @@ export function NoteAISummaryDialog({
                 </>
               ) : (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleEdit} disabled={saving}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEdit}
+                    disabled={saving}
+                  >
                     <Edit2 className="w-4 h-4" />
                     Edit
                   </Button>

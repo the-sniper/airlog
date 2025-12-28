@@ -16,12 +16,12 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {}
         },
       },
-    }
+    },
   );
 }
 
@@ -38,10 +38,10 @@ export function createAdminClient() {
       global: {
         headers: {
           // Bypass any read replica caching
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
         },
       },
-    }
+    },
   );
 }

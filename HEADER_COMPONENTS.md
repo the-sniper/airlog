@@ -1,6 +1,7 @@
 # Header Components Documentation
 
 ## Overview
+
 Two reusable header components have been created to provide consistent navigation across the application:
 
 1. **TesterHeader** - For tester-facing pages (dashboard, sessions, join pages)
@@ -9,9 +10,11 @@ Two reusable header components have been created to provide consistent navigatio
 ## TesterHeader Component
 
 ### Location
+
 `/src/components/tester-header.tsx`
 
 ### Features
+
 - **Logo** - Links to home page
 - **Navigation Links** (Desktop only)
   - Dashboard (`/dashboard`)
@@ -32,7 +35,7 @@ import { TesterHeader } from "@/components/tester-header";
 // In your page component
 export default function YourPage() {
   const [user, setUser] = useState(null);
-  
+
   // Fetch user data
   useEffect(() => {
     async function fetchUser() {
@@ -55,6 +58,7 @@ export default function YourPage() {
 ```
 
 ### Props
+
 ```typescript
 interface TesterHeaderProps {
   user?: {
@@ -67,6 +71,7 @@ interface TesterHeaderProps {
 ```
 
 ### Pages to Update
+
 Replace the existing header implementation in these pages:
 
 1. **`/src/app/dashboard/page.tsx`**
@@ -83,9 +88,11 @@ Replace the existing header implementation in these pages:
 ## AdminHeader Component
 
 ### Location
+
 `/src/components/admin-header.tsx`
 
 ### Features
+
 - **Logo** - Links to home page
 - **Navigation Links** (Desktop only)
   - Sessions (`/admin`)
@@ -107,7 +114,7 @@ import { AdminHeader } from "@/components/admin-header";
 // In your admin page component
 export default function AdminPage() {
   const [admin, setAdmin] = useState(null);
-  
+
   // Fetch admin data
   useEffect(() => {
     async function fetchAdmin() {
@@ -130,6 +137,7 @@ export default function AdminPage() {
 ```
 
 ### Props
+
 ```typescript
 interface AdminHeaderProps {
   admin?: {
@@ -143,7 +151,9 @@ interface AdminHeaderProps {
 ## Key Features Included
 
 ### Notification & Polling (TesterHeader)
+
 The TesterHeader includes the `TesterNotifications` component which:
+
 - Polls for session updates every 5 seconds
 - Shows real-time notifications for:
   - New session invites
@@ -156,7 +166,9 @@ The TesterHeader includes the `TesterNotifications` component which:
 - Supports both single-session and multi-session modes
 
 ### Responsive Design
+
 Both headers include:
+
 - Desktop navigation with dropdown menus
 - Mobile hamburger menu with slide-out drawer
 - Smooth transitions and animations
@@ -164,7 +176,9 @@ Both headers include:
 - Theme toggle integration
 
 ### Logout Flow
+
 Both headers include:
+
 - Confirmation dialog before logout
 - Proper API call to logout endpoint
 - Redirect to appropriate login page
@@ -175,6 +189,7 @@ Both headers include:
 ### For Dashboard Page (`/src/app/dashboard/page.tsx`)
 
 **Before:**
+
 ```tsx
 return (
   <div className="min-h-screen gradient-mesh flex flex-col">
@@ -191,6 +206,7 @@ return (
 ```
 
 **After:**
+
 ```tsx
 import { TesterHeader } from "@/components/tester-header";
 
@@ -212,12 +228,14 @@ The join page currently has a minimal header. You can replace it with:
 import { TesterHeader } from "@/components/tester-header";
 
 // Convert tester data to user format
-const user = tester ? {
-  id: tester.user_id || tester.id,
-  first_name: tester.first_name,
-  last_name: tester.last_name,
-  email: tester.email,
-} : null;
+const user = tester
+  ? {
+      id: tester.user_id || tester.id,
+      first_name: tester.first_name,
+      last_name: tester.last_name,
+      email: tester.email,
+    }
+  : null;
 
 return (
   <>

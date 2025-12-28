@@ -85,7 +85,9 @@ export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<MeResponse["user"] | null>(null);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -107,7 +109,9 @@ export default function DashboardPage() {
         setUser(meData.user);
 
         // Then fetch dashboard data
-        const dashRes = await fetch("/api/users/dashboard", { cache: "no-store" });
+        const dashRes = await fetch("/api/users/dashboard", {
+          cache: "no-store",
+        });
 
         if (!mounted) return;
 

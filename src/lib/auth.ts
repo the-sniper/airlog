@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { createAdminClient } from "./supabase/server";
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.ADMIN_JWT_SECRET || "your-secret-key-change-in-production"
+  process.env.ADMIN_JWT_SECRET || "your-secret-key-change-in-production",
 );
 
 const COOKIE_NAME = "admin_session";
@@ -23,7 +23,10 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 // Verify password
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  hash: string,
+): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
 
@@ -37,7 +40,9 @@ export async function createToken(adminId: string): Promise<string> {
 }
 
 // Verify JWT token
-export async function verifyToken(token: string): Promise<{ adminId: string } | null> {
+export async function verifyToken(
+  token: string,
+): Promise<{ adminId: string } | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
     return { adminId: payload.adminId as string };
@@ -98,7 +103,10 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
 }
 
 // Create admin (only if none exists)
-export async function createAdmin(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+export async function createAdmin(
+  email: string,
+  password: string,
+): Promise<{ success: boolean; error?: string }> {
   const exists = await adminExists();
   if (exists) {
     return { success: false, error: "Admin already exists" };
@@ -119,7 +127,10 @@ export async function createAdmin(email: string, password: string): Promise<{ su
 }
 
 // Login admin
-export async function loginAdmin(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+export async function loginAdmin(
+  email: string,
+  password: string,
+): Promise<{ success: boolean; error?: string }> {
   const supabase = createAdminClient();
 
   const { data: admin } = await supabase
@@ -154,4 +165,3 @@ export async function loginAdmin(email: string, password: string): Promise<{ suc
 export async function logoutAdmin() {
   await clearAuthCookie();
 }
-

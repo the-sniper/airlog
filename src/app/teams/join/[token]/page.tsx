@@ -2,9 +2,23 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Loader2, AlertCircle, CheckCircle, ArrowRight, LogIn, UserPlus } from "lucide-react";
+import {
+  Users,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  ArrowRight,
+  LogIn,
+  UserPlus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface Team {
   id: string;
@@ -26,13 +40,20 @@ interface LoggedInUser {
   email: string;
 }
 
-export default function TeamJoinPage({ params }: { params: { token: string } }) {
+export default function TeamJoinPage({
+  params,
+}: {
+  params: { token: string };
+}) {
   const { token } = params;
   const [team, setTeam] = useState<Team | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
-  const [success, setSuccess] = useState<{ member: Member; alreadyRegistered: boolean } | null>(null);
+  const [success, setSuccess] = useState<{
+    member: Member;
+    alreadyRegistered: boolean;
+  } | null>(null);
   const [loggedInUser, setLoggedInUser] = useState<LoggedInUser | null>(null);
   const [showAuthLanding, setShowAuthLanding] = useState(false);
 
@@ -163,7 +184,8 @@ export default function TeamJoinPage({ params }: { params: { token: string } }) 
                 : `You've successfully joined ${team?.name}.`}
             </p>
             <p className="text-sm text-muted-foreground mb-6">
-              Hi {success.member.first_name}! The admin will add you to testing sessions when needed.
+              Hi {success.member.first_name}! The admin will add you to testing
+              sessions when needed.
             </p>
             <Link href="/dashboard">
               <Button>
@@ -191,9 +213,14 @@ export default function TeamJoinPage({ params }: { params: { token: string } }) 
           <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
             <CardHeader className="text-center pb-2">
               <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
-                <Users className="w-8 h-8 text-primary-foreground" strokeWidth={1.75} />
+                <Users
+                  className="w-8 h-8 text-primary-foreground"
+                  strokeWidth={1.75}
+                />
               </div>
-              <CardTitle className="text-2xl font-bold">Join {team.name}</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                Join {team.name}
+              </CardTitle>
               <CardDescription className="text-muted-foreground">
                 You&apos;ve been invited to join this team
               </CardDescription>
@@ -203,7 +230,8 @@ export default function TeamJoinPage({ params }: { params: { token: string } }) 
               {/* Team Info */}
               <div className="p-4 rounded-xl bg-secondary/50 space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  As a team member, you&apos;ll be able to participate in testing sessions organized by this team.
+                  As a team member, you&apos;ll be able to participate in
+                  testing sessions organized by this team.
                 </p>
               </div>
 
@@ -214,14 +242,18 @@ export default function TeamJoinPage({ params }: { params: { token: string } }) 
                 </p>
 
                 <div className="grid gap-3">
-                  <Link href={`/login?callbackUrl=${encodeURIComponent(`/teams/join/${token}`)}`}>
+                  <Link
+                    href={`/login?callbackUrl=${encodeURIComponent(`/teams/join/${token}`)}`}
+                  >
                     <Button className="w-full h-12" size="lg">
                       <LogIn className="w-5 h-5 mr-2" />
                       Log in
                     </Button>
                   </Link>
 
-                  <Link href={`/signup?callbackUrl=${encodeURIComponent(`/teams/join/${token}`)}`}>
+                  <Link
+                    href={`/signup?callbackUrl=${encodeURIComponent(`/teams/join/${token}`)}`}
+                  >
                     <Button variant="outline" className="w-full h-12" size="lg">
                       <UserPlus className="w-5 h-5 mr-2" />
                       Create Account

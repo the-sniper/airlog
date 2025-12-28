@@ -7,7 +7,17 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { TesterNotifications } from "@/components/tester/tester-notifications";
-import { Menu, X, LayoutGrid, ChevronRight, Settings, Users2, LogOut, ChevronDown, User } from "lucide-react";
+import {
+  Menu,
+  X,
+  LayoutGrid,
+  ChevronRight,
+  Settings,
+  Users2,
+  LogOut,
+  ChevronDown,
+  User,
+} from "lucide-react";
 import { useTheme } from "@/components/common/theme-provider";
 import {
   DropdownMenu,
@@ -52,13 +62,28 @@ export function TesterHeader({ user }: TesterHeaderProps) {
       <header className="h-16 border-b border-border/50 bg-card/80 glass flex items-center justify-between px-4 z-40">
         <div className="flex items-center gap-2">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <Image src="/logo.svg" alt="AirLog" width={110} height={28} className="dark:hidden" />
-            <Image src="/logo-dark.svg" alt="AirLog" width={110} height={28} className="hidden dark:block" />
+            <Image
+              src="/logo.svg"
+              alt="AirLog"
+              width={110}
+              height={28}
+              className="dark:hidden"
+            />
+            <Image
+              src="/logo-dark.svg"
+              alt="AirLog"
+              width={110}
+              height={28}
+              className="hidden dark:block"
+            />
           </Link>
         </div>
         <div className="flex items-center gap-3">
           <nav className="hidden md:flex items-center gap-3 mr-4">
-            <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link
+              href="/dashboard"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
               Dashboard
             </Link>
           </nav>
@@ -66,8 +91,14 @@ export function TesterHeader({ user }: TesterHeaderProps) {
           <div className="hidden md:block">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <span>{user?.first_name ? `Hey ${user.first_name}` : "Account"}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <span>
+                    {user?.first_name ? `Hey ${user.first_name}` : "Account"}
+                  </span>
                   <ChevronDown className="w-4 h-4 transition-transform data-[state=open]:rotate-180" />
                 </Button>
               </DropdownMenuTrigger>
@@ -127,24 +158,39 @@ export function TesterHeader({ user }: TesterHeaderProps) {
 
       {/* Mobile drawer */}
       <div
-        className={`fixed inset-0 z-50 transition-all duration-300 sm:hidden ${drawerOpen ? "pointer-events-auto" : "pointer-events-none"
-          }`}
+        className={`fixed inset-0 z-50 transition-all duration-300 sm:hidden ${
+          drawerOpen ? "pointer-events-auto" : "pointer-events-none"
+        }`}
       >
         <div
-          className={`absolute inset-0 bg-background/70 backdrop-blur-md transition-opacity duration-300 ${drawerOpen ? "opacity-100" : "opacity-0"
-            }`}
+          className={`absolute inset-0 bg-background/70 backdrop-blur-md transition-opacity duration-300 ${
+            drawerOpen ? "opacity-100" : "opacity-0"
+          }`}
           onClick={() => setDrawerOpen(false)}
         />
         <div
           role="dialog"
           aria-modal="true"
-          className={`absolute inset-y-0 right-0 w-[86%] max-w-sm bg-card shadow-2xl border-l border-border/60 rounded-l-3xl flex flex-col transition-transform duration-300 ease-in-out ${drawerOpen ? "translate-x-0" : "translate-x-full"
-            }`}
+          className={`absolute inset-y-0 right-0 w-[86%] max-w-sm bg-card shadow-2xl border-l border-border/60 rounded-l-3xl flex flex-col transition-transform duration-300 ease-in-out ${
+            drawerOpen ? "translate-x-0" : "translate-x-full"
+          }`}
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
             <div className="flex items-center gap-3">
-              <Image src="/logo.svg" alt="AirLog" width={96} height={24} className="dark:hidden" />
-              <Image src="/logo-dark.svg" alt="AirLog" width={96} height={24} className="hidden dark:block" />
+              <Image
+                src="/logo.svg"
+                alt="AirLog"
+                width={96}
+                height={24}
+                className="dark:hidden"
+              />
+              <Image
+                src="/logo-dark.svg"
+                alt="AirLog"
+                width={96}
+                height={24}
+                className="hidden dark:block"
+              />
             </div>
             <Button
               variant="ghost"
@@ -160,7 +206,9 @@ export function TesterHeader({ user }: TesterHeaderProps) {
           <div className="px-5 py-6 space-y-6 flex-1 overflow-y-auto flex flex-col">
             <div className="space-y-3">
               <div className="rounded-xl">
-                <p className="text-xs text-muted-foreground">You are logged in as</p>
+                <p className="text-xs text-muted-foreground">
+                  You are logged in as
+                </p>
                 <p className="font-semibold">{fullName || "User"}</p>
               </div>
 
@@ -175,7 +223,9 @@ export function TesterHeader({ user }: TesterHeaderProps) {
                   </div>
                   <div>
                     <p className="font-medium">Dashboard</p>
-                    <p className="text-xs text-muted-foreground">Your workspace</p>
+                    <p className="text-xs text-muted-foreground">
+                      Your workspace
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -192,7 +242,9 @@ export function TesterHeader({ user }: TesterHeaderProps) {
                   </div>
                   <div>
                     <p className="font-medium">Sessions</p>
-                    <p className="text-xs text-muted-foreground">Browse and manage sessions</p>
+                    <p className="text-xs text-muted-foreground">
+                      Browse and manage sessions
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -209,7 +261,9 @@ export function TesterHeader({ user }: TesterHeaderProps) {
                   </div>
                   <div>
                     <p className="font-medium">Profile</p>
-                    <p className="text-xs text-muted-foreground">Manage your account</p>
+                    <p className="text-xs text-muted-foreground">
+                      Manage your account
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -229,7 +283,9 @@ export function TesterHeader({ user }: TesterHeaderProps) {
                   </div>
                   <div>
                     <p className="font-medium">Theme</p>
-                    <p className="text-xs text-muted-foreground">Light or dark mode</p>
+                    <p className="text-xs text-muted-foreground">
+                      Light or dark mode
+                    </p>
                   </div>
                 </div>
                 <ThemeToggle />
@@ -247,7 +303,9 @@ export function TesterHeader({ user }: TesterHeaderProps) {
                 <LogOut className="w-5 h-5" strokeWidth={1.75} />
                 <div className="text-left">
                   <p className="font-medium">Sign Out</p>
-                  <p className="text-xs text-muted-foreground">End this session securely</p>
+                  <p className="text-xs text-muted-foreground">
+                    End this session securely
+                  </p>
                 </div>
               </Button>
             </div>
@@ -264,7 +322,10 @@ export function TesterHeader({ user }: TesterHeaderProps) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowLogoutDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowLogoutDialog(false)}
+            >
               Cancel
             </Button>
             <Button

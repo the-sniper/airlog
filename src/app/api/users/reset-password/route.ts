@@ -12,10 +12,13 @@ async function sendResetEmail(to: string, token: string) {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === "true",
-    auth: process.env.SMTP_USER && process.env.SMTP_PASS ? {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    } : undefined,
+    auth:
+      process.env.SMTP_USER && process.env.SMTP_PASS
+        ? {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          }
+        : undefined,
   });
 
   const from = process.env.SMTP_FROM || "AirLog <no-reply@airlog.app>";
@@ -54,7 +57,10 @@ export async function POST(req: Request) {
     const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
     // Invalidate previous tokens for this user
-    await supabase.from("password_reset_tokens").delete().eq("user_id", user.id);
+    await supabase
+      .from("password_reset_tokens")
+      .delete()
+      .eq("user_id", user.id);
 
     const { error } = await supabase
       .from("password_reset_tokens")

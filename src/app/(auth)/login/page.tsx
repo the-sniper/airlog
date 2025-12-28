@@ -8,7 +8,13 @@ import { Mail, Lock, Eye, EyeOff, LogIn, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 
@@ -60,7 +66,9 @@ function LoginForm() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Login is not available yet. Please try again later.");
+        setError(
+          data.error || "Login is not available yet. Please try again later.",
+        );
         setLoading(false);
         return;
       }
@@ -78,7 +86,10 @@ function LoginForm() {
     <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
       <CardHeader className="text-center pb-2">
         <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center mb-3 shadow-lg shadow-primary/20">
-          <LogIn className="w-7 h-7 text-primary-foreground" strokeWidth={1.75} />
+          <LogIn
+            className="w-7 h-7 text-primary-foreground"
+            strokeWidth={1.75}
+          />
         </div>
         <CardTitle className="text-2xl font-bold">Log in</CardTitle>
         <CardDescription className="text-muted-foreground">
@@ -100,7 +111,7 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => !isInviteFlow && setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className={`pl-9 h-11 ${isInviteFlow ? 'bg-secondary/50 cursor-not-allowed' : ''}`}
+                className={`pl-9 h-11 ${isInviteFlow ? "bg-secondary/50 cursor-not-allowed" : ""}`}
                 required
                 autoComplete="email"
                 readOnly={!!isInviteFlow}
@@ -132,7 +143,11 @@ function LoginForm() {
                 onClick={() => setShowPassword((s) => !s)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -160,7 +175,11 @@ function LoginForm() {
                   Want to use a different account?
                 </p>
                 <Link href={"/login"}>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                  >
                     <UserX className="w-4 h-4 mr-1" />
                     Leave invite & login differently
                   </Button>
@@ -171,12 +190,19 @@ function LoginForm() {
             <>
               <span>
                 Don&apos;t have an account?{" "}
-                <Button variant="link" className="px-1" onClick={() => router.push("/signup")}>
+                <Button
+                  variant="link"
+                  className="px-1"
+                  onClick={() => router.push("/signup")}
+                >
                   Sign up
                 </Button>
               </span>
               <p className="text-center text-xs text-muted-foreground/60 mt-6">
-                <Link href="/admin/login" className="hover:text-primary transition-colors underline underline-offset-4">
+                <Link
+                  href="/admin/login"
+                  className="hover:text-primary transition-colors underline underline-offset-4"
+                >
                   Login as an admin
                 </Link>
               </p>
@@ -193,7 +219,10 @@ function LoginFormFallback() {
     <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
       <CardHeader className="text-center pb-2">
         <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center mb-3 shadow-lg shadow-primary/20">
-          <LogIn className="w-7 h-7 text-primary-foreground" strokeWidth={1.75} />
+          <LogIn
+            className="w-7 h-7 text-primary-foreground"
+            strokeWidth={1.75}
+          />
         </div>
         <CardTitle className="text-2xl font-bold">Log in</CardTitle>
         <CardDescription className="text-muted-foreground">
@@ -219,8 +248,20 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative">
         <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-          <Image src="/logo.svg" alt="AirLog" width={120} height={32} className="dark:hidden" />
-          <Image src="/logo-dark.svg" alt="AirLog" width={120} height={32} className="hidden dark:block" />
+          <Image
+            src="/logo.svg"
+            alt="AirLog"
+            width={120}
+            height={32}
+            className="dark:hidden"
+          />
+          <Image
+            src="/logo-dark.svg"
+            alt="AirLog"
+            width={120}
+            height={32}
+            className="hidden dark:block"
+          />
         </div>
 
         <Suspense fallback={<LoginFormFallback />}>

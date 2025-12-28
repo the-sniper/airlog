@@ -10,10 +10,10 @@ The system allows multiple testers to record spoken feedback during testing sess
 
 ## Core Goals
 
-* Make note-taking effortless during testing
-* Remove tester bias and groupthink
-* Preserve raw feedback while producing structured insights
-* Generate reports that are immediately useful to product and engineering teams
+- Make note-taking effortless during testing
+- Remove tester bias and groupthink
+- Preserve raw feedback while producing structured insights
+- Generate reports that are immediately useful to product and engineering teams
 
 ---
 
@@ -21,19 +21,19 @@ The system allows multiple testers to record spoken feedback during testing sess
 
 ### Admin
 
-* Creates and manages test sessions
-* Defines scenes and session metadata
-* Controls session start and end
-* Generates reports and exports
-* Manages integrations
+- Creates and manages test sessions
+- Defines scenes and session metadata
+- Controls session start and end
+- Generates reports and exports
+- Manages integrations
 
 ### Tester
 
-* Joins active sessions
-* Selects assigned scene
-* Records voice notes
-* Reviews and edits transcriptions
-* Cannot view others’ feedback until session ends
+- Joins active sessions
+- Selects assigned scene
+- Records voice notes
+- Reviews and edits transcriptions
+- Cannot view others’ feedback until session ends
 
 ---
 
@@ -41,17 +41,17 @@ The system allows multiple testers to record spoken feedback during testing sess
 
 ### 1. Session Creation (Admin)
 
-* Session name
-* Date and time
-* Build or version identifier
-* Defined scenes (Scene A, Scene B, etc.)
-* Optional visibility lock until session end
+- Session name
+- Date and time
+- Build or version identifier
+- Defined scenes (Scene A, Scene B, etc.)
+- Optional visibility lock until session end
 
 ### 2. Session Participation (Testers)
 
-* Join via invite link or authentication
-* Select the scene being tested
-* Begin recording voice notes
+- Join via invite link or authentication
+- Select the scene being tested
+- Begin recording voice notes
 
 ### 3. Voice Note Capture
 
@@ -59,17 +59,17 @@ Each note is a discrete entry.
 
 Controls:
 
-* Record
-* Pause
-* Resume
-* Stop
+- Record
+- Pause
+- Resume
+- Stop
 
 Optional prompt at start:
 
-* Bug
-* Feature
-* UX feedback
-* Let the system auto-detect
+- Bug
+- Feature
+- UX feedback
+- Let the system auto-detect
 
 ---
 
@@ -77,19 +77,19 @@ Optional prompt at start:
 
 ### Speech to Text
 
-* Automatic transcription per recording
-* Confidence scoring per word or segment
-* Audio retained as source of truth
+- Automatic transcription per recording
+- Confidence scoring per word or segment
+- Audio retained as source of truth
 
 ### Editable Transcripts
 
-* Users can edit transcribed text
-* Two versions retained:
+- Users can edit transcribed text
+- Two versions retained:
+  - Raw transcript (immutable)
+  - Edited transcript (used for processing)
 
-  * Raw transcript (immutable)
-  * Edited transcript (used for processing)
-* Low-confidence words visually highlighted
-* Optional redaction of sensitive information
+- Low-confidence words visually highlighted
+- Optional redaction of sensitive information
 
 ---
 
@@ -97,24 +97,24 @@ Optional prompt at start:
 
 Each note is automatically tagged with:
 
-* Scene
-* User
-* Timestamp
-* Category (Bug, Feature, UX, Performance, Other)
-* Classification source (Auto or User-Declared)
+- Scene
+- User
+- Timestamp
+- Category (Bug, Feature, UX, Performance, Other)
+- Classification source (Auto or User-Declared)
 
 ### Auto-Classification Heuristics
 
-* Keywords and semantic cues used to infer category
-* Ambiguous notes flagged instead of forced
+- Keywords and semantic cues used to infer category
+- Ambiguous notes flagged instead of forced
 
 ---
 
 ## Bias Prevention
 
-* Testers cannot see other feedback during an active session
-* Feedback is revealed only after admin ends the session
-* Optional anonymized reporting
+- Testers cannot see other feedback during an active session
+- Feedback is revealed only after admin ends the session
+- Optional anonymized reporting
 
 ---
 
@@ -126,37 +126,37 @@ Triggered automatically when session ends.
 
 #### High-Level Summary
 
-* Total notes recorded
-* Category breakdown
-* Scene-wise distribution
+- Total notes recorded
+- Category breakdown
+- Scene-wise distribution
 
 #### Scene Breakdown
 
 For each scene:
 
-* Grouped issues and feedback clusters
-* Recurring themes
-* Direct quotes with timestamps and user tags
+- Grouped issues and feedback clusters
+- Recurring themes
+- Direct quotes with timestamps and user tags
 
 #### Confidence and Trends
 
-* Frequency of similar issues
-* Severity indicators
+- Frequency of similar issues
+- Severity indicators
 
 ### Export Options
 
-* Downloadable PDF
-* Clean, executive-friendly layout
-* Optional anonymized version
+- Downloadable PDF
+- Clean, executive-friendly layout
+- Optional anonymized version
 
 ---
 
 ## History and Replay
 
-* Persistent session history
-* Filter by project, date, build, or tester
-* Searchable transcripts
-* Audio playback synced with text
+- Persistent session history
+- Filter by project, date, build, or tester
+- Searchable transcripts
+- Audio playback synced with text
 
 ---
 
@@ -164,17 +164,17 @@ For each scene:
 
 ### Confluence (Later Phase)
 
-* Map session to Space and Parent Page
-* Auto-create pages at session end
-* Optional child pages per scene
-* Structured markdown to Confluence format
+- Map session to Space and Parent Page
+- Auto-create pages at session end
+- Optional child pages per scene
+- Structured markdown to Confluence format
 
 ### Future Integrations
 
-* Jira
-* Linear
-* GitHub Issues
-* Slack notifications
+- Jira
+- Linear
+- GitHub Issues
+- Slack notifications
 
 ---
 
@@ -182,30 +182,30 @@ For each scene:
 
 ### Actionability
 
-* One-click convert note to ticket
-* Duplicate detection across sessions
+- One-click convert note to ticket
+- Duplicate detection across sessions
 
 ### Testing Rigor
 
-* Admin-defined test prompts per scene
-* Blind testing modes
+- Admin-defined test prompts per scene
+- Blind testing modes
 
 ### Voice Enhancements
 
-* Spoken hotwords, e.g., "mark this important"
-* Moment bookmarks
-* Post-note severity rating
+- Spoken hotwords, e.g., "mark this important"
+- Moment bookmarks
+- Post-note severity rating
 
 ### Reporting Enhancements
 
-* Cross-session trend analysis
-* Scene and category heatmaps
+- Cross-session trend analysis
+- Scene and category heatmaps
 
 ### Privacy and Trust
 
-* Anonymized tester views
-* Admin-only identity resolution
-* Redaction tools
+- Anonymized tester views
+- Admin-only identity resolution
+- Redaction tools
 
 ---
 
@@ -213,33 +213,33 @@ For each scene:
 
 ### Frontend
 
-* Mobile-first
-* React Native or Expo
-* Web dashboard for admins
+- Mobile-first
+- React Native or Expo
+- Web dashboard for admins
 
 ### Backend
 
-* Node.js or FastAPI
-* REST or GraphQL API
+- Node.js or FastAPI
+- REST or GraphQL API
 
 ### Speech to Text
 
-* Open-source Whisper (self-hosted)
-* Optional hosted STT APIs for MVP
+- Open-source Whisper (self-hosted)
+- Optional hosted STT APIs for MVP
 
 ### NLP and Tagging
 
-* Lightweight rules plus LLM classification
+- Lightweight rules plus LLM classification
 
 ### Storage
 
-* PostgreSQL for structured data
-* Object storage for audio
+- PostgreSQL for structured data
+- Object storage for audio
 
 ### Reporting
 
-* Server-side PDF generation
-* Markdown-based templates
+- Server-side PDF generation
+- Markdown-based templates
 
 ---
 
@@ -253,7 +253,7 @@ It turns testing feedback from an afterthought into a reliable signal.
 
 ## Future Vision
 
-* Multi-project dashboards
-* Predictive issue surfacing
-* Voice analytics across teams
-* Enterprise-grade audit and compliance features
+- Multi-project dashboards
+- Predictive issue surfacing
+- Voice analytics across teams
+- Enterprise-grade audit and compliance features

@@ -2,11 +2,24 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Plus, X, Loader2, AlertTriangle, GripVertical } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  X,
+  Loader2,
+  AlertTriangle,
+  GripVertical,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -61,7 +74,7 @@ function renderTextWithLinks(text: string) {
         className="text-primary hover:underline break-words"
       >
         {label}
-      </a>
+      </a>,
     );
     lastIndex = regex.lastIndex;
   }
@@ -74,10 +87,10 @@ function renderTextWithLinks(text: string) {
 }
 
 function FormattedDescription({ text }: { text: string }) {
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   const elements: React.ReactNode[] = [];
   let currentList: string[] = [];
-  
+
   const flushList = () => {
     if (currentList.length > 0) {
       elements.push(
@@ -88,33 +101,35 @@ function FormattedDescription({ text }: { text: string }) {
               <span>{renderTextWithLinks(item)}</span>
             </li>
           ))}
-        </ul>
+        </ul>,
       );
       currentList = [];
     }
   };
-  
+
   lines.forEach((line, index) => {
     const trimmed = line.trim();
     const bulletMatch = trimmed.match(/^(?:[•\-\*\>]|\d+[\.\)])\s*(.*)$/);
-    
+
     if (bulletMatch) {
       currentList.push(bulletMatch[1] || trimmed.slice(1).trim());
-    } else if (trimmed === '') {
+    } else if (trimmed === "") {
       flushList();
     } else {
       flushList();
       elements.push(
         <p key={`text-${index}`} className="text-xs">
           {renderTextWithLinks(trimmed)}
-        </p>
+        </p>,
       );
     }
   });
-  
+
   flushList();
-  
-  return <div className="text-xs text-muted-foreground space-y-1">{elements}</div>;
+
+  return (
+    <div className="text-xs text-muted-foreground space-y-1">{elements}</div>
+  );
 }
 
 function SortableSceneItem({
@@ -212,13 +227,22 @@ export default function NewSessionPage() {
     setAddSceneDialog(true);
   }
 
-  function insertIntoNewSceneDescription(snippet: string, startOnNewLine = false) {
+  function insertIntoNewSceneDescription(
+    snippet: string,
+    startOnNewLine = false,
+  ) {
     const textarea = newSceneDescriptionRef.current;
     if (textarea) {
       const { selectionStart, selectionEnd } = textarea;
-      const needsNewLine = startOnNewLine && selectionStart > 0 && newSceneDescription[selectionStart - 1] !== "\n";
+      const needsNewLine =
+        startOnNewLine &&
+        selectionStart > 0 &&
+        newSceneDescription[selectionStart - 1] !== "\n";
       const insertion = needsNewLine ? `\n${snippet}` : snippet;
-      const nextValue = newSceneDescription.slice(0, selectionStart) + insertion + newSceneDescription.slice(selectionEnd);
+      const nextValue =
+        newSceneDescription.slice(0, selectionStart) +
+        insertion +
+        newSceneDescription.slice(selectionEnd);
       setNewSceneDescription(nextValue);
       requestAnimationFrame(() => {
         const caret = selectionStart + insertion.length;
@@ -232,14 +256,22 @@ export default function NewSessionPage() {
 
   function handleAddScene() {
     if (newSceneName.trim()) {
-      setScenes([...scenes, { name: newSceneName.trim(), description: newSceneDescription.trim() || null }]);
+      setScenes([
+        ...scenes,
+        {
+          name: newSceneName.trim(),
+          description: newSceneDescription.trim() || null,
+        },
+      ]);
       setNewSceneName("");
       setNewSceneDescription("");
       setAddSceneDialog(false);
     }
   }
 
-  function removeScene(i: number) { setScenes(scenes.filter((_, idx) => idx !== i)); }
+  function removeScene(i: number) {
+    setScenes(scenes.filter((_, idx) => idx !== i));
+  }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -254,7 +286,7 @@ export default function NewSessionPage() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   function addIssueOption(option: string) {
@@ -280,8 +312,11 @@ export default function NewSessionPage() {
     });
   }
 
-  function handleDescriptionKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    const isUndo = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z" && !e.shiftKey;
+  function handleDescriptionKeyDown(
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) {
+    const isUndo =
+      (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z" && !e.shiftKey;
     if (isUndo && descriptionHistoryIndex > 0) {
       e.preventDefault();
       const prevIndex = descriptionHistoryIndex - 1;
@@ -294,9 +329,15 @@ export default function NewSessionPage() {
     const textarea = descriptionRef.current;
     if (textarea) {
       const { selectionStart, selectionEnd } = textarea;
-      const needsNewLine = startOnNewLine && selectionStart > 0 && description[selectionStart - 1] !== "\n";
+      const needsNewLine =
+        startOnNewLine &&
+        selectionStart > 0 &&
+        description[selectionStart - 1] !== "\n";
       const insertion = needsNewLine ? `\n${snippet}` : snippet;
-      const nextValue = description.slice(0, selectionStart) + insertion + description.slice(selectionEnd);
+      const nextValue =
+        description.slice(0, selectionStart) +
+        insertion +
+        description.slice(selectionEnd);
       recordDescription(nextValue);
       requestAnimationFrame(() => {
         const caret = selectionStart + insertion.length;
@@ -309,7 +350,7 @@ export default function NewSessionPage() {
   }
 
   function removeIssueOption(option: string) {
-    setIssueOptions(issueOptions.filter(o => o !== option));
+    setIssueOptions(issueOptions.filter((o) => o !== option));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -317,29 +358,115 @@ export default function NewSessionPage() {
     if (!name.trim() || scenes.length === 0) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim(), description: description.trim() || null, build_version: buildVersion.trim() || null, scenes, issue_options: issueOptions }) });
-      if (res.ok) { const session = await res.json(); router.push(`/admin/sessions/${session.id}`); }
-    } finally { setLoading(false); }
+      const res = await fetch("/api/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim() || null,
+          build_version: buildVersion.trim() || null,
+          scenes,
+          issue_options: issueOptions,
+        }),
+      });
+      if (res.ok) {
+        const session = await res.json();
+        router.push(`/admin/sessions/${session.id}`);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-4"><Link href="/admin"><Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button></Link><div><h1 className="text-2xl font-bold">Create Session</h1><p className="text-muted-foreground">Set up a new test session</p></div></div>
+      <div className="flex items-center gap-4">
+        <Link href="/admin">
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold">Create Session</h1>
+          <p className="text-muted-foreground">Set up a new test session</p>
+        </div>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card><CardHeader><CardTitle>Session Details</CardTitle><CardDescription>Basic information</CardDescription></CardHeader><CardContent className="space-y-4"><div className="space-y-2"><Label htmlFor="name">Session Name *</Label><Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Sprint 24" required /></div><div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <Label htmlFor="description">Description</Label>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <span className="hidden sm:inline">Quick format</span>
-              <Button type="button" variant="outline" size="sm" className="h-8" onClick={() => insertIntoDescription("• ", true)}>Bullet</Button>
-              <Button type="button" variant="outline" size="sm" className="h-8" onClick={() => insertIntoDescription("[Link text](https://)", false)}>Add link</Button>
-            </div>
-          </div>
-          <Textarea id="description" ref={descriptionRef} value={description} onChange={(e) => recordDescription(e.target.value)} onKeyDown={handleDescriptionKeyDown} placeholder={"Add context, links, and bullets:\n• Goals for this session\n• Known issues or areas to avoid\n• Useful links: https://example.com/docs"} className="min-h-[100px] resize-none" />
-          <p className="text-xs text-muted-foreground">Use bullet points for clarity and add reference links with the toolbar.</p>
-        </div><div className="space-y-2"><Label htmlFor="buildVersion">Build / Version</Label><Input id="buildVersion" value={buildVersion} onChange={(e) => setBuildVersion(e.target.value)} placeholder="e.g., v2.1.0" /></div></CardContent></Card>
         <Card>
-          <CardHeader><CardTitle>Scenes</CardTitle><CardDescription>Areas being tested</CardDescription></CardHeader>
+          <CardHeader>
+            <CardTitle>Session Details</CardTitle>
+            <CardDescription>Basic information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Session Name *</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Sprint 24"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="description">Description</Label>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="hidden sm:inline">Quick format</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={() => insertIntoDescription("• ", true)}
+                  >
+                    Bullet
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={() =>
+                      insertIntoDescription("[Link text](https://)", false)
+                    }
+                  >
+                    Add link
+                  </Button>
+                </div>
+              </div>
+              <Textarea
+                id="description"
+                ref={descriptionRef}
+                value={description}
+                onChange={(e) => recordDescription(e.target.value)}
+                onKeyDown={handleDescriptionKeyDown}
+                placeholder={
+                  "Add context, links, and bullets:\n• Goals for this session\n• Known issues or areas to avoid\n• Useful links: https://example.com/docs"
+                }
+                className="min-h-[100px] resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Use bullet points for clarity and add reference links with the
+                toolbar.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="buildVersion">Build / Version</Label>
+              <Input
+                id="buildVersion"
+                value={buildVersion}
+                onChange={(e) => setBuildVersion(e.target.value)}
+                placeholder="e.g., v2.1.0"
+              />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Scenes</CardTitle>
+            <CardDescription>Areas being tested</CardDescription>
+          </CardHeader>
           <CardContent className="space-y-4">
             {scenes.length > 0 ? (
               <DndContext
@@ -362,7 +489,15 @@ export default function NewSessionPage() {
                     ))}
                   </div>
                 </SortableContext>
-                <Button type="button" variant="outline" className="w-full border-dashed mt-2" onClick={openAddSceneDialog}><Plus className="w-4 h-4 mr-2" />Add Scene</Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-dashed mt-2"
+                  onClick={openAddSceneDialog}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Scene
+                </Button>
               </DndContext>
             ) : (
               <button
@@ -373,8 +508,12 @@ export default function NewSessionPage() {
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
                   <Plus className="w-5 h-5" />
                 </div>
-                <span className="text-sm font-medium">Add your first scene</span>
-                <span className="text-xs">Define areas or features to test</span>
+                <span className="text-sm font-medium">
+                  Add your first scene
+                </span>
+                <span className="text-xs">
+                  Define areas or features to test
+                </span>
               </button>
             )}
           </CardContent>
@@ -385,7 +524,9 @@ export default function NewSessionPage() {
               <AlertTriangle className="w-5 h-5" />
               Issue Checkboxes
             </CardTitle>
-            <CardDescription>Quick checkboxes for common issues testers can report</CardDescription>
+            <CardDescription>
+              Quick checkboxes for common issues testers can report
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {issueOptions.length > 0 && (
@@ -430,7 +571,9 @@ export default function NewSessionPage() {
             </div>
             {issueOptions.length === 0 && (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Quick add common issues:</p>
+                <p className="text-sm text-muted-foreground">
+                  Quick add common issues:
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {defaultIssueOptions.map((option) => (
                     <Button
@@ -448,31 +591,47 @@ export default function NewSessionPage() {
                 </div>
               </div>
             )}
-            {issueOptions.length > 0 && defaultIssueOptions.some(option => !issueOptions.includes(option)) && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Add more:</p>
-                <div className="flex flex-wrap gap-2">
-                  {defaultIssueOptions
-                    .filter((option) => !issueOptions.includes(option))
-                    .map((option) => (
-                      <Button
-                        key={option}
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => addIssueOption(option)}
-                        className="text-xs h-7"
-                      >
-                        <Plus className="w-3 h-3 mr-1" />
-                        {option}
-                      </Button>
-                    ))}
+            {issueOptions.length > 0 &&
+              defaultIssueOptions.some(
+                (option) => !issueOptions.includes(option),
+              ) && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Add more:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {defaultIssueOptions
+                      .filter((option) => !issueOptions.includes(option))
+                      .map((option) => (
+                        <Button
+                          key={option}
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => addIssueOption(option)}
+                          className="text-xs h-7"
+                        >
+                          <Plus className="w-3 h-3 mr-1" />
+                          {option}
+                        </Button>
+                      ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </CardContent>
         </Card>
-        <div className="flex justify-end gap-4"><Link href="/admin"><Button type="button" variant="ghost">Cancel</Button></Link><Button type="submit" disabled={loading || !name.trim() || scenes.length === 0}>{loading && <Loader2 className="w-4 h-4 animate-spin" />}Create Session</Button></div>
+        <div className="flex justify-end gap-4">
+          <Link href="/admin">
+            <Button type="button" variant="ghost">
+              Cancel
+            </Button>
+          </Link>
+          <Button
+            type="submit"
+            disabled={loading || !name.trim() || scenes.length === 0}
+          >
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}Create
+            Session
+          </Button>
+        </div>
       </form>
 
       <Dialog open={addSceneDialog} onOpenChange={setAddSceneDialog}>
@@ -484,37 +643,71 @@ export default function NewSessionPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="sceneName">Scene Name</Label>
-            <Input
-              id="sceneName"
-              value={newSceneName}
+            <div className="space-y-2">
+              <Label htmlFor="sceneName">Scene Name</Label>
+              <Input
+                id="sceneName"
+                value={newSceneName}
                 onChange={(e) => setNewSceneName(e.target.value)}
                 placeholder="e.g., Login Flow"
               />
             </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="sceneDescription">What to Test <span className="text-muted-foreground font-normal">(optional)</span></Label>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <span className="hidden sm:inline">Quick format</span>
-                <Button type="button" variant="outline" size="sm" className="h-8" onClick={() => insertIntoNewSceneDescription("• ", true)}>Bullet</Button>
-                <Button type="button" variant="outline" size="sm" className="h-8" onClick={() => insertIntoNewSceneDescription("[Link text](https://)", false)}>Add link</Button>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="sceneDescription">
+                  What to Test{" "}
+                  <span className="text-muted-foreground font-normal">
+                    (optional)
+                  </span>
+                </Label>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="hidden sm:inline">Quick format</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={() => insertIntoNewSceneDescription("• ", true)}
+                  >
+                    Bullet
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={() =>
+                      insertIntoNewSceneDescription(
+                        "[Link text](https://)",
+                        false,
+                      )
+                    }
+                  >
+                    Add link
+                  </Button>
+                </div>
               </div>
+              <Textarea
+                id="sceneDescription"
+                ref={newSceneDescriptionRef}
+                value={newSceneDescription}
+                onChange={(e) => setNewSceneDescription(e.target.value)}
+                placeholder={
+                  "Use bullet points for clarity:\n• Test player movement and controls\n• Check collision detection\n• Verify UI interactions work correctly"
+                }
+                className="min-h-[120px] resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Tip: Use • or - for bullet points
+              </p>
             </div>
-            <Textarea
-              id="sceneDescription"
-              ref={newSceneDescriptionRef}
-              value={newSceneDescription}
-              onChange={(e) => setNewSceneDescription(e.target.value)}
-              placeholder={"Use bullet points for clarity:\n• Test player movement and controls\n• Check collision detection\n• Verify UI interactions work correctly"}
-              className="min-h-[120px] resize-none"
-            />
-            <p className="text-xs text-muted-foreground">Tip: Use • or - for bullet points</p>
           </div>
-        </div>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setAddSceneDialog(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setAddSceneDialog(false)}
+            >
               Cancel
             </Button>
             <Button

@@ -13,42 +13,59 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const { id } = await params;
 
   try {
     const { testers, sessionName } = await req.json();
 
     if (!testers || !Array.isArray(testers) || testers.length === 0) {
-      return NextResponse.json({ error: "No testers provided" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No testers provided" },
+        { status: 400 },
+      );
     }
 
     const supabase = createAdminClient();
     // Fetch session join code
     const { data: sessionData, error: sessionError } = await supabase
-      .from('sessions')
-      .select('join_code')
-      .eq('id', id)
+      .from("sessions")
+      .select("join_code")
+      .eq("id", id)
       .single();
 
     if (sessionError || !sessionData?.join_code) {
       console.error("Error fetching session join code:", sessionError);
-      return NextResponse.json({ error: "Failed to fetch session join code" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to fetch session join code" },
+        { status: 500 },
+      );
     }
 
     const joinCode = sessionData.join_code;
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.headers.get("origin") || "http://localhost:3000";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      req.headers.get("origin") ||
+      "http://localhost:3000";
     const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER;
     const inviteUrl = `${baseUrl}/join/${joinCode}`;
 
     const results = await Promise.allSettled(
-      testers.map(async (tester: { id: string; first_name: string; last_name: string; email: string }) => {
-
-        await transporter.sendMail({
-          from: fromEmail,
-          to: tester.email,
-          subject: `You're invited to test: ${sessionName || "Testing Session"}`,
-          html: `
+      testers.map(
+        async (tester: {
+          id: string;
+          first_name: string;
+          last_name: string;
+          email: string;
+        }) => {
+          await transporter.sendMail({
+            from: fromEmail,
+            to: tester.email,
+            subject: `You're invited to test: ${sessionName || "Testing Session"}`,
+            html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
               <h1 style="color: #4f6fc5; font-size: 24px; margin-bottom: 24px;">AirLog Invitation</h1>
               
@@ -83,14 +100,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
               </p>
             </div>
           `,
-        });
+          });
 
-        return { testerId: tester.id, success: true };
-      })
+          return { testerId: tester.id, success: true };
+        },
+      ),
     );
 
-    const successful = results.filter(r => r.status === "fulfilled").length;
-    const failed = results.filter(r => r.status === "rejected");
+    const successful = results.filter((r) => r.status === "fulfilled").length;
+    const failed = results.filter((r) => r.status === "rejected");
 
     // Log failures for debugging
     failed.forEach((f, i) => {
@@ -102,10 +120,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Update invite_sent_at for successfully sent emails
     if (successful > 0) {
       const successfulTesterIds = testers
-        .filter((_: { id: string }, index: number) => results[index].status === "fulfilled")
+        .filter(
+          (_: { id: string }, index: number) =>
+            results[index].status === "fulfilled",
+        )
         .map((t: { id: string }) => t.id);
 
-      console.log("[Invite API] Updating invite_sent_at for testers:", successfulTesterIds);
+      console.log(
+        "[Invite API] Updating invite_sent_at for testers:",
+        successfulTesterIds,
+      );
 
       const { error: updateError } = await supabase
         .from("testers")
@@ -113,9 +137,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         .in("id", successfulTesterIds);
 
       if (updateError) {
-        console.error("[Invite API] Error updating invite_sent_at:", updateError);
+        console.error(
+          "[Invite API] Error updating invite_sent_at:",
+          updateError,
+        );
       } else {
-        console.log("[Invite API] Successfully updated invite_sent_at for", successfulTesterIds.length, "testers");
+        console.log(
+          "[Invite API] Successfully updated invite_sent_at for",
+          successfulTesterIds.length,
+          "testers",
+        );
       }
     }
 
@@ -123,10 +154,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       success: true,
       sent: successful,
       failed: failed.length,
-      sessionId: id
+      sessionId: id,
     });
   } catch (error) {
     console.error("Error sending invite emails:", error);
-    return NextResponse.json({ error: "Failed to send invite emails" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to send invite emails" },
+      { status: 500 },
+    );
   }
 }

@@ -46,7 +46,7 @@ export function ThemeProvider({
     if (!mounted) return;
 
     const root = window.document.documentElement;
-    
+
     const applyTheme = (isDark: boolean) => {
       root.classList.remove("light", "dark");
       root.classList.add(isDark ? "dark" : "light");
@@ -63,12 +63,12 @@ export function ThemeProvider({
     } else if (theme === "auto") {
       // Time-based theme: dark from 6 PM to 6 AM
       applyTheme(isDarkTimeOfDay());
-      
+
       // Check every minute for time changes
       const interval = setInterval(() => {
         applyTheme(isDarkTimeOfDay());
       }, 60000); // Check every minute
-      
+
       return () => clearInterval(interval);
     } else {
       applyTheme(theme === "dark");
@@ -89,9 +89,7 @@ export function ThemeProvider({
   };
 
   return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
 

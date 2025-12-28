@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { hashPassword, createUserToken, setUserAuthCookie } from "@/lib/user-auth";
+import {
+  hashPassword,
+  createUserToken,
+  setUserAuthCookie,
+} from "@/lib/user-auth";
 import { generateInviteToken } from "@/lib/utils";
 
 export async function POST(req: Request) {
@@ -32,11 +36,17 @@ export async function POST(req: Request) {
       .eq("email", normalizedEmail)
       .single();
     if (existing) {
-      return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Email already registered" },
+        { status: 409 },
+      );
     }
 
     if (password.length < 8) {
-      return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Password must be at least 8 characters" },
+        { status: 400 },
+      );
     }
 
     const password_hash = await hashPassword(password);
@@ -52,7 +62,10 @@ export async function POST(req: Request) {
       .single();
 
     if (insertError || !created) {
-      return NextResponse.json({ error: insertError?.message || "Failed to create user" }, { status: 500 });
+      return NextResponse.json(
+        { error: insertError?.message || "Failed to create user" },
+        { status: 500 },
+      );
     }
 
     // Link existing testers with same email to this user
@@ -122,4 +135,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
-

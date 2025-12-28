@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  ReactNode,
+} from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -34,7 +40,8 @@ interface PWAProviderProps {
 }
 
 export function PWAProvider({ children }: PWAProviderProps) {
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installPrompt, setInstallPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
@@ -55,18 +62,20 @@ export function PWAProvider({ children }: PWAProviderProps) {
 
     // Detect platform
     const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent) || 
+    const isIOSDevice =
+      /iphone|ipad|ipod/.test(userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     const isAndroidDevice = /android/.test(userAgent);
-    
+
     setIsIOS(isIOSDevice);
     setIsAndroid(isAndroidDevice);
 
     // Check if running in standalone mode (installed PWA)
-    const standalone = window.matchMedia("(display-mode: standalone)").matches ||
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone === true ||
       document.referrer.includes("android-app://");
-    
+
     setIsStandalone(standalone);
     setIsInstalled(standalone);
 
@@ -74,7 +83,7 @@ export function PWAProvider({ children }: PWAProviderProps) {
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
-      
+
       // Show banner if not dismissed and not installed
       if (!bannerDismissed && !standalone) {
         setShowInstallBanner(true);
@@ -110,12 +119,12 @@ export function PWAProvider({ children }: PWAProviderProps) {
 
     await installPrompt.prompt();
     const { outcome } = await installPrompt.userChoice;
-    
+
     if (outcome === "accepted") {
       setIsInstalled(true);
       setShowInstallBanner(false);
     }
-    
+
     setInstallPrompt(null);
   };
 

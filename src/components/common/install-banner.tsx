@@ -29,7 +29,9 @@ export function InstallBanner() {
       <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
         <div className="w-full max-w-md mx-3 mb-3 rounded-xl bg-card border border-border shadow-xl p-4 animate-in slide-in-from-bottom duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-foreground">Install AirLog</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              Install AirLog
+            </h3>
             <Button
               size="sm"
               variant="ghost"
@@ -47,7 +49,9 @@ export function InstallBanner() {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-foreground">
-                  Tap the <Share className="inline h-4 w-4 text-blue-500 mx-1" /> Share button in Safari&apos;s toolbar
+                  Tap the{" "}
+                  <Share className="inline h-4 w-4 text-blue-500 mx-1" /> Share
+                  button in Safari&apos;s toolbar
                 </p>
               </div>
             </div>
@@ -58,7 +62,10 @@ export function InstallBanner() {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-foreground">
-                  Scroll down and tap <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-muted rounded text-xs font-medium"><Plus className="h-3 w-3" /> Add to Home Screen</span>
+                  Scroll down and tap{" "}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-muted rounded text-xs font-medium">
+                    <Plus className="h-3 w-3" /> Add to Home Screen
+                  </span>
                 </p>
               </div>
             </div>
@@ -69,7 +76,8 @@ export function InstallBanner() {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-foreground">
-                  Tap <span className="font-medium">Add</span> to install the app
+                  Tap <span className="font-medium">Add</span> to install the
+                  app
                 </p>
               </div>
             </div>

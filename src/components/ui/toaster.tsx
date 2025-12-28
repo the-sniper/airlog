@@ -15,13 +15,21 @@ export function Toaster() {
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
+      {toasts.map(function ({
+        id,
+        title,
+        description,
+        action,
+        variant,
+        ...props
+      }) {
         // Show destructive (error) toasts on all devices, hide others on mobile
         const isCritical = variant === "destructive";
         const mobileVisibilityClass = isCritical ? "" : "hidden sm:flex";
 
         // Mobile-native styling: centered, full-width with padding on mobile
-        const mobileNativeClass = "sm:max-w-[420px] max-w-[calc(100vw-2rem)] mx-auto";
+        const mobileNativeClass =
+          "sm:max-w-[420px] max-w-[calc(100vw-2rem)] mx-auto";
 
         return (
           <Toast

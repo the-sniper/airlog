@@ -21,12 +21,17 @@ const mono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "AirLog - Voice-Based Testing Notes",
-  description: "Capture unbiased tester feedback with voice notes and automatic transcription.",
+  description:
+    "Capture unbiased tester feedback with voice notes and automatic transcription.",
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.svg",
     apple: [
-      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      {
+        url: "/icons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
       { url: "/icons/icon-152x152.png", sizes: "152x152", type: "image/png" },
     ],
   },
@@ -55,19 +60,38 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* PWA meta tags for iOS - must use PNG format, iOS doesn't support SVG for touch icons */}
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
-        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
+        <link
+          rel="apple-touch-icon"
+          sizes="152x152"
+          href="/icons/icon-152x152.png"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/icons/icon-180x180.png"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="192x192"
+          href="/icons/icon-192x192.png"
+        />
 
         {/* Splash screens for iOS */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
         <meta name="apple-mobile-web-app-title" content="AirLog" />
 
         {/* Android/Chrome meta tags */}
@@ -96,7 +120,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${jakarta.variable} ${mono.variable} font-sans antialiased`}>
+      <body
+        className={`${jakarta.variable} ${mono.variable} font-sans antialiased`}
+      >
         <ThemeProvider defaultTheme="light" storageKey="echo-test-theme">
           <PWAProvider>
             {children}

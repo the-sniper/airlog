@@ -15,8 +15,20 @@ export function Header({ variant = "home" }: HeaderProps) {
     <header className="border-b border-border/40 glass sticky top-0 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <Image src="/logo.svg" alt="AirLog" width={120} height={32} className="dark:hidden" />
-          <Image src="/logo-dark.svg" alt="AirLog" width={120} height={32} className="hidden dark:block" />
+          <Image
+            src="/logo.svg"
+            alt="AirLog"
+            width={120}
+            height={32}
+            className="dark:hidden"
+          />
+          <Image
+            src="/logo-dark.svg"
+            alt="AirLog"
+            width={120}
+            height={32}
+            className="hidden dark:block"
+          />
         </Link>
 
         <nav className="flex items-center gap-2">
@@ -24,7 +36,9 @@ export function Header({ variant = "home" }: HeaderProps) {
           {variant === "home" && (
             <>
               <Link href="/admin">
-                <Button variant="ghost" size="sm">Admin</Button>
+                <Button variant="ghost" size="sm">
+                  Admin
+                </Button>
               </Link>
               <Link href="/join">
                 <Button size="sm">

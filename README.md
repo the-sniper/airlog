@@ -14,7 +14,7 @@ A Next.js web application for capturing and organizing tester feedback during us
 
 ## Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Supabase account (for database and storage)
 - Docker (for running the Whisper transcription service)
@@ -38,13 +38,13 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### Environment Variable Details
 
-| Variable | Public | Description |
-|----------|--------|-------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Your Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Public anon key (subject to RLS policies) |
-| `SUPABASE_SERVICE_ROLE_KEY` | **No** | Service role key (bypasses RLS, server-side only) |
-| `NEXT_PUBLIC_WHISPER_URL` | Yes | URL to the Whisper transcription service |
-| `NEXT_PUBLIC_APP_URL` | Yes | Your app URL for generating invite links |
+| Variable                        | Public | Description                                       |
+| ------------------------------- | ------ | ------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Yes    | Your Supabase project URL                         |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes    | Public anon key (subject to RLS policies)         |
+| `SUPABASE_SERVICE_ROLE_KEY`     | **No** | Service role key (bypasses RLS, server-side only) |
+| `NEXT_PUBLIC_WHISPER_URL`       | Yes    | URL to the Whisper transcription service          |
+| `NEXT_PUBLIC_APP_URL`           | Yes    | Your app URL for generating invite links          |
 
 > ⚠️ **Important**: Never expose `SUPABASE_SERVICE_ROLE_KEY` to the client. It should only be used in server-side API routes.
 
@@ -65,6 +65,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 4. Click **Run** to execute the migration
 
 This creates:
+
 - `sessions` table - Test session metadata
 - `scenes` table - Tasks/scenes within a session
 - `testers` table - Tester info with invite tokens
@@ -96,6 +97,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Running the Full Stack
 
 1. **Start the Whisper service** (see `whisper-service/README.md`):
+
    ```bash
    cd whisper-service
    docker-compose up -d
@@ -129,12 +131,12 @@ echo_test/
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
+| Command         | Description              |
+| --------------- | ------------------------ |
+| `npm run dev`   | Start development server |
+| `npm run build` | Build for production     |
+| `npm run start` | Start production server  |
+| `npm run lint`  | Run ESLint               |
 
 ## Usage
 
@@ -170,4 +172,3 @@ echo_test/
 ## License
 
 MIT
-

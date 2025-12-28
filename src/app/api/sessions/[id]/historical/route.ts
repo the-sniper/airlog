@@ -4,7 +4,7 @@ import type { HistoricalSession } from "@/lib/analytics";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const { id } = params;
   const supabase = createAdminClient();
@@ -24,7 +24,8 @@ export async function GET(
     // Get all sessions (excluding current), limited to last 10
     const { data: sessions, error: sessionsError } = await supabase
       .from("sessions")
-      .select(`
+      .select(
+        `
         id,
         name,
         build_version,
@@ -33,27 +34,35 @@ export async function GET(
         status,
         notes (id, category),
         testers (id)
-      `)
+      `,
+      )
       .neq("id", id)
       .order("created_at", { ascending: false })
       .limit(10);
 
     if (sessionsError) {
       console.error("Error fetching historical sessions:", sessionsError);
-      return NextResponse.json({ error: "Failed to fetch historical data" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to fetch historical data" },
+        { status: 500 },
+      );
     }
 
     // Transform to HistoricalSession format
-    const historicalSessions: HistoricalSession[] = (sessions || []).map((s) => ({
-      id: s.id,
-      name: s.name,
-      build_version: s.build_version,
-      started_at: s.started_at,
-      ended_at: s.ended_at,
-      totalNotes: s.notes?.length || 0,
-      bugCount: s.notes?.filter((n: { category: string }) => n.category === "bug").length || 0,
-      testerCount: s.testers?.length || 0,
-    }));
+    const historicalSessions: HistoricalSession[] = (sessions || []).map(
+      (s) => ({
+        id: s.id,
+        name: s.name,
+        build_version: s.build_version,
+        started_at: s.started_at,
+        ended_at: s.ended_at,
+        totalNotes: s.notes?.length || 0,
+        bugCount:
+          s.notes?.filter((n: { category: string }) => n.category === "bug")
+            .length || 0,
+        testerCount: s.testers?.length || 0,
+      }),
+    );
 
     // Sort by started_at ascending (oldest first) for trend display, fall back to ended_at
     historicalSessions.sort((a, b) => {
@@ -65,6 +74,9 @@ export async function GET(
     return NextResponse.json({ sessions: historicalSessions });
   } catch (error) {
     console.error("Error in historical endpoint:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

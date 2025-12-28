@@ -71,7 +71,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const [sceneFilter, setSceneFilter] = useState<string>("all");
   const [testerFilter, setTesterFilter] = useState<string>("all");
   const [groupBy, setGroupBy] = useState<"scene" | "tester" | "category">(
-    "scene"
+    "scene",
   );
   const [noteFiltersOpen, setNoteFiltersOpen] = useState(false);
   const [pollSceneFilter, setPollSceneFilter] = useState<string>("all");
@@ -94,7 +94,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         setLoading(false);
       }
     },
-    [id]
+    [id],
   );
 
   const fetchPollResponses = useCallback(
@@ -115,7 +115,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         console.error("Error fetching poll responses:", error);
       }
     },
-    [id]
+    [id],
   );
 
   useEffect(() => {
@@ -437,7 +437,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                     {session.testers?.reduce(
                       (total: number, tester: Tester) =>
                         total + (tester.reported_issues?.length || 0),
-                      0
+                      0,
                     ) || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -460,11 +460,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       <Badge
                         variant={
                           category as
-                          | "bug"
-                          | "feature"
-                          | "ux"
-                          | "performance"
-                          | "secondary"
+                            | "bug"
+                            | "feature"
+                            | "ux"
+                            | "performance"
+                            | "secondary"
                         }
                         className="w-32 justify-center"
                       >
@@ -474,8 +474,9 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                         <div
                           className="h-full bg-primary rounded-full transition-all duration-500"
                           style={{
-                            width: `${stats?.total ? (count / stats.total) * 100 : 0
-                              }%`,
+                            width: `${
+                              stats?.total ? (count / stats.total) * 100 : 0
+                            }%`,
                           }}
                         />
                       </div>
@@ -483,7 +484,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                         {count}
                       </span>
                     </div>
-                  )
+                  ),
                 )}
               </div>
             </CardContent>
@@ -506,14 +507,14 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                   if (issueStats[issue]) {
                     issueStats[issue].count++;
                     issueStats[issue].testers.push(
-                      `${tester.first_name} ${tester.last_name}`
+                      `${tester.first_name} ${tester.last_name}`,
                     );
                   }
                 });
               });
               const totalTesters = session.testers?.length || 0;
               const reportedIssues = Object.entries(issueStats).filter(
-                ([, s]) => s.count > 0
+                ([, s]) => s.count > 0,
               );
 
               if (reportedIssues.length === 0) return null;
@@ -754,7 +755,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
                       questionResponses.forEach((response) => {
                         const tester = session.testers?.find(
-                          (t: Tester) => t.id === response.tester_id
+                          (t: Tester) => t.id === response.tester_id,
                         );
                         const testerName = tester
                           ? `${tester.first_name} ${tester.last_name}`
@@ -962,7 +963,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                                               {tester.first_name}{" "}
                                               {tester.last_name}
                                             </SelectItem>
-                                          )
+                                          ),
                                         )}
                                       </SelectContent>
                                     </Select>
@@ -976,7 +977,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                                 value={groupBy}
                                 onValueChange={(v) =>
                                   setGroupBy(
-                                    v as "scene" | "tester" | "category"
+                                    v as "scene" | "tester" | "category",
                                   )
                                 }
                               >
@@ -1123,11 +1124,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                       <Badge
                         variant={
                           key as
-                          | "bug"
-                          | "feature"
-                          | "ux"
-                          | "performance"
-                          | "secondary"
+                            | "bug"
+                            | "feature"
+                            | "ux"
+                            | "performance"
+                            | "secondary"
                         }
                       >
                         {label}
@@ -1153,11 +1154,11 @@ export default function ReportPage({ params }: { params: { id: string } }) {
                             <Badge
                               variant={
                                 note.category as
-                                | "bug"
-                                | "feature"
-                                | "ux"
-                                | "performance"
-                                | "secondary"
+                                  | "bug"
+                                  | "feature"
+                                  | "ux"
+                                  | "performance"
+                                  | "secondary"
                               }
                             >
                               {getCategoryLabel(note.category)}

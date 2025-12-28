@@ -20,7 +20,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useTesterNotifications, NotificationKind } from "@/hooks/use-tester-notifications";
+import {
+  useTesterNotifications,
+  NotificationKind,
+} from "@/hooks/use-tester-notifications";
 
 function formatTimestamp(value: string) {
   const date = new Date(value);
@@ -39,12 +42,12 @@ const kindMeta: Record<
     label: string;
     icon: JSX.Element;
     badgeVariant:
-    | "default"
-    | "secondary"
-    | "destructive"
-    | "outline"
-    | "active"
-    | "completed";
+      | "default"
+      | "secondary"
+      | "destructive"
+      | "outline"
+      | "active"
+      | "completed";
   }
 > = {
   session_added: {
@@ -54,7 +57,9 @@ const kindMeta: Record<
   },
   session_started: {
     label: "Live",
-    icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" strokeWidth={1.75} />,
+    icon: (
+      <CheckCircle2 className="w-4 h-4 text-emerald-500" strokeWidth={1.75} />
+    ),
     badgeVariant: "active",
   },
   report_sent: {
@@ -64,7 +69,9 @@ const kindMeta: Record<
   },
   session_completed: {
     label: "Ended",
-    icon: <AlertTriangle className="w-4 h-4 text-amber-500" strokeWidth={1.75} />,
+    icon: (
+      <AlertTriangle className="w-4 h-4 text-amber-500" strokeWidth={1.75} />
+    ),
     badgeVariant: "destructive",
   },
   session_restarted: {
@@ -93,12 +100,12 @@ export function TesterNotifications({
     notifications,
     unreadCount,
     clearNotifications,
-    setOpen: markRead
+    setOpen: markRead,
   } = useTesterNotifications({
     session,
     tester,
     userId,
-    onRealtimeUpdate
+    onRealtimeUpdate,
   });
 
   // Client-side only: detect mobile and mark as mounted
@@ -117,7 +124,9 @@ export function TesterNotifications({
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isMobile, isOpen]);
 
   const openNotifications = () => {
@@ -138,9 +147,16 @@ export function TesterNotifications({
           <p className="text-xs text-muted-foreground">Updates and alerts</p>
         </div>
         <div className="flex items-center gap-2">
-          {unreadCount > 0 && <Badge variant="secondary">Unread {unreadCount}</Badge>}
+          {unreadCount > 0 && (
+            <Badge variant="secondary">Unread {unreadCount}</Badge>
+          )}
           {notifications.length > 0 && (
-            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={clearNotifications}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs"
+              onClick={clearNotifications}
+            >
               Clear
             </Button>
           )}
@@ -164,16 +180,19 @@ export function TesterNotifications({
                 </div>
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold leading-tight">{notification.title}</p>
-                    {notification.kind === "report_sent" && notification.actionUrl && (
-                      <Link
-                        href={notification.actionUrl}
-                        className="text-[11px] font-semibold text-primary hover:underline ml-auto"
-                        onClick={closeNotifications}
-                      >
-                        {notification.actionLabel || "View"}
-                      </Link>
-                    )}
+                    <p className="text-sm font-semibold leading-tight">
+                      {notification.title}
+                    </p>
+                    {notification.kind === "report_sent" &&
+                      notification.actionUrl && (
+                        <Link
+                          href={notification.actionUrl}
+                          className="text-[11px] font-semibold text-primary hover:underline ml-auto"
+                          onClick={closeNotifications}
+                        >
+                          {notification.actionLabel || "View"}
+                        </Link>
+                      )}
                   </div>
                   <p className="text-xs text-muted-foreground leading-snug line-clamp-2">
                     {notification.description}
@@ -232,8 +251,11 @@ export function TesterNotifications({
         {/* Bottom Sheet Portal */}
         {createPortal(
           <div
-            className={`fixed inset-0 z-[9999] transition-all duration-300 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-              }`}
+            className={`fixed inset-0 z-[9999] transition-all duration-300 ${
+              isOpen
+                ? "opacity-100 pointer-events-auto"
+                : "opacity-0 pointer-events-none"
+            }`}
           >
             {/* Backdrop */}
             <div
@@ -244,24 +266,32 @@ export function TesterNotifications({
             <div
               role="dialog"
               aria-modal="true"
-              className={`absolute bottom-0 left-0 right-0 bg-card shadow-2xl border-t border-border/60 rounded-t-3xl flex flex-col max-h-[85vh] overflow-hidden transition-transform duration-300 ease-out ${isOpen ? "translate-y-0" : "translate-y-full"
-                }`}
+              className={`absolute bottom-0 left-0 right-0 bg-card shadow-2xl border-t border-border/60 rounded-t-3xl flex flex-col max-h-[85vh] overflow-hidden transition-transform duration-300 ease-out ${
+                isOpen ? "translate-y-0" : "translate-y-full"
+              }`}
             >
               {/* Drag handle */}
-              <div className="flex items-center justify-center py-3 cursor-pointer" onClick={closeNotifications}>
+              <div
+                className="flex items-center justify-center py-3 cursor-pointer"
+                onClick={closeNotifications}
+              >
                 <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
               </div>
               {/* Header */}
               <div className="flex items-center justify-between px-4 pb-2">
                 <h2 className="text-lg font-semibold">Notifications</h2>
-                <Button variant="ghost" size="icon" onClick={closeNotifications}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={closeNotifications}
+                >
                   <X className="w-5 h-5" strokeWidth={1.75} />
                 </Button>
               </div>
               {renderNotificationContent()}
             </div>
           </div>,
-          document.body
+          document.body,
         )}
       </>
     );
@@ -269,7 +299,14 @@ export function TesterNotifications({
 
   // DESKTOP VIEW
   return (
-    <DropdownMenu open={isOpen} onOpenChange={(open) => { setIsOpen(open); markRead(open); }} modal={false}>
+    <DropdownMenu
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        markRead(open);
+      }}
+      modal={false}
+    >
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"

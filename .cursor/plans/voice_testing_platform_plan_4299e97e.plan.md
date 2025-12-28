@@ -151,7 +151,7 @@ erDiagram
 - Start/end sessions
 - Generate and download PDF reports
 
-### 4.2 Tester Interface  
+### 4.2 Tester Interface
 
 - Join via invite link with token
 - Select current scene
@@ -203,18 +203,18 @@ flowchart TB
         TesterUI[Tester Interface]
         VoiceRec[Voice Recorder]
     end
-    
+
     subgraph Backend [API Layer]
         SessionAPI[Session API]
         TranscribeAPI[Transcription API]
         ReportAPI[Report Generator]
     end
-    
+
     subgraph Services [External Services]
         Supabase[(Supabase DB + Storage)]
         Whisper[Whisper Container]
     end
-    
+
     AdminDash --> SessionAPI
     TesterUI --> SessionAPI
     VoiceRec --> TranscribeAPI

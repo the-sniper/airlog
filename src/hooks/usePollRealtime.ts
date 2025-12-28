@@ -1,7 +1,13 @@
 import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export function usePollRealtime({ sessionId, onPollChange }: { sessionId: string, onPollChange: () => void }) {
+export function usePollRealtime({
+  sessionId,
+  onPollChange,
+}: {
+  sessionId: string;
+  onPollChange: () => void;
+}) {
   const callbackRef = useRef(onPollChange);
   callbackRef.current = onPollChange;
 
@@ -12,7 +18,12 @@ export function usePollRealtime({ sessionId, onPollChange }: { sessionId: string
     const sub = channel
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "poll_questions", filter: `session_id=eq.${sessionId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "poll_questions",
+          filter: `session_id=eq.${sessionId}`,
+        },
         (payload) => {
           // Debug log
           if (process.env.NODE_ENV !== "production") {
@@ -20,7 +31,7 @@ export function usePollRealtime({ sessionId, onPollChange }: { sessionId: string
             console.log("[PollRealtime] Change detected:", payload);
           }
           callbackRef.current();
-        }
+        },
       )
       .subscribe();
     return () => {

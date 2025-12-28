@@ -69,7 +69,9 @@ export default function JoinPage() {
       {/* Show admin mobile header/nav when logged in */}
       {isAdmin && <AdminMobileHeader />}
 
-      <div className={`min-h-screen gradient-mesh flex items-center justify-center p-4 ${isAdmin ? "pt-20 pb-20 md:pt-4 md:pb-4" : ""}`}>
+      <div
+        className={`min-h-screen gradient-mesh flex items-center justify-center p-4 ${isAdmin ? "pt-20 pb-20 md:pt-4 md:pb-4" : ""}`}
+      >
         {/* Only show theme toggle when not admin (admin has it in header) */}
         {!isAdmin && (
           <div className="absolute top-4 right-4">
@@ -80,8 +82,20 @@ export default function JoinPage() {
           {/* Hide logo on mobile when admin (already in header) */}
           <div className={`text-center ${isAdmin ? "hidden md:block" : ""}`}>
             <Link href="/" className="inline-flex items-center gap-3">
-              <Image src="/logo.svg" alt="AirLog" width={90} height={24} className="dark:hidden md:w-[150px] md:h-[40px]" />
-              <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="hidden dark:block md:w-[150px] md:h-[40px]" />
+              <Image
+                src="/logo.svg"
+                alt="AirLog"
+                width={90}
+                height={24}
+                className="dark:hidden md:w-[150px] md:h-[40px]"
+              />
+              <Image
+                src="/logo-dark.svg"
+                alt="AirLog"
+                width={90}
+                height={24}
+                className="hidden dark:block md:w-[150px] md:h-[40px]"
+              />
             </Link>
           </div>
 
@@ -126,7 +140,9 @@ export default function JoinPage() {
           </Card>
 
           {/* Show login prompt - hidden on mobile when logged in as admin */}
-          <p className={`text-center text-sm text-muted-foreground ${isAdmin ? "hidden md:block" : ""}`}>
+          <p
+            className={`text-center text-sm text-muted-foreground ${isAdmin ? "hidden md:block" : ""}`}
+          >
             Managing a session?{" "}
             <Link href="/admin/login" className="text-primary hover:underline">
               Login here

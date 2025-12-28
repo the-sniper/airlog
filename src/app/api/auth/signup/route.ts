@@ -8,14 +8,14 @@ export async function POST(request: Request) {
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (password.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -23,16 +23,13 @@ export async function POST(request: Request) {
     if (exists) {
       return NextResponse.json(
         { error: "Admin already exists. Please login instead." },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     const result = await createAdmin(email, password);
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
     // Auto-login after signup
@@ -43,7 +40,7 @@ export async function POST(request: Request) {
     console.error("Signup error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -57,8 +54,7 @@ export async function GET() {
     console.error("Check admin error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

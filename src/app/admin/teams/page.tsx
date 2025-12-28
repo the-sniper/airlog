@@ -1,12 +1,38 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Plus, Users, Trash2, Pencil, Loader2, ChevronRight, UserPlus, Link2, Copy, Check, RefreshCw, MoreVertical, Mail } from "lucide-react";
+import {
+  Plus,
+  Users,
+  Trash2,
+  Pencil,
+  Loader2,
+  ChevronRight,
+  UserPlus,
+  Link2,
+  Copy,
+  Check,
+  RefreshCw,
+  MoreVertical,
+  Mail,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
 import { UserSelect, type UserOption } from "@/components/ui/user-select";
 import type { Team, TeamMember, TeamWithMembers } from "@/types";
@@ -19,27 +45,47 @@ export default function TeamsPage() {
   const { toast } = useToast();
   const [teams, setTeams] = useState<TeamWithCount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTeam, setSelectedTeam] = useState<TeamWithMembers | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<TeamWithMembers | null>(
+    null
+  );
   const [loadingTeam, setLoadingTeam] = useState(false);
 
   // Dialog states
   const [createTeamDialog, setCreateTeamDialog] = useState(false);
-  const [editTeamDialog, setEditTeamDialog] = useState<{ open: boolean; team: Team | null }>({ open: false, team: null });
-  const [deleteTeamDialog, setDeleteTeamDialog] = useState<{ open: boolean; team: Team | null }>({ open: false, team: null });
+  const [editTeamDialog, setEditTeamDialog] = useState<{
+    open: boolean;
+    team: Team | null;
+  }>({ open: false, team: null });
+  const [deleteTeamDialog, setDeleteTeamDialog] = useState<{
+    open: boolean;
+    team: Team | null;
+  }>({ open: false, team: null });
   const [addMemberDialog, setAddMemberDialog] = useState(false);
-  const [editMemberDialog, setEditMemberDialog] = useState<{ open: boolean; member: TeamMember | null }>({ open: false, member: null });
-  const [deleteMemberDialog, setDeleteMemberDialog] = useState<{ open: boolean; member: TeamMember | null }>({ open: false, member: null });
+  const [editMemberDialog, setEditMemberDialog] = useState<{
+    open: boolean;
+    member: TeamMember | null;
+  }>({ open: false, member: null });
+  const [deleteMemberDialog, setDeleteMemberDialog] = useState<{
+    open: boolean;
+    member: TeamMember | null;
+  }>({ open: false, member: null });
 
   // Form states
   const [newTeamName, setNewTeamName] = useState("");
   const [editTeamName, setEditTeamName] = useState("");
-  const [memberForm, setMemberForm] = useState({ first_name: "", last_name: "", email: "" });
+  const [memberForm, setMemberForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+  });
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Add member tab and form states
   const [memberTab, setMemberTab] = useState<"users" | "invite">("users");
-  const [selectedUsersForMember, setSelectedUsersForMember] = useState<UserOption[]>([]);
+  const [selectedUsersForMember, setSelectedUsersForMember] = useState<
+    UserOption[]
+  >([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteError, setInviteError] = useState<string | null>(null);
 
@@ -113,7 +159,9 @@ export default function TeamsPage() {
     if (!deleteTeamDialog.team) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/teams/${deleteTeamDialog.team.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/teams/${deleteTeamDialog.team.id}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         setDeleteTeamDialog({ open: false, team: null });
         if (selectedTeam?.id === deleteTeamDialog.team.id) {
@@ -159,13 +207,17 @@ export default function TeamsPage() {
         if (addedCount > 0) {
           toast({
             title: "Members added!",
-            description: `Successfully added ${addedCount} member${addedCount > 1 ? "s" : ""}.`,
+            description: `Successfully added ${addedCount} member${
+              addedCount > 1 ? "s" : ""
+            }.`,
             variant: "success",
           });
         } else {
           toast({
             title: "No members added",
-            description: result.message || "Selected users are already members of this team.",
+            description:
+              result.message ||
+              "Selected users are already members of this team.",
           });
         }
         resetMemberDialog();
@@ -221,12 +273,14 @@ export default function TeamsPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            testers: [{
-              first_name: result.user.first_name,
-              last_name: result.user.last_name,
-              email: result.user.email,
-              user_id: result.user.id,
-            }],
+            testers: [
+              {
+                first_name: result.user.first_name,
+                last_name: result.user.last_name,
+                email: result.user.email,
+                user_id: result.user.id,
+              },
+            ],
           }),
         });
 
@@ -240,7 +294,9 @@ export default function TeamsPage() {
           fetchTeamDetails(selectedTeam.id);
           fetchTeams();
         } else {
-          setInviteError("Failed to add member. They may already be in this team.");
+          setInviteError(
+            "Failed to add member. They may already be in this team."
+          );
         }
       } else if (res.status === 409) {
         // Invite already pending
@@ -265,18 +321,27 @@ export default function TeamsPage() {
   }
 
   async function handleEditMember() {
-    if (!selectedTeam || !editMemberDialog.member || !memberForm.first_name.trim() || !memberForm.last_name.trim()) return;
+    if (
+      !selectedTeam ||
+      !editMemberDialog.member ||
+      !memberForm.first_name.trim() ||
+      !memberForm.last_name.trim()
+    )
+      return;
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/teams/${selectedTeam.id}/members/${editMemberDialog.member.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          first_name: memberForm.first_name,
-          last_name: memberForm.last_name,
-          email: memberForm.email.trim() || null,
-        }),
-      });
+      const res = await fetch(
+        `/api/teams/${selectedTeam.id}/members/${editMemberDialog.member.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            first_name: memberForm.first_name,
+            last_name: memberForm.last_name,
+            email: memberForm.email.trim() || null,
+          }),
+        }
+      );
       if (res.ok) {
         setEditMemberDialog({ open: false, member: null });
         setMemberForm({ first_name: "", last_name: "", email: "" });
@@ -291,9 +356,12 @@ export default function TeamsPage() {
     if (!selectedTeam || !deleteMemberDialog.member) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/teams/${selectedTeam.id}/members/${deleteMemberDialog.member.id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `/api/teams/${selectedTeam.id}/members/${deleteMemberDialog.member.id}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (res.ok) {
         setDeleteMemberDialog({ open: false, member: null });
         fetchTeamDetails(selectedTeam.id);
@@ -323,7 +391,9 @@ export default function TeamsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Teams</h1>
-          <p className="text-muted-foreground">Manage team templates for testing sessions</p>
+          <p className="text-muted-foreground">
+            Manage team templates for testing sessions
+          </p>
         </div>
         <Button onClick={() => setCreateTeamDialog(true)}>
           <Plus className="w-4 h-4" />
@@ -343,7 +413,9 @@ export default function TeamsPage() {
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Users className="w-12 h-12 mb-4 text-muted-foreground opacity-50" />
                 <h3 className="font-semibold mb-2">No teams yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">Create a team to add members</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Create a team to add members
+                </p>
                 <Button onClick={() => setCreateTeamDialog(true)} size="sm">
                   <Plus className="w-4 h-4" />
                   Create Team
@@ -354,10 +426,11 @@ export default function TeamsPage() {
                 {teams.map((team) => (
                   <div
                     key={team.id}
-                    className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors group ${selectedTeam?.id === team.id
-                      ? "bg-primary/10 border border-primary/30"
-                      : "bg-secondary/50 hover:bg-secondary"
-                      }`}
+                    className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors group ${
+                      selectedTeam?.id === team.id
+                        ? "bg-primary/10 border border-primary/30"
+                        : "bg-secondary/50 hover:bg-secondary"
+                    }`}
                     onClick={() => fetchTeamDetails(team.id)}
                   >
                     <div className="flex items-center gap-3">
@@ -365,7 +438,8 @@ export default function TeamsPage() {
                       <div>
                         <p className="font-medium">{team.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {team.members?.[0]?.count || 0} member{(team.members?.[0]?.count || 0) !== 1 ? "s" : ""}
+                          {team.members?.[0]?.count || 0} member
+                          {(team.members?.[0]?.count || 0) !== 1 ? "s" : ""}
                         </p>
                       </div>
                     </div>
@@ -454,7 +528,9 @@ export default function TeamsPage() {
                     onClick={() => fetchTeamDetails(selectedTeam.id)}
                     disabled={loadingTeam}
                   >
-                    <RefreshCw className={`w-4 h-4 ${loadingTeam ? "animate-spin" : ""}`} />
+                    <RefreshCw
+                      className={`w-4 h-4 ${loadingTeam ? "animate-spin" : ""}`}
+                    />
                   </Button>
                   <Button size="sm" onClick={() => setAddMemberDialog(true)}>
                     <UserPlus className="w-4 h-4" />
@@ -471,12 +547,18 @@ export default function TeamsPage() {
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                 <div className="flex items-center gap-2 mb-2">
                   <Link2 className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">Invite Link</span>
+                  <span className="text-sm font-medium text-primary">
+                    Invite Link
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
                     readOnly
-                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/teams/join/${selectedTeam.invite_token}`}
+                    value={`${
+                      typeof window !== "undefined"
+                        ? window.location.origin
+                        : ""
+                    }/teams/join/${selectedTeam.invite_token}`}
                     className="text-xs font-mono bg-secondary/50 h-9"
                   />
                   <Button
@@ -508,7 +590,10 @@ export default function TeamsPage() {
             {loadingTeam ? (
               <div className="space-y-2 animate-pulse">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/50"
+                  >
                     <div className="space-y-2">
                       <div className="h-4 w-32 bg-muted/40 rounded" />
                       <div className="h-3 w-40 bg-muted/30 rounded" />
@@ -523,13 +608,17 @@ export default function TeamsPage() {
             ) : !selectedTeam ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Users className="w-12 h-12 mb-4 text-muted-foreground opacity-50" />
-                <p className="text-sm text-muted-foreground">Select a team to view members</p>
+                <p className="text-sm text-muted-foreground">
+                  Select a team to view members
+                </p>
               </div>
             ) : selectedTeam.members.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <UserPlus className="w-12 h-12 mb-4 text-muted-foreground opacity-50" />
                 <h3 className="font-semibold mb-2">No members yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">Add team members to this team</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add team members to this team
+                </p>
                 <Button onClick={() => setAddMemberDialog(true)} size="sm">
                   <UserPlus className="w-4 h-4" />
                   Add Member
@@ -546,7 +635,9 @@ export default function TeamsPage() {
                       <p className="font-medium">
                         {member.first_name} {member.last_name}
                       </p>
-                      <p className="text-xs text-muted-foreground">{member.email}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {member.email}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1">
                       {/* Edit button commented out - no need to edit names
@@ -570,7 +661,9 @@ export default function TeamsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive hidden sm:inline-flex"
-                        onClick={() => setDeleteMemberDialog({ open: true, member })}
+                        onClick={() =>
+                          setDeleteMemberDialog({ open: true, member })
+                        }
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -634,7 +727,9 @@ export default function TeamsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Team</DialogTitle>
-            <DialogDescription>Create a new team to organize testers</DialogDescription>
+            <DialogDescription>
+              Create a new team to organize testers
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -654,7 +749,10 @@ export default function TeamsPage() {
             <Button variant="ghost" onClick={() => setCreateTeamDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateTeam} disabled={submitting || !newTeamName.trim()}>
+            <Button
+              onClick={handleCreateTeam}
+              disabled={submitting || !newTeamName.trim()}
+            >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Create
             </Button>
@@ -663,7 +761,10 @@ export default function TeamsPage() {
       </Dialog>
 
       {/* Edit Team Dialog */}
-      <Dialog open={editTeamDialog.open} onOpenChange={(o) => setEditTeamDialog({ open: o, team: null })}>
+      <Dialog
+        open={editTeamDialog.open}
+        onOpenChange={(o) => setEditTeamDialog({ open: o, team: null })}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Team</DialogTitle>
@@ -683,10 +784,16 @@ export default function TeamsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditTeamDialog({ open: false, team: null })}>
+            <Button
+              variant="ghost"
+              onClick={() => setEditTeamDialog({ open: false, team: null })}
+            >
               Cancel
             </Button>
-            <Button onClick={handleEditTeam} disabled={submitting || !editTeamName.trim()}>
+            <Button
+              onClick={handleEditTeam}
+              disabled={submitting || !editTeamName.trim()}
+            >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Save
             </Button>
@@ -695,19 +802,31 @@ export default function TeamsPage() {
       </Dialog>
 
       {/* Delete Team Dialog */}
-      <Dialog open={deleteTeamDialog.open} onOpenChange={(o) => setDeleteTeamDialog({ open: o, team: null })}>
+      <Dialog
+        open={deleteTeamDialog.open}
+        onOpenChange={(o) => setDeleteTeamDialog({ open: o, team: null })}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Team</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{deleteTeamDialog.team?.name}&quot;? This will also remove all team members.
+              Are you sure you want to delete &quot;
+              {deleteTeamDialog.team?.name}&quot;? This will also remove all
+              team members.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDeleteTeamDialog({ open: false, team: null })}>
+            <Button
+              variant="ghost"
+              onClick={() => setDeleteTeamDialog({ open: false, team: null })}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteTeam} disabled={submitting}>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteTeam}
+              disabled={submitting}
+            >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Delete
             </Button>
@@ -716,11 +835,20 @@ export default function TeamsPage() {
       </Dialog>
 
       {/* Add Member Dialog */}
-      <Dialog open={addMemberDialog} onOpenChange={(open) => { if (!open) resetMemberDialog(); else setAddMemberDialog(true); }}>
+      <Dialog
+        open={addMemberDialog}
+        onOpenChange={(open) => {
+          if (!open) resetMemberDialog();
+          else setAddMemberDialog(true);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Team Member</DialogTitle>
-            <DialogDescription>Add a registered user or invite someone by email to {selectedTeam?.name}</DialogDescription>
+            <DialogDescription>
+              Add a registered user or invite someone by email to{" "}
+              {selectedTeam?.name}
+            </DialogDescription>
           </DialogHeader>
 
           {/* Tab Buttons */}
@@ -752,8 +880,16 @@ export default function TeamsPage() {
                 multiple
                 selectedUsers={selectedUsersForMember}
                 onSelect={setSelectedUsersForMember}
-                excludeIds={selectedTeam?.members?.map((m) => m.user_id).filter(Boolean) as string[] || []}
-                excludeEmails={selectedTeam?.members?.map((m) => m.email?.toLowerCase()).filter(Boolean) as string[] || []}
+                excludeIds={
+                  (selectedTeam?.members
+                    ?.map((m) => m.user_id)
+                    .filter(Boolean) as string[]) || []
+                }
+                excludeEmails={
+                  (selectedTeam?.members
+                    ?.map((m) => m.email?.toLowerCase())
+                    .filter(Boolean) as string[]) || []
+                }
                 placeholder="Search registered users..."
                 maxResults={20}
               />
@@ -765,9 +901,10 @@ export default function TeamsPage() {
             <div className="space-y-4 py-2">
               <div className="rounded-lg bg-secondary/30 p-4 text-sm text-muted-foreground">
                 <p>
-                  Enter an email address to invite someone. If they're already registered,
-                  they'll be added immediately. Otherwise, they'll receive a signup invitation
-                  and will be added once they register.
+                  Enter an email address to invite someone. If they&apos;re
+                  already registered, they&apos;ll be added immediately.
+                  Otherwise, they&apos;ll receive a signup invitation and will
+                  be added once they register.
                 </p>
               </div>
               <div className="space-y-2">
@@ -805,7 +942,12 @@ export default function TeamsPage() {
                 disabled={submitting || selectedUsersForMember.length === 0}
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                Add {selectedUsersForMember.length > 0 ? `${selectedUsersForMember.length} Member${selectedUsersForMember.length > 1 ? "s" : ""}` : "Members"}
+                Add{" "}
+                {selectedUsersForMember.length > 0
+                  ? `${selectedUsersForMember.length} Member${
+                      selectedUsersForMember.length > 1 ? "s" : ""
+                    }`
+                  : "Members"}
               </Button>
             )}
             {memberTab === "invite" && (
@@ -822,7 +964,10 @@ export default function TeamsPage() {
       </Dialog>
 
       {/* Edit Member Dialog */}
-      <Dialog open={editMemberDialog.open} onOpenChange={(o) => setEditMemberDialog({ open: o, member: null })}>
+      <Dialog
+        open={editMemberDialog.open}
+        onOpenChange={(o) => setEditMemberDialog({ open: o, member: null })}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Team Member</DialogTitle>
@@ -835,7 +980,9 @@ export default function TeamsPage() {
                 <Input
                   id="edit-first-name"
                   value={memberForm.first_name}
-                  onChange={(e) => setMemberForm({ ...memberForm, first_name: e.target.value })}
+                  onChange={(e) =>
+                    setMemberForm({ ...memberForm, first_name: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -843,7 +990,9 @@ export default function TeamsPage() {
                 <Input
                   id="edit-last-name"
                   value={memberForm.last_name}
-                  onChange={(e) => setMemberForm({ ...memberForm, last_name: e.target.value })}
+                  onChange={(e) =>
+                    setMemberForm({ ...memberForm, last_name: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -851,21 +1000,31 @@ export default function TeamsPage() {
               <Label htmlFor="edit-email">
                 Email
                 {editMemberDialog.member?.user_id ? (
-                  <span className="text-muted-foreground font-normal ml-1">(linked to user account)</span>
+                  <span className="text-muted-foreground font-normal ml-1">
+                    (linked to user account)
+                  </span>
                 ) : (
-                  <span className="text-muted-foreground font-normal ml-1">(optional)</span>
+                  <span className="text-muted-foreground font-normal ml-1">
+                    (optional)
+                  </span>
                 )}
               </Label>
               <Input
                 id="edit-email"
                 type="email"
                 value={memberForm.email}
-                onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })}
+                onChange={(e) =>
+                  setMemberForm({ ...memberForm, email: e.target.value })
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleEditMember();
                 }}
                 disabled={!!editMemberDialog.member?.user_id}
-                className={editMemberDialog.member?.user_id ? "bg-muted cursor-not-allowed" : ""}
+                className={
+                  editMemberDialog.member?.user_id
+                    ? "bg-muted cursor-not-allowed"
+                    : ""
+                }
               />
               {editMemberDialog.member?.user_id && (
                 <p className="text-xs text-muted-foreground">
@@ -886,7 +1045,11 @@ export default function TeamsPage() {
             </Button>
             <Button
               onClick={handleEditMember}
-              disabled={submitting || !memberForm.first_name.trim() || !memberForm.last_name.trim()}
+              disabled={
+                submitting ||
+                !memberForm.first_name.trim() ||
+                !memberForm.last_name.trim()
+              }
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Save
@@ -896,19 +1059,33 @@ export default function TeamsPage() {
       </Dialog>
 
       {/* Delete Member Dialog */}
-      <Dialog open={deleteMemberDialog.open} onOpenChange={(o) => setDeleteMemberDialog({ open: o, member: null })}>
+      <Dialog
+        open={deleteMemberDialog.open}
+        onOpenChange={(o) => setDeleteMemberDialog({ open: o, member: null })}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Remove Team Member</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {deleteMemberDialog.member?.first_name} {deleteMemberDialog.member?.last_name} from the team?
+              Are you sure you want to remove{" "}
+              {deleteMemberDialog.member?.first_name}{" "}
+              {deleteMemberDialog.member?.last_name} from the team?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDeleteMemberDialog({ open: false, member: null })}>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                setDeleteMemberDialog({ open: false, member: null })
+              }
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteMember} disabled={submitting}>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteMember}
+              disabled={submitting}
+            >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Remove
             </Button>

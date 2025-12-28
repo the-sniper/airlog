@@ -19,8 +19,15 @@ interface AnalyticsTabProps {
   shareToken?: string; // For public report
 }
 
-export function AnalyticsTab({ session, pollResponses, sessionId, shareToken }: AnalyticsTabProps) {
-  const [historicalData, setHistoricalData] = useState<HistoricalSession[] | null>(null);
+export function AnalyticsTab({
+  session,
+  pollResponses,
+  sessionId,
+  shareToken,
+}: AnalyticsTabProps) {
+  const [historicalData, setHistoricalData] = useState<
+    HistoricalSession[] | null
+  >(null);
   const [loadingHistorical, setLoadingHistorical] = useState(false);
 
   useEffect(() => {
@@ -33,7 +40,7 @@ export function AnalyticsTab({ session, pollResponses, sessionId, shareToken }: 
         } else if (shareToken) {
           response = await fetch(`/api/public/report/${shareToken}/historical`);
         }
-        
+
         if (response?.ok) {
           const data = await response.json();
           setHistoricalData(data.sessions || []);
@@ -53,7 +60,10 @@ export function AnalyticsTab({ session, pollResponses, sessionId, shareToken }: 
   if (!hasNotes) {
     return (
       <div className="text-center py-16">
-        <p className="text-muted-foreground">No notes recorded. Analytics will be available once testers submit feedback.</p>
+        <p className="text-muted-foreground">
+          No notes recorded. Analytics will be available once testers submit
+          feedback.
+        </p>
       </div>
     );
   }
@@ -82,10 +92,15 @@ export function AnalyticsTab({ session, pollResponses, sessionId, shareToken }: 
       {loadingHistorical ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-muted-foreground">Loading historical data...</span>
+          <span className="ml-2 text-muted-foreground">
+            Loading historical data...
+          </span>
         </div>
       ) : (
-        <HistoricalComparisonCard session={session} pastSessions={historicalData || []} />
+        <HistoricalComparisonCard
+          session={session}
+          pastSessions={historicalData || []}
+        />
       )}
     </div>
   );

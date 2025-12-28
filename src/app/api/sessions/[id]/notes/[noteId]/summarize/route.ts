@@ -10,7 +10,7 @@ const openai = new OpenAI({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string; noteId: string } }
+  { params }: { params: { id: string; noteId: string } },
 ) {
   const { id: sessionId, noteId } = params;
 
@@ -32,7 +32,7 @@ export async function POST(
     if (!transcript) {
       return NextResponse.json(
         { error: "No transcript available for this note" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -128,14 +128,14 @@ Be honest and helpful. It's better to acknowledge unclear input than to generate
       if (error.status === 401) {
         return NextResponse.json(
           { error: "Invalid OpenAI API key. Please check your configuration." },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
 
     return NextResponse.json(
       { error: "Failed to generate summary" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

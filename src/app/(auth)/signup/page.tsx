@@ -4,11 +4,25 @@ import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, Lock, User, Eye, EyeOff, ShieldCheck, UserX } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  UserX,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
 function SignupForm() {
@@ -70,12 +84,19 @@ function SignupForm() {
       const res = await fetch("/api/users/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ first_name: firstName, last_name: lastName, email, password }),
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          password,
+        }),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Signup is not available yet. Please try again later.");
+        setError(
+          data.error || "Signup is not available yet. Please try again later.",
+        );
         setLoading(false);
         return;
       }
@@ -93,9 +114,14 @@ function SignupForm() {
     <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
       <CardHeader className="text-center pb-2">
         <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center mb-3 shadow-lg shadow-primary/20">
-          <ShieldCheck className="w-7 h-7 text-primary-foreground" strokeWidth={1.75} />
+          <ShieldCheck
+            className="w-7 h-7 text-primary-foreground"
+            strokeWidth={1.75}
+          />
         </div>
-        <CardTitle className="text-2xl font-bold">Create your account</CardTitle>
+        <CardTitle className="text-2xl font-bold">
+          Create your account
+        </CardTitle>
         <CardDescription className="text-muted-foreground">
           Join AirLog with your work email.
         </CardDescription>
@@ -131,7 +157,6 @@ function SignupForm() {
                   required
                 />
               </div>
-
             </div>
           </div>
 
@@ -145,7 +170,7 @@ function SignupForm() {
                 value={email}
                 onChange={(e) => !isInviteFlow && setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className={`pl-9 h-11 ${isInviteFlow ? 'bg-secondary/50 cursor-not-allowed' : ''}`}
+                className={`pl-9 h-11 ${isInviteFlow ? "bg-secondary/50 cursor-not-allowed" : ""}`}
                 required
                 autoComplete="email"
                 readOnly={!!isInviteFlow}
@@ -177,10 +202,16 @@ function SignupForm() {
                 onClick={() => setShowPassword((s) => !s)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">At least 8 characters.</p>
+            <p className="text-xs text-muted-foreground">
+              At least 8 characters.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -211,7 +242,11 @@ function SignupForm() {
               <Button
                 variant="link"
                 className="px-1"
-                onClick={() => router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}&inviteEmail=${encodeURIComponent(inviteEmail || '')}`)}
+                onClick={() =>
+                  router.push(
+                    `/login?callbackUrl=${encodeURIComponent(callbackUrl)}&inviteEmail=${encodeURIComponent(inviteEmail || "")}`,
+                  )
+                }
               >
                 Log in
               </Button>
@@ -221,7 +256,11 @@ function SignupForm() {
                 Want to use a different account?
               </p>
               <Link href={"/signup"}>
-                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                >
                   <UserX className="w-4 h-4 mr-1" />
                   Leave invite & signup differently
                 </Button>
@@ -231,7 +270,15 @@ function SignupForm() {
         ) : (
           <p className="text-sm text-center text-muted-foreground">
             Already have an account?{" "}
-            <Button variant="link" className="px-1" onClick={() => router.push(`/login${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`)}>
+            <Button
+              variant="link"
+              className="px-1"
+              onClick={() =>
+                router.push(
+                  `/login${callbackUrl !== "/dashboard" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`,
+                )
+              }
+            >
               Log in
             </Button>
           </p>
@@ -246,9 +293,14 @@ function SignupFormFallback() {
     <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
       <CardHeader className="text-center pb-2">
         <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center mb-3 shadow-lg shadow-primary/20">
-          <ShieldCheck className="w-7 h-7 text-primary-foreground" strokeWidth={1.75} />
+          <ShieldCheck
+            className="w-7 h-7 text-primary-foreground"
+            strokeWidth={1.75}
+          />
         </div>
-        <CardTitle className="text-2xl font-bold">Create your account</CardTitle>
+        <CardTitle className="text-2xl font-bold">
+          Create your account
+        </CardTitle>
         <CardDescription className="text-muted-foreground">
           Join AirLog with your work email.
         </CardDescription>
@@ -272,8 +324,20 @@ export default function SignupPage() {
 
       <div className="w-full max-w-md relative">
         <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-          <Image src="/logo.svg" alt="AirLog" width={120} height={32} className="dark:hidden" />
-          <Image src="/logo-dark.svg" alt="AirLog" width={120} height={32} className="hidden dark:block" />
+          <Image
+            src="/logo.svg"
+            alt="AirLog"
+            width={120}
+            height={32}
+            className="dark:hidden"
+          />
+          <Image
+            src="/logo-dark.svg"
+            alt="AirLog"
+            width={120}
+            height={32}
+            className="hidden dark:block"
+          />
         </div>
 
         <Suspense fallback={<SignupFormFallback />}>

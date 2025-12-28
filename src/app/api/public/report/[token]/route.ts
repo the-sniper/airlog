@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // GET report data by share token (public access)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: { token: string } },
 ) {
   try {
     const { token } = params;
@@ -18,7 +18,9 @@ export async function GET(
     // Find session by share token (report link)
     const { data: session, error } = await supabase
       .from("sessions")
-      .select(`*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*))`)
+      .select(
+        `*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*))`,
+      )
       .eq("share_token", token)
       .eq("status", "completed")
       .order("order_index", { referencedTable: "scenes", ascending: true })
@@ -28,13 +30,17 @@ export async function GET(
     if (error || !session) {
       return NextResponse.json(
         { error: "Report not found or not available" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Fetch poll responses for all testers in this session
     const testerIds = session.testers?.map((t: { id: string }) => t.id) || [];
-    let pollResponses: { poll_question_id: string; tester_id: string; selected_options: string[] }[] = [];
+    let pollResponses: {
+      poll_question_id: string;
+      tester_id: string;
+      selected_options: string[];
+    }[] = [];
     if (testerIds.length > 0) {
       const { data: responses } = await supabase
         .from("poll_responses")
@@ -68,7 +74,7 @@ export async function GET(
     console.error("Error fetching public report:", error);
     return NextResponse.json(
       { error: "Failed to fetch report" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -76,7 +82,7 @@ export async function GET(
 // POST to generate PDF (public access)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: { token: string } },
 ) {
   try {
     const { token } = params;
@@ -85,7 +91,9 @@ export async function POST(
     // Find session by share token
     const { data: session, error } = await supabase
       .from("sessions")
-      .select(`*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*))`)
+      .select(
+        `*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*))`,
+      )
       .eq("share_token", token)
       .eq("status", "completed")
       .order("order_index", { referencedTable: "scenes", ascending: true })
@@ -95,12 +103,12 @@ export async function POST(
     if (error || !session) {
       return NextResponse.json(
         { error: "Report not found or not available" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const pdfBuffer = await renderToBuffer(
-      SessionReportPDF({ session: session as SessionWithDetails })
+      SessionReportPDF({ session: session as SessionWithDetails }),
     );
     const uint8Array = new Uint8Array(pdfBuffer);
 
@@ -114,7 +122,7 @@ export async function POST(
     console.error("Error generating public PDF:", error);
     return NextResponse.json(
       { error: "Failed to generate PDF" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

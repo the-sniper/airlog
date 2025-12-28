@@ -4,13 +4,13 @@ import { jwtVerify } from "jose";
 
 // Admin authentication
 const ADMIN_JWT_SECRET = new TextEncoder().encode(
-  process.env.ADMIN_JWT_SECRET || "your-secret-key-change-in-production"
+  process.env.ADMIN_JWT_SECRET || "your-secret-key-change-in-production",
 );
 const ADMIN_COOKIE_NAME = "admin_session";
 
 // Tester authentication
 const USER_JWT_SECRET = new TextEncoder().encode(
-  process.env.USER_JWT_SECRET || "user-session-secret-change-me"
+  process.env.USER_JWT_SECRET || "user-session-secret-change-me",
 );
 const USER_COOKIE_NAME = "user_session";
 
@@ -19,7 +19,13 @@ const ADMIN_PROTECTED_ROUTES = ["/admin"];
 const ADMIN_AUTH_ROUTES = ["/admin/login"];
 
 // Tester routes that require authentication
-const TESTER_PROTECTED_ROUTES = ["/dashboard", "/sessions", "/profile", "/teams", "/report"];
+const TESTER_PROTECTED_ROUTES = [
+  "/dashboard",
+  "/sessions",
+  "/profile",
+  "/teams",
+  "/report",
+];
 // Tester auth routes (should redirect to dashboard if already authenticated)
 const TESTER_AUTH_ROUTES = ["/login", "/signup", "/reset-password"];
 
@@ -31,9 +37,12 @@ export async function middleware(request: NextRequest) {
 
   // === ADMIN ROUTE HANDLING ===
   const isAdminProtectedRoute = ADMIN_PROTECTED_ROUTES.some(
-    (route) => pathname.startsWith(route) && !pathname.startsWith("/admin/login")
+    (route) =>
+      pathname.startsWith(route) && !pathname.startsWith("/admin/login"),
   );
-  const isAdminAuthRoute = ADMIN_AUTH_ROUTES.some((route) => pathname.startsWith(route));
+  const isAdminAuthRoute = ADMIN_AUTH_ROUTES.some((route) =>
+    pathname.startsWith(route),
+  );
 
   if (isAdminProtectedRoute || isAdminAuthRoute) {
     const adminToken = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
@@ -65,10 +74,10 @@ export async function middleware(request: NextRequest) {
 
   // === TESTER ROUTE HANDLING ===
   const isTesterProtectedRoute = TESTER_PROTECTED_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
+    (route) => pathname === route || pathname.startsWith(route + "/"),
   );
   const isTesterAuthRoute = TESTER_AUTH_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
+    (route) => pathname === route || pathname.startsWith(route + "/"),
   );
 
   if (isTesterProtectedRoute || isTesterAuthRoute) {

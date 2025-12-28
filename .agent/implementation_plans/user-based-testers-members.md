@@ -6,14 +6,14 @@ Refactor the tester and team member system to require registered users. This eli
 
 ## Key Decisions
 
-| Decision | Choice |
-|----------|--------|
-| Can unregistered users be testers? | No - must be registered users |
-| Can unregistered users be team members? | No - must be registered users |
-| How to handle invite by email? | Create pending invite, send signup email |
-| Identification method | `user_id` (not email) |
-| Email editable? | No - locked to user account |
-| Auto-add or require acceptance? | Auto-add + send notification/email |
+| Decision                                | Choice                                   |
+| --------------------------------------- | ---------------------------------------- |
+| Can unregistered users be testers?      | No - must be registered users            |
+| Can unregistered users be team members? | No - must be registered users            |
+| How to handle invite by email?          | Create pending invite, send signup email |
+| Identification method                   | `user_id` (not email)                    |
+| Email editable?                         | No - locked to user account              |
+| Auto-add or require acceptance?         | Auto-add + send notification/email       |
 
 ---
 
@@ -92,6 +92,7 @@ CREATE INDEX IF NOT EXISTS idx_team_members_user_id ON team_members(user_id);
 **File**: `src/app/api/users/signup/route.ts`
 
 Add at end of signup flow:
+
 ```typescript
 // Check for pending invites matching this email
 // For each pending invite:
@@ -172,16 +173,19 @@ Replace current form with user search/select:
 Three tabs:
 
 #### Tab 1: From Team (existing, update to use user_id)
+
 ```
 Select team → shows members (only those with user_id)
 ```
 
 #### Tab 2: From Users (NEW)
+
 ```
 Search all registered users → multi-select → add
 ```
 
 #### Tab 3: Invite by Email (UPDATED)
+
 ```
 Enter email address
 → If registered: add directly
@@ -191,12 +195,14 @@ Enter email address
 ### 3.3 Tester/Member Details - Lock Email
 
 When viewing/editing a tester or team member:
+
 - Email field is **read-only** (displayed but not editable)
 - Name fields use data from `users` table via `user_id` join
 
 ### 3.4 Show Pending Invites
 
 In session/team detail views, show pending invites section:
+
 ```
 Pending Invites (2)
 ├── pending@example.com - Invited Dec 27, expires Jan 3 [Resend] [Cancel]
@@ -266,6 +272,7 @@ interface UserSelectProps {
 ```
 
 Features:
+
 - Debounced search input
 - Fetches from `/api/admin/users?search=...`
 - Shows user avatar, name, email
@@ -277,7 +284,7 @@ Features:
 
 ```typescript
 interface PendingInvitesListProps {
-  type: 'session' | 'team';
+  type: "session" | "team";
   targetId: string;
   onResend: (inviteId: string) => void;
   onCancel: (inviteId: string) => void;
@@ -289,6 +296,7 @@ interface PendingInvitesListProps {
 ## Implementation Order
 
 ### Milestone 1: Foundation (APIs + Database)
+
 1. [x] Create migration `022_pending_invites.sql`
 2. [ ] Apply migration in Supabase Dashboard (manual step required)
 3. [x] Create `/api/admin/users` endpoint
@@ -296,6 +304,7 @@ interface PendingInvitesListProps {
 5. [x] Update signup API to claim pending invites
 
 ### Milestone 2: Add Tester Flow
+
 6. [x] Create `UserSelect` component
 7. [x] Update Add Tester dialog with 3 tabs (From Team, From Users, Invite by Email)
 8. [x] Add handlers for adding users and inviting by email
@@ -303,16 +312,19 @@ interface PendingInvitesListProps {
 10. [x] Session invite email already exists
 
 ### Milestone 3: Add Team Member Flow
+
 11. [x] Update Add Member dialog with 2 tabs (From Users, Invite by Email)
 12. [x] Add handlers for adding users and inviting by email
 13. [ ] Show pending invites in team detail (optional enhancement)
 
 ### Milestone 4: Email Invites
+
 14. [x] Create signup invite email template
 15. [x] Pre-fill email on signup page from URL param (uses inviteEmail param)
 16. [ ] Test full invite → signup → auto-add flow (requires migration first)
 
 ### Milestone 5: Cleanup
+
 17. [x] Lock email editing for testers linked to user accounts
 18. [x] Lock email editing for team members linked to user accounts
 19. [ ] Add pending invites UI to session detail (optional enhancement)
@@ -323,11 +335,13 @@ interface PendingInvitesListProps {
 ## Migration Strategy for Existing Data
 
 ### Testers without user_id
+
 - Keep existing records as-is (grandfathered)
 - Only new testers require user_id
 - Display warning in admin UI: "Legacy tester - not linked to user account"
 
 ### Team Members without user_id
+
 - Keep existing records as-is (grandfathered)
 - Only new members require user_id
 - Display warning in admin UI: "Legacy member - not linked to user account"
@@ -336,19 +350,20 @@ interface PendingInvitesListProps {
 
 ## Questions Resolved
 
-| Question | Answer |
-|----------|--------|
-| Email editable? | No - comes from users table |
-| Identify by email or user_id? | user_id internally |
-| Show user list to admins? | Yes, with search |
-| Unregistered user handling? | Create pending invite, send signup email |
-| Notification on add? | Yes - in-app + email |
+| Question                      | Answer                                   |
+| ----------------------------- | ---------------------------------------- |
+| Email editable?               | No - comes from users table              |
+| Identify by email or user_id? | user_id internally                       |
+| Show user list to admins?     | Yes, with search                         |
+| Unregistered user handling?   | Create pending invite, send signup email |
+| Notification on add?          | Yes - in-app + email                     |
 
 ---
 
 ## Files to Create/Modify
 
 ### New Files
+
 - `supabase/migrations/022_pending_invites.sql`
 - `supabase/migrations/023_require_user_id.sql`
 - `src/app/api/admin/users/route.ts`
@@ -359,6 +374,7 @@ interface PendingInvitesListProps {
 - `src/lib/emails/signup-invite.ts`
 
 ### Modified Files
+
 - `src/app/api/users/signup/route.ts`
 - `src/app/api/sessions/[id]/testers/route.ts`
 - `src/app/api/teams/[id]/members/route.ts`

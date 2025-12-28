@@ -80,7 +80,7 @@ export function NotesList({
   const [editText, setEditText] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
-    null
+    null,
   );
   const [editingSceneId, setEditingSceneId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -141,11 +141,11 @@ export function NotesList({
         setEditingId(null);
         setEditText("");
       }
-    } catch { }
+    } catch {}
   }
   function toggleAudio(noteId: string) {
     const audio = document.getElementById(
-      `audio-${noteId}`
+      `audio-${noteId}`,
     ) as HTMLAudioElement;
     if (audio) {
       if (playingId === noteId) {
@@ -203,7 +203,7 @@ export function NotesList({
     try {
       const res = await fetch(
         `/api/sessions/${sessionId}/notes/${noteToDelete.id}`,
-        { method: "DELETE" }
+        { method: "DELETE" },
       );
       if (res.ok && onNoteDeleted) {
         onNoteDeleted(noteToDelete.id);
@@ -375,11 +375,11 @@ export function NotesList({
                     <Badge
                       variant={
                         note.category as
-                        | "bug"
-                        | "feature"
-                        | "ux"
-                        | "performance"
-                        | "secondary"
+                          | "bug"
+                          | "feature"
+                          | "ux"
+                          | "performance"
+                          | "secondary"
                       }
                       className="cursor-pointer hover:opacity-80"
                       onClick={() => setEditingCategoryId(note.id)}
@@ -441,43 +441,43 @@ export function NotesList({
                 {(note.edited_transcript ||
                   note.raw_transcript ||
                   onNoteDeleted) && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 shrink-0 -mr-2"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {(note.edited_transcript || note.raw_transcript) && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() => setAiSummaryNote(note)}
-                            >
-                              <Sparkles className="w-4 h-4 mr-2" />
-                              AI Summary
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => startEditing(note)}>
-                              <Edit2 className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                        {onNoteDeleted && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 -mr-2"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {(note.edited_transcript || note.raw_transcript) && (
+                        <>
                           <DropdownMenuItem
-                            onClick={() => openDeleteNoteDialog(note)}
-                            className="text-destructive focus:text-destructive"
+                            onClick={() => setAiSummaryNote(note)}
                           >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            AI Summary
                           </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                          <DropdownMenuItem onClick={() => startEditing(note)}>
+                            <Edit2 className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {onNoteDeleted && (
+                        <DropdownMenuItem
+                          onClick={() => openDeleteNoteDialog(note)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
 
               {/* Row 2: Tester name and date */}

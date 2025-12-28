@@ -1,7 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Target, TrendingUp, UserX, Award } from "lucide-react";
 import type { SessionWithDetails } from "@/types";
@@ -12,11 +18,16 @@ interface TesterEngagementCardProps {
 }
 
 export function TesterEngagementCard({ session }: TesterEngagementCardProps) {
-  const engagement = useMemo(() => calculateTesterEngagement(session), [session]);
+  const engagement = useMemo(
+    () => calculateTesterEngagement(session),
+    [session],
+  );
 
   const getParticipationLevel = () => {
-    if (engagement.participationRate >= 80) return { label: "Excellent", color: "text-emerald-500" };
-    if (engagement.participationRate >= 50) return { label: "Good", color: "text-amber-500" };
+    if (engagement.participationRate >= 80)
+      return { label: "Excellent", color: "text-emerald-500" };
+    if (engagement.participationRate >= 50)
+      return { label: "Good", color: "text-amber-500" };
     return { label: "Needs Attention", color: "text-[#fb7088]" };
   };
 
@@ -43,12 +54,16 @@ export function TesterEngagementCard({ session }: TesterEngagementCardProps) {
           <div className="h-2 bg-secondary rounded-full overflow-hidden mb-2">
             <div
               className="h-full bg-primary rounded-full transition-all"
-              style={{ width: `${Math.min(engagement.participationRate, 100)}%` }}
+              style={{
+                width: `${Math.min(engagement.participationRate, 100)}%`,
+              }}
             />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>
-              {Math.round(engagement.participationRate)}% ({engagement.testersWithNotes}/{engagement.totalTesters}) testers shared notes
+              {Math.round(engagement.participationRate)}% (
+              {engagement.testersWithNotes}/{engagement.totalTesters}) testers
+              shared notes
             </span>
           </div>
         </div>
@@ -58,9 +73,13 @@ export function TesterEngagementCard({ session }: TesterEngagementCardProps) {
           <div className="p-3 rounded-lg bg-secondary/30">
             <div className="flex items-center gap-2 mb-1">
               <Target className="w-4 h-4 text-sky-500" />
-              <span className="text-xs text-muted-foreground">Avg Notes / Tester</span>
+              <span className="text-xs text-muted-foreground">
+                Avg Notes / Tester
+              </span>
             </div>
-            <div className="text-xl font-bold">{engagement.averageNotesPerTester.toFixed(1)}</div>
+            <div className="text-xl font-bold">
+              {engagement.averageNotesPerTester.toFixed(1)}
+            </div>
           </div>
           <div className="p-3 rounded-lg bg-secondary/30">
             <div className="flex items-center gap-2 mb-1">
@@ -99,11 +118,17 @@ export function TesterEngagementCard({ session }: TesterEngagementCardProps) {
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground flex items-center gap-1">
               <UserX className="w-3 h-3" />
-              {engagement.silentTesters.length} tester{engagement.silentTesters.length > 1 ? "s" : ""} haven&apos;t added notes yet
+              {engagement.silentTesters.length} tester
+              {engagement.silentTesters.length > 1 ? "s" : ""} haven&apos;t
+              added notes yet
             </div>
             <div className="flex flex-wrap gap-1">
               {engagement.silentTesters.slice(0, 5).map((tester) => (
-                <Badge key={tester.id} variant="outline" className="text-[11px]">
+                <Badge
+                  key={tester.id}
+                  variant="outline"
+                  className="text-[11px]"
+                >
                   {tester.name}
                 </Badge>
               ))}
@@ -115,7 +140,9 @@ export function TesterEngagementCard({ session }: TesterEngagementCardProps) {
             </div>
           </div>
         ) : (
-          <div className="text-xs text-muted-foreground text-center py-1">Everyone participated 🎉</div>
+          <div className="text-xs text-muted-foreground text-center py-1">
+            Everyone participated 🎉
+          </div>
         )}
       </CardContent>
     </Card>

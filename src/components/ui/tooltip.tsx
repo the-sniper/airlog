@@ -33,9 +33,11 @@ export function Tooltip({
 
   const arrowClasses = {
     top: "top-full left-1/2 -translate-x-1/2 border-t-popover border-x-transparent border-b-transparent",
-    bottom: "bottom-full left-1/2 -translate-x-1/2 border-b-popover border-x-transparent border-t-transparent",
+    bottom:
+      "bottom-full left-1/2 -translate-x-1/2 border-b-popover border-x-transparent border-t-transparent",
     left: "left-full top-1/2 -translate-y-1/2 border-l-popover border-y-transparent border-r-transparent",
-    right: "right-full top-1/2 -translate-y-1/2 border-r-popover border-y-transparent border-l-transparent",
+    right:
+      "right-full top-1/2 -translate-y-1/2 border-r-popover border-y-transparent border-l-transparent",
   };
 
   return (
@@ -49,16 +51,13 @@ export function Tooltip({
         <div
           className={cn(
             "absolute z-50 px-3 py-1.5 text-xs font-medium text-popover-foreground bg-popover border border-border rounded-md shadow-md whitespace-nowrap pointer-events-none transition-opacity duration-100 ease-out max-w-xs overflow-hidden",
-            positionClasses[side]
+            positionClasses[side],
           )}
           role="tooltip"
         >
           {content}
           <span
-            className={cn(
-              "absolute w-0 h-0 border-4",
-              arrowClasses[side]
-            )}
+            className={cn("absolute w-0 h-0 border-4", arrowClasses[side])}
           />
         </div>
       )}

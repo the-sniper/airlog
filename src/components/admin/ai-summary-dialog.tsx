@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles, Loader2, RefreshCw, Check, Edit2, Copy, X, Filter } from "lucide-react";
+import {
+  Sparkles,
+  Loader2,
+  RefreshCw,
+  Check,
+  Edit2,
+  Copy,
+  X,
+  Filter,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,7 +34,6 @@ export interface FilterLabels {
   scene?: string;
   tester?: string;
 }
-
 
 interface AISummaryDialogProps {
   sessionId: string;
@@ -55,7 +63,9 @@ export function AISummaryDialog({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [summary, setSummary] = useState<string | null>(existingSummary || null);
+  const [summary, setSummary] = useState<string | null>(
+    existingSummary || null,
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [editedSummary, setEditedSummary] = useState(existingSummary || "");
   const [approved, setApproved] = useState(!!existingSummary);
@@ -63,7 +73,8 @@ export function AISummaryDialog({
   const [summarizeFiltered, setSummarizeFiltered] = useState(false);
 
   // Check if filters are active
-  const hasActiveFilters = filters && (filters.category || filters.sceneId || filters.testerId);
+  const hasActiveFilters =
+    filters && (filters.category || filters.sceneId || filters.testerId);
   const actualFilteredCount = filteredNotesCount ?? notesCount;
 
   // Initialize state when dialog opens or existingSummary changes
@@ -84,11 +95,11 @@ export function AISummaryDialog({
     setSummary(null);
     setApproved(false);
     setIsEditing(false);
-    
+
     try {
       // Only pass filters if user chose to summarize filtered notes
       const body = summarizeFiltered && hasActiveFilters ? filters : {};
-      
+
       const response = await fetch(`/api/sessions/${sessionId}/summarize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -107,7 +118,8 @@ export function AISummaryDialog({
       console.error("Error generating summary:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate summary",
+        description:
+          error instanceof Error ? error.message : "Failed to generate summary",
         variant: "destructive",
       });
     } finally {
@@ -133,7 +145,7 @@ export function AISummaryDialog({
   async function handleApprove() {
     const summaryToSave = summary || "";
     setSaving(true);
-    
+
     try {
       // Save to database
       const response = await fetch(`/api/sessions/${sessionId}`, {
@@ -147,12 +159,12 @@ export function AISummaryDialog({
       }
 
       setApproved(true);
-      
+
       // Notify parent component
       if (onSummaryApproved) {
         onSummaryApproved(summaryToSave);
       }
-      
+
       toast({
         title: "Summary Approved",
         description: "The session summary has been saved.",
@@ -171,7 +183,7 @@ export function AISummaryDialog({
   }
 
   async function handleCopy() {
-    const textToCopy = isEditing ? editedSummary : (summary || "");
+    const textToCopy = isEditing ? editedSummary : summary || "";
     await navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -201,7 +213,8 @@ export function AISummaryDialog({
             Session Summary
           </DialogTitle>
           <DialogDescription>
-            Generate actionable items from all {notesCount} notes in &quot;{sessionName}&quot;
+            Generate actionable items from all {notesCount} notes in &quot;
+            {sessionName}&quot;
           </DialogDescription>
         </DialogHeader>
 
@@ -212,13 +225,15 @@ export function AISummaryDialog({
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
               <h3 className="font-semibold mb-2">
-                {hasActiveFilters ? "Summarize Session" : "Summarize Entire Session"}
+                {hasActiveFilters
+                  ? "Summarize Session"
+                  : "Summarize Entire Session"}
               </h3>
               <p className="text-sm text-muted-foreground mb-4 max-w-sm">
-                Our AI will analyze notes from this session and create
-                a comprehensive list of actionable items for your team.
+                Our AI will analyze notes from this session and create a
+                comprehensive list of actionable items for your team.
               </p>
-              
+
               {/* Filter selection when filters are active */}
               {hasActiveFilters && (
                 <div className="w-full max-w-sm mb-6 space-y-3">
@@ -226,12 +241,16 @@ export function AISummaryDialog({
                     <Filter className="w-4 h-4" />
                     <span>Active filters:</span>
                     <span className="text-foreground font-medium">
-                      {[filterLabels?.category, filterLabels?.scene, filterLabels?.tester]
+                      {[
+                        filterLabels?.category,
+                        filterLabels?.scene,
+                        filterLabels?.tester,
+                      ]
                         .filter(Boolean)
                         .join(", ")}
                     </span>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
@@ -244,7 +263,8 @@ export function AISummaryDialog({
                     >
                       <p className="font-medium text-sm">Filtered Notes</p>
                       <p className="text-xs text-muted-foreground">
-                        {actualFilteredCount} note{actualFilteredCount !== 1 ? "s" : ""}
+                        {actualFilteredCount} note
+                        {actualFilteredCount !== 1 ? "s" : ""}
                       </p>
                     </button>
                     <button
@@ -264,13 +284,13 @@ export function AISummaryDialog({
                   </div>
                 </div>
               )}
-              
+
               {!hasActiveFilters && (
                 <p className="text-sm text-muted-foreground mb-2">
                   {notesCount} note{notesCount !== 1 ? "s" : ""} to analyze
                 </p>
               )}
-              
+
               <Button onClick={generateSummary}>
                 <Sparkles className="w-4 h-4" />
                 Generate Summary
@@ -282,7 +302,8 @@ export function AISummaryDialog({
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
               <p className="text-sm text-muted-foreground">
-                Analyzing {summarizeFiltered ? actualFilteredCount : notesCount} notes...
+                Analyzing {summarizeFiltered ? actualFilteredCount : notesCount}{" "}
+                notes...
               </p>
               {hasActiveFilters && summarizeFiltered && (
                 <p className="text-xs text-muted-foreground mt-1">
@@ -300,7 +321,7 @@ export function AISummaryDialog({
                   <span className="text-sm font-medium">Summary Approved</span>
                 </div>
               )}
-              
+
               {isEditing ? (
                 <Textarea
                   value={editedSummary}
@@ -331,11 +352,7 @@ export function AISummaryDialog({
                 <RefreshCw className="w-4 h-4" />
                 Redo
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopy}
-              >
+              <Button variant="outline" size="sm" onClick={handleCopy}>
                 {copied ? (
                   <Check className="w-4 h-4 text-green-500" />
                 ) : (
@@ -358,7 +375,12 @@ export function AISummaryDialog({
                 </>
               ) : (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleEdit} disabled={saving}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEdit}
+                    disabled={saving}
+                  >
                     <Edit2 className="w-4 h-4" />
                     Edit
                   </Button>

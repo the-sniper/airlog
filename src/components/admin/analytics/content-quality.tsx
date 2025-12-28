@@ -1,7 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { FileText, Mic, Sparkles, PenLine, Bot } from "lucide-react";
 import type { SessionWithDetails } from "@/types";
 import { calculateContentQuality } from "@/lib/analytics";
@@ -64,7 +70,9 @@ export function ContentQualityCard({ session }: ContentQualityCardProps) {
           <FileText className="w-5 h-5" />
           Content Quality
         </CardTitle>
-        <CardDescription>Note characteristics and AI processing</CardDescription>
+        <CardDescription>
+          Note characteristics and AI processing
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {metrics.map((metric) => (
@@ -72,10 +80,16 @@ export function ContentQualityCard({ session }: ContentQualityCardProps) {
             <metric.icon className={`w-4 h-4 ${metric.color} shrink-0`} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-muted-foreground">{metric.label}</span>
+                <span className="text-sm text-muted-foreground">
+                  {metric.label}
+                </span>
                 <span className="text-sm font-medium">
                   {metric.value}
-                  {metric.unit && <span className="text-muted-foreground ml-1">{metric.unit}</span>}
+                  {metric.unit && (
+                    <span className="text-muted-foreground ml-1">
+                      {metric.unit}
+                    </span>
+                  )}
                 </span>
               </div>
               {metric.bar !== undefined && (

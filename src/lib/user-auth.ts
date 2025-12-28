@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { createAdminClient } from "./supabase/server";
 
 const USER_JWT_SECRET = new TextEncoder().encode(
-  process.env.USER_JWT_SECRET || "user-session-secret-change-me"
+  process.env.USER_JWT_SECRET || "user-session-secret-change-me",
 );
 const USER_COOKIE_NAME = "user_session";
 const USER_SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days

@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 // POST add member(s) to team
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const { id: team_id } = await params;
     const body = await request.json();
@@ -18,14 +21,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
       // Create sets for duplicate checking (by user_id and email)
       const existingUserIds = new Set(
-        (existingMembers || [])
-          .filter(m => m.user_id)
-          .map(m => m.user_id)
+        (existingMembers || []).filter((m) => m.user_id).map((m) => m.user_id),
       );
       const existingEmails = new Set(
         (existingMembers || [])
-          .filter(m => m.email)
-          .map(m => m.email.toLowerCase())
+          .filter((m) => m.email)
+          .map((m) => m.email.toLowerCase()),
       );
 
       // Filter out members that already exist (by user_id or email)
@@ -41,18 +42,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           }
           return true;
         })
-        .map((t: { first_name: string; last_name: string; email?: string; user_id?: string }) => ({
-          team_id,
-          first_name: t.first_name.trim(),
-          last_name: t.last_name.trim(),
-          email: t.email?.trim()?.toLowerCase() || null,
-          user_id: t.user_id || null,
-        }));
+        .map(
+          (t: {
+            first_name: string;
+            last_name: string;
+            email?: string;
+            user_id?: string;
+          }) => ({
+            team_id,
+            first_name: t.first_name.trim(),
+            last_name: t.last_name.trim(),
+            email: t.email?.trim()?.toLowerCase() || null,
+            user_id: t.user_id || null,
+          }),
+        );
 
       if (newMembers.length === 0) {
         return NextResponse.json({
           data: [],
-          message: "All selected users are already members of this team"
+          message: "All selected users are already members of this team",
         });
       }
 
@@ -69,7 +77,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const { first_name, last_name, email } = body;
 
     if (!first_name?.trim() || !last_name?.trim()) {
-      return NextResponse.json({ error: "First name and last name are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "First name and last name are required" },
+        { status: 400 },
+      );
     }
 
     const { data, error } = await supabase
@@ -87,12 +98,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error adding team member:", error);
-    return NextResponse.json({ error: "Failed to add team member" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to add team member" },
+      { status: 500 },
+    );
   }
 }
 
 // GET check which testers are already in this team
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const { id: team_id } = await params;
     const supabase = await createClient();
@@ -106,6 +123,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json(data || []);
   } catch (error) {
     console.error("Error fetching team members:", error);
-    return NextResponse.json({ error: "Failed to fetch team members" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch team members" },
+      { status: 500 },
+    );
   }
 }

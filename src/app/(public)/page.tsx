@@ -25,8 +25,20 @@ export default async function Home() {
       {/* Header */}
       <header className="flex items-center justify-between p-4 md:p-6">
         <div className="flex items-center gap-3">
-          <Image src="/logo.svg" alt="AirLog" width={100} height={26} className="dark:hidden" />
-          <Image src="/logo-dark.svg" alt="AirLog" width={100} height={26} className="hidden dark:block" />
+          <Image
+            src="/logo.svg"
+            alt="AirLog"
+            width={100}
+            height={26}
+            className="dark:hidden"
+          />
+          <Image
+            src="/logo-dark.svg"
+            alt="AirLog"
+            width={100}
+            height={26}
+            className="hidden dark:block"
+          />
         </div>
         <ThemeToggle />
       </header>
@@ -45,14 +57,25 @@ export default async function Home() {
 
           <div className="flex flex-col gap-4">
             <Button asChild size="lg" className="w-full h-14 text-base">
-              <Link href="/login" className="flex items-center justify-center gap-3">
+              <Link
+                href="/login"
+                className="flex items-center justify-center gap-3"
+              >
                 <User className="w-5 h-5" />
                 User Login
               </Link>
             </Button>
 
-            <Button asChild variant="outline" size="lg" className="w-full h-14 text-base">
-              <Link href="/admin/login" className="flex items-center justify-center gap-3">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="w-full h-14 text-base"
+            >
+              <Link
+                href="/admin/login"
+                className="flex items-center justify-center gap-3"
+              >
                 <ShieldCheck className="w-5 h-5" />
                 Admin Login
               </Link>

@@ -3,11 +3,26 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Shield, Loader2, Eye, EyeOff, Lock, Mail, Sparkles, ArrowRight } from "lucide-react";
+import {
+  Shield,
+  Loader2,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Link from "next/link";
 
 function LoginForm() {
@@ -109,20 +124,38 @@ function LoginForm() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/3 rounded-full blur-2xl animate-pulse" style={{ animationDuration: "4s" }} />
+        <div
+          className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/3 rounded-full blur-2xl animate-pulse"
+          style={{ animationDuration: "4s" }}
+        />
       </div>
 
       <div className="w-full max-w-md relative">
         {/* Logo */}
         <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-          <Image src="/logo.svg" alt="AirLog" width={90} height={24} className="dark:hidden md:w-[150px] md:h-[40px]" />
-          <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="hidden dark:block md:w-[150px] md:h-[40px]" />
+          <Image
+            src="/logo.svg"
+            alt="AirLog"
+            width={90}
+            height={24}
+            className="dark:hidden md:w-[150px] md:h-[40px]"
+          />
+          <Image
+            src="/logo-dark.svg"
+            alt="AirLog"
+            width={90}
+            height={24}
+            className="hidden dark:block md:w-[150px] md:h-[40px]"
+          />
         </div>
 
         <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
           <CardHeader className="text-center pb-2">
             <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
-              <Shield className="w-8 h-8 text-primary-foreground" strokeWidth={1.75} />
+              <Shield
+                className="w-8 h-8 text-primary-foreground"
+                strokeWidth={1.75}
+              />
             </div>
             <CardTitle className="text-2xl font-bold">
               {mode === "signup" ? "Create Admin Account" : "Welcome Back"}
@@ -169,7 +202,9 @@ function LoginForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10 h-11 bg-secondary/40"
                     required
-                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    autoComplete={
+                      mode === "signup" ? "new-password" : "current-password"
+                    }
                   />
                   <button
                     type="button"
@@ -192,7 +227,10 @@ function LoginForm() {
 
               {mode === "signup" && (
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                  <Label
+                    htmlFor="confirmPassword"
+                    className="text-sm font-medium"
+                  >
                     Confirm Password
                   </Label>
                   <div className="relative">
@@ -251,7 +289,11 @@ function LoginForm() {
         </p> */}
         <h5 className="text-center text-muted-foreground/60 mt-6">
           Login as user?
-          <Button variant="link" className="px-1" onClick={() => router.push("/login")}>
+          <Button
+            variant="link"
+            className="px-1"
+            onClick={() => router.push("/login")}
+          >
             Sign in
           </Button>
         </h5>
@@ -284,4 +326,3 @@ export default function AdminLoginPage() {
     </Suspense>
   );
 }
-

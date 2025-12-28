@@ -13,7 +13,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const { id } = await params;
 
   try {
@@ -54,13 +57,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Get testers to send to - either specific IDs or all testers
     let targetTesters = session.testers || [];
     if (testerIds && testerIds.length > 0) {
-      targetTesters = targetTesters.filter((t: { id: string }) => testerIds!.includes(t.id));
+      targetTesters = targetTesters.filter((t: { id: string }) =>
+        testerIds!.includes(t.id),
+      );
     }
 
     // Filter testers with email
-    const testersWithEmail = targetTesters.filter(
-      (t: { email: string | null }) => t.email
-    ) || [];
+    const testersWithEmail =
+      targetTesters.filter((t: { email: string | null }) => t.email) || [];
 
     if (testersWithEmail.length === 0) {
       return NextResponse.json({
@@ -71,13 +75,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.headers.get("origin") || "http://localhost:3000";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      req.headers.get("origin") ||
+      "http://localhost:3000";
     const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER;
     const reportUrl = `${baseUrl}/report/${shareToken}`;
 
     const results = await Promise.allSettled(
       testersWithEmail.map(
-        async (tester: { id: string; first_name: string; last_name: string; email: string }) => {
+        async (tester: {
+          id: string;
+          first_name: string;
+          last_name: string;
+          email: string;
+        }) => {
           await transporter.sendMail({
             from: fromEmail,
             to: tester.email,
@@ -117,8 +129,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           });
 
           return { testerId: tester.id, success: true };
-        }
-      )
+        },
+      ),
     );
 
     const successfulResults = results
@@ -153,6 +165,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
   } catch (error) {
     console.error("Error sending report emails:", error);
-    return NextResponse.json({ error: "Failed to send report emails" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to send report emails" },
+      { status: 500 },
+    );
   }
 }

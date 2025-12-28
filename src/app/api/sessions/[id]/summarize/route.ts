@@ -16,7 +16,7 @@ interface FilterParams {
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const { id } = params;
 
@@ -39,7 +39,7 @@ export async function POST(
     const { data: session, error } = await supabase
       .from("sessions")
       .select(
-        "*, scenes (*), testers (*), notes (*, scene:scenes (*), tester:testers (*))"
+        "*, scenes (*), testers (*), notes (*, scene:scenes (*), tester:testers (*))",
       )
       .eq("id", id)
       .single();
@@ -51,58 +51,80 @@ export async function POST(
     if (!session.notes || session.notes.length === 0) {
       return NextResponse.json(
         { error: "No notes to summarize" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Apply filters if provided
     let filteredNotes = session.notes;
     const hasFilters = filters.category || filters.sceneId || filters.testerId;
-    
+
     if (hasFilters) {
-      filteredNotes = session.notes.filter((note: { category: string; scene_id: string; tester_id: string }) => {
-        if (filters.category && note.category !== filters.category) return false;
-        if (filters.sceneId && note.scene_id !== filters.sceneId) return false;
-        if (filters.testerId && note.tester_id !== filters.testerId) return false;
-        return true;
-      });
+      filteredNotes = session.notes.filter(
+        (note: { category: string; scene_id: string; tester_id: string }) => {
+          if (filters.category && note.category !== filters.category)
+            return false;
+          if (filters.sceneId && note.scene_id !== filters.sceneId)
+            return false;
+          if (filters.testerId && note.tester_id !== filters.testerId)
+            return false;
+          return true;
+        },
+      );
     }
 
     if (filteredNotes.length === 0) {
       return NextResponse.json(
         { error: "No notes match the selected filters" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Get unique testers and scenes for context (from filtered notes)
-    const testerNames = Array.from(new Set(filteredNotes.map((note: { tester?: { first_name: string; last_name: string } | null }) => 
-      note.tester ? `${note.tester.first_name} ${note.tester.last_name}` : "Unknown"
-    )));
-    const sceneNames = Array.from(new Set(filteredNotes.map((note: { scene?: { name: string } | null }) => 
-      note.scene?.name || "Unknown"
-    )));
+    const testerNames = Array.from(
+      new Set(
+        filteredNotes.map(
+          (note: {
+            tester?: { first_name: string; last_name: string } | null;
+          }) =>
+            note.tester
+              ? `${note.tester.first_name} ${note.tester.last_name}`
+              : "Unknown",
+        ),
+      ),
+    );
+    const sceneNames = Array.from(
+      new Set(
+        filteredNotes.map(
+          (note: { scene?: { name: string } | null }) =>
+            note.scene?.name || "Unknown",
+        ),
+      ),
+    );
 
     // Format notes for the AI prompt
     const notesText = filteredNotes
-      .map((note: {
-        category: string;
-        scene?: { name: string } | null;
-        tester?: { first_name: string; last_name: string } | null;
-        edited_transcript: string | null;
-        raw_transcript: string | null;
-      }) => {
-        const transcript = note.edited_transcript || note.raw_transcript || "";
-        const sceneName = note.scene?.name || "Unknown Scene";
-        const testerName = note.tester
-          ? `${note.tester.first_name} ${note.tester.last_name}`
-          : "Unknown Tester";
-        return `[Category: ${note.category.toUpperCase()}] [Scene: ${sceneName}] [Tester: ${testerName}]\n"${transcript}"`;
-      })
+      .map(
+        (note: {
+          category: string;
+          scene?: { name: string } | null;
+          tester?: { first_name: string; last_name: string } | null;
+          edited_transcript: string | null;
+          raw_transcript: string | null;
+        }) => {
+          const transcript =
+            note.edited_transcript || note.raw_transcript || "";
+          const sceneName = note.scene?.name || "Unknown Scene";
+          const testerName = note.tester
+            ? `${note.tester.first_name} ${note.tester.last_name}`
+            : "Unknown Tester";
+          return `[Category: ${note.category.toUpperCase()}] [Scene: ${sceneName}] [Tester: ${testerName}]\n"${transcript}"`;
+        },
+      )
       .join("\n\n");
-    
+
     // Build filter context for the prompt if filters are applied
-    const filterContext = hasFilters 
+    const filterContext = hasFilters
       ? `\nNote: This summary is based on filtered notes (${filteredNotes.length} of ${session.notes.length} total notes).`
       : "";
 
@@ -198,19 +220,19 @@ IMPORTANT: Be generous with including notes as actionable items. Most tester fee
     });
   } catch (error) {
     console.error("Error generating summary:", error);
-    
+
     if (error instanceof OpenAI.APIError) {
       if (error.status === 401) {
         return NextResponse.json(
           { error: "Invalid OpenAI API key. Please check your configuration." },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
-    
+
     return NextResponse.json(
       { error: "Failed to generate summary" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

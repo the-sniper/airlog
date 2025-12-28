@@ -1,4 +1,12 @@
-import type { SessionWithDetails, NoteWithDetails, NoteCategory, Scene, Tester, PollQuestion, PollResponse } from "@/types";
+import type {
+  SessionWithDetails,
+  NoteWithDetails,
+  NoteCategory,
+  Scene,
+  Tester,
+  PollQuestion,
+  PollResponse,
+} from "@/types";
 
 // ============================================================================
 // Types
@@ -87,7 +95,9 @@ export interface HistoricalComparison {
 // Scene Analytics
 // ============================================================================
 
-export function calculateSceneAnalytics(session: SessionWithDetails): SceneAnalytics[] {
+export function calculateSceneAnalytics(
+  session: SessionWithDetails,
+): SceneAnalytics[] {
   const scenes = session.scenes || [];
   const notes = session.notes || [];
 
@@ -110,14 +120,18 @@ export function calculateSceneAnalytics(session: SessionWithDetails): SceneAnaly
       sceneName: scene.name,
       totalNotes: sceneNotes.length,
       bugCount,
-      bugDensity: sceneNotes.length > 0 ? (bugCount / sceneNotes.length) * 100 : 0,
+      bugDensity:
+        sceneNotes.length > 0 ? (bugCount / sceneNotes.length) * 100 : 0,
       uniqueTesters,
       categoryBreakdown,
     };
   });
 }
 
-export function getHotspotScenes(sceneAnalytics: SceneAnalytics[], limit = 3): SceneAnalytics[] {
+export function getHotspotScenes(
+  sceneAnalytics: SceneAnalytics[],
+  limit = 3,
+): SceneAnalytics[] {
   return [...sceneAnalytics]
     .filter((s) => s.bugCount > 0)
     .sort((a, b) => b.bugCount - a.bugCount)
@@ -137,28 +151,31 @@ export function getSceneCoverage(session: SessionWithDetails): number {
 // Temporal Analytics
 // ============================================================================
 
-export function calculateTemporalAnalytics(session: SessionWithDetails): TemporalAnalytics {
+export function calculateTemporalAnalytics(
+  session: SessionWithDetails,
+): TemporalAnalytics {
   const notes = session.notes || [];
-  
+
   // Session duration - use first_ended_at for accurate duration (excludes restarts)
   let sessionDuration: number | null = null;
   let sessionDurationFormatted = "N/A";
-  
+
   // Use first_ended_at to get the original session duration, falling back to ended_at
   const endTime = session.first_ended_at || session.ended_at;
-  
+
   if (session.started_at && endTime) {
     const start = new Date(session.started_at).getTime();
     const end = new Date(endTime).getTime();
     sessionDuration = Math.round((end - start) / (1000 * 60)); // minutes
-    
+
     const hours = Math.floor(sessionDuration / 60);
     const mins = sessionDuration % 60;
     sessionDurationFormatted = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   }
 
   // Notes by time segment (divide session into 4 quarters)
-  const notesByTimeSegment: { segment: string; count: number; bugs: number }[] = [];
+  const notesByTimeSegment: { segment: string; count: number; bugs: number }[] =
+    [];
   let earlyNotes = 0;
   let lateNotes = 0;
   let peakSegment: string | null = null;
@@ -169,14 +186,19 @@ export function calculateTemporalAnalytics(session: SessionWithDetails): Tempora
     const duration = end - start;
     const quarterDuration = duration / 4;
 
-    const segments = ["Q1 (0-25%)", "Q2 (25-50%)", "Q3 (50-75%)", "Q4 (75-100%)"];
+    const segments = [
+      "Q1 (0-25%)",
+      "Q2 (25-50%)",
+      "Q3 (50-75%)",
+      "Q4 (75-100%)",
+    ];
     const segmentCounts = segments.map(() => ({ count: 0, bugs: 0 }));
 
     notes.forEach((note) => {
       const noteTime = new Date(note.created_at).getTime();
       const elapsed = noteTime - start;
       const quarterIndex = Math.min(Math.floor(elapsed / quarterDuration), 3);
-      
+
       if (quarterIndex >= 0 && quarterIndex < 4) {
         segmentCounts[quarterIndex].count++;
         if (note.category === "bug") {
@@ -217,7 +239,9 @@ export function calculateTemporalAnalytics(session: SessionWithDetails): Tempora
 // Content Quality Metrics
 // ============================================================================
 
-export function calculateContentQuality(session: SessionWithDetails): ContentQualityMetrics {
+export function calculateContentQuality(
+  session: SessionWithDetails,
+): ContentQualityMetrics {
   const notes = session.notes || [];
   const totalNotes = notes.length;
 
@@ -253,7 +277,10 @@ export function calculateContentQuality(session: SessionWithDetails): ContentQua
 
   // Edit rate (notes where edited != raw)
   const edited = notes.filter(
-    (n) => n.edited_transcript && n.raw_transcript && n.edited_transcript !== n.raw_transcript
+    (n) =>
+      n.edited_transcript &&
+      n.raw_transcript &&
+      n.edited_transcript !== n.raw_transcript,
   ).length;
   const editRate = (edited / totalNotes) * 100;
 
@@ -271,7 +298,9 @@ export function calculateContentQuality(session: SessionWithDetails): ContentQua
 // Category Insights
 // ============================================================================
 
-export function calculateCategoryInsights(session: SessionWithDetails): CategoryInsights {
+export function calculateCategoryInsights(
+  session: SessionWithDetails,
+): CategoryInsights {
   const notes = session.notes || [];
   const scenes = session.scenes || [];
 
@@ -288,13 +317,17 @@ export function calculateCategoryInsights(session: SessionWithDetails): Category
 
   // Bug to feature ratio
   const bugToFeatureRatio =
-    totalByCategory.feature > 0 ? totalByCategory.bug / totalByCategory.feature : null;
+    totalByCategory.feature > 0
+      ? totalByCategory.bug / totalByCategory.feature
+      : null;
 
   // Dominant category
-  const dominantCategory = (Object.entries(totalByCategory) as [NoteCategory, number][]).reduce(
-    (max, [cat, count]) => (count > max[1] ? [cat, count] : max),
-    ["other", 0] as [NoteCategory, number]
-  )[0];
+  const dominantCategory = (
+    Object.entries(totalByCategory) as [NoteCategory, number][]
+  ).reduce((max, [cat, count]) => (count > max[1] ? [cat, count] : max), [
+    "other",
+    0,
+  ] as [NoteCategory, number])[0];
 
   // Category by scene
   const categoryByScene = scenes.map((scene) => {
@@ -322,7 +355,8 @@ export function calculateCategoryInsights(session: SessionWithDetails): Category
     const shares = (Object.values(totalByCategory) as number[])
       .filter((count) => count > 0)
       .map((count) => count / totalNotes);
-    concentrationScore = shares.reduce((sum, share) => sum + share * share, 0) * 100;
+    concentrationScore =
+      shares.reduce((sum, share) => sum + share * share, 0) * 100;
     topCategoryShare = Math.max(...shares) * 100;
   }
 
@@ -340,7 +374,9 @@ export function calculateCategoryInsights(session: SessionWithDetails): Category
 // Tester Engagement
 // ============================================================================
 
-export function calculateTesterEngagement(session: SessionWithDetails): TesterEngagement {
+export function calculateTesterEngagement(
+  session: SessionWithDetails,
+): TesterEngagement {
   const testers = session.testers || [];
   const notes = session.notes || [];
 
@@ -350,11 +386,16 @@ export function calculateTesterEngagement(session: SessionWithDetails): TesterEn
   });
 
   const testersWithNotes = Array.from(noteCounts.keys()).length;
-  const participationRate = testers.length > 0 ? (testersWithNotes / testers.length) * 100 : 0;
-  const averageNotesPerTester = testers.length > 0 ? notes.length / testers.length : 0;
+  const participationRate =
+    testers.length > 0 ? (testersWithNotes / testers.length) * 100 : 0;
+  const averageNotesPerTester =
+    testers.length > 0 ? notes.length / testers.length : 0;
 
   const formatName = (tester: Tester) => {
-    const fullName = [tester.first_name, tester.last_name].filter(Boolean).join(" ").trim();
+    const fullName = [tester.first_name, tester.last_name]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
     return fullName || tester.email || "Tester";
   };
 
@@ -387,7 +428,9 @@ export function calculateTesterEngagement(session: SessionWithDetails): TesterEn
 // Trends & Themes
 // ============================================================================
 
-export function calculateTrendsAndThemes(session: SessionWithDetails): TrendsAndThemes {
+export function calculateTrendsAndThemes(
+  session: SessionWithDetails,
+): TrendsAndThemes {
   const notes = session.notes || [];
 
   const totalNotes = notes.length;
@@ -410,11 +453,39 @@ export function calculateTrendsAndThemes(session: SessionWithDetails): TrendsAnd
   let negativeNotes = 0;
   let mixedNotes = 0;
   let neutralNotes = 0;
-  const positiveWords = ["good", "great", "excellent", "nice", "love", "works", "smooth", "easy", "intuitive"];
-  const negativeWords = ["bad", "broken", "crash", "error", "bug", "issue", "problem", "fail", "confusing", "hard", "difficult", "slow", "frustrating"];
+  const positiveWords = [
+    "good",
+    "great",
+    "excellent",
+    "nice",
+    "love",
+    "works",
+    "smooth",
+    "easy",
+    "intuitive",
+  ];
+  const negativeWords = [
+    "bad",
+    "broken",
+    "crash",
+    "error",
+    "bug",
+    "issue",
+    "problem",
+    "fail",
+    "confusing",
+    "hard",
+    "difficult",
+    "slow",
+    "frustrating",
+  ];
 
   notes.forEach((note) => {
-    const text = (note.edited_transcript || note.raw_transcript || "").toLowerCase();
+    const text = (
+      note.edited_transcript ||
+      note.raw_transcript ||
+      ""
+    ).toLowerCase();
     const hasPositive = positiveWords.some((w) => text.includes(w));
     const hasNegative = negativeWords.some((w) => text.includes(w));
 
@@ -429,7 +500,8 @@ export function calculateTrendsAndThemes(session: SessionWithDetails): TrendsAnd
     }
   });
 
-  let sentimentIndicator: "positive" | "negative" | "neutral" | "mixed" = "neutral";
+  let sentimentIndicator: "positive" | "negative" | "neutral" | "mixed" =
+    "neutral";
   if (positiveNotes > negativeNotes * 2) {
     sentimentIndicator = "positive";
   } else if (negativeNotes > positiveNotes * 2) {
@@ -455,10 +527,11 @@ export function calculateTrendsAndThemes(session: SessionWithDetails): TrendsAnd
 
 export function calculateHistoricalComparison(
   currentSession: SessionWithDetails,
-  pastSessions: HistoricalSession[]
+  pastSessions: HistoricalSession[],
 ): HistoricalComparison {
-  const currentBugs = currentSession.notes?.filter((n) => n.category === "bug").length || 0;
-  
+  const currentBugs =
+    currentSession.notes?.filter((n) => n.category === "bug").length || 0;
+
   // Include current session in the list for display
   const allSessions: HistoricalSession[] = [
     ...pastSessions,
@@ -501,7 +574,8 @@ export function calculateHistoricalComparison(
 
   // Average bugs across all sessions
   const totalBugs = allSessions.reduce((sum, s) => sum + s.bugCount, 0);
-  const averageBugs = allSessions.length > 0 ? totalBugs / allSessions.length : 0;
+  const averageBugs =
+    allSessions.length > 0 ? totalBugs / allSessions.length : 0;
 
   return {
     sessions: allSessions,
@@ -518,11 +592,17 @@ export function calculateHistoricalComparison(
 export function calculatePollCompletionRate(
   pollQuestions: PollQuestion[],
   pollResponses: PollResponse[],
-  testers: Tester[]
-): { questionId: string; question: string; completionRate: number; required: boolean }[] {
+  testers: Tester[],
+): {
+  questionId: string;
+  question: string;
+  completionRate: number;
+  required: boolean;
+}[] {
   return pollQuestions.map((q) => {
     const responses = pollResponses.filter((r) => r.poll_question_id === q.id);
-    const completionRate = testers.length > 0 ? (responses.length / testers.length) * 100 : 0;
+    const completionRate =
+      testers.length > 0 ? (responses.length / testers.length) * 100 : 0;
     return {
       questionId: q.id,
       question: q.question,
@@ -538,9 +618,13 @@ export function calculatePollCompletionRate(
 
 export function calculateIssueCorrelation(
   testers: Tester[],
-  issueOptions: string[]
+  issueOptions: string[],
 ): { issue1: string; issue2: string; correlation: number }[] {
-  const correlations: { issue1: string; issue2: string; correlation: number }[] = [];
+  const correlations: {
+    issue1: string;
+    issue2: string;
+    correlation: number;
+  }[] = [];
 
   for (let i = 0; i < issueOptions.length; i++) {
     for (let j = i + 1; j < issueOptions.length; j++) {
@@ -549,12 +633,16 @@ export function calculateIssueCorrelation(
 
       // Count testers who reported both issues
       const bothCount = testers.filter(
-        (t) => t.reported_issues?.includes(issue1) && t.reported_issues?.includes(issue2)
+        (t) =>
+          t.reported_issues?.includes(issue1) &&
+          t.reported_issues?.includes(issue2),
       ).length;
 
       // Count testers who reported either issue
       const eitherCount = testers.filter(
-        (t) => t.reported_issues?.includes(issue1) || t.reported_issues?.includes(issue2)
+        (t) =>
+          t.reported_issues?.includes(issue1) ||
+          t.reported_issues?.includes(issue2),
       ).length;
 
       const correlation = eitherCount > 0 ? (bothCount / eitherCount) * 100 : 0;
@@ -572,12 +660,14 @@ export function calculateIssueCorrelation(
 // Participation Rate (excluding tester comparison)
 // ============================================================================
 
-export function calculateParticipationRate(session: SessionWithDetails): number {
+export function calculateParticipationRate(
+  session: SessionWithDetails,
+): number {
   const testers = session.testers || [];
   const notes = session.notes || [];
-  
+
   if (testers.length === 0) return 0;
-  
+
   const testersWithNotes = new Set(notes.map((n) => n.tester_id)).size;
   return (testersWithNotes / testers.length) * 100;
 }

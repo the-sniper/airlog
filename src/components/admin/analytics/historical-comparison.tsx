@@ -1,9 +1,23 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { History, TrendingUp, TrendingDown, Minus, Bug, FileText, Users } from "lucide-react";
+import {
+  History,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Bug,
+  FileText,
+  Users,
+} from "lucide-react";
 import type { SessionWithDetails } from "@/types";
 import type { HistoricalSession } from "@/lib/analytics";
 import { calculateHistoricalComparison } from "@/lib/analytics";
@@ -13,16 +27,34 @@ interface HistoricalComparisonCardProps {
   pastSessions: HistoricalSession[];
 }
 
-export function HistoricalComparisonCard({ session, pastSessions }: HistoricalComparisonCardProps) {
+export function HistoricalComparisonCard({
+  session,
+  pastSessions,
+}: HistoricalComparisonCardProps) {
   const comparison = useMemo(
     () => calculateHistoricalComparison(session, pastSessions),
-    [session, pastSessions]
+    [session, pastSessions],
   );
 
   const trendConfig = {
-    improving: { icon: TrendingDown, color: "text-emerald-500", bg: "bg-emerald-500/10", label: "Improving" },
-    worsening: { icon: TrendingUp, color: "text-[#fb7088]", bg: "bg-[#fb7088]/10", label: "More Issues" },
-    stable: { icon: Minus, color: "text-sky-500", bg: "bg-sky-500/10", label: "Stable" },
+    improving: {
+      icon: TrendingDown,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10",
+      label: "Improving",
+    },
+    worsening: {
+      icon: TrendingUp,
+      color: "text-[#fb7088]",
+      bg: "bg-[#fb7088]/10",
+      label: "More Issues",
+    },
+    stable: {
+      icon: Minus,
+      color: "text-sky-500",
+      bg: "bg-sky-500/10",
+      label: "Stable",
+    },
   };
 
   const trend = trendConfig[comparison.bugTrend];
@@ -30,14 +62,17 @@ export function HistoricalComparisonCard({ session, pastSessions }: HistoricalCo
 
   const maxBugs = Math.max(...comparison.sessions.map((s) => s.bugCount), 1);
   const maxNotes = Math.max(...comparison.sessions.map((s) => s.totalNotes), 1);
-  const maxTesters = Math.max(...comparison.sessions.map((s) => s.testerCount), 1);
+  const maxTesters = Math.max(
+    ...comparison.sessions.map((s) => s.testerCount),
+    1,
+  );
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleDateString("en-US", { 
-      month: "short", 
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
       day: "numeric",
-      timeZone: "America/New_York" 
+      timeZone: "America/New_York",
     });
   };
 
@@ -55,7 +90,9 @@ export function HistoricalComparisonCard({ session, pastSessions }: HistoricalCo
           <div className="text-center py-8 text-muted-foreground">
             <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
             <p className="text-sm">No previous sessions to compare with.</p>
-            <p className="text-xs mt-1">Historical trends will appear after completing more sessions.</p>
+            <p className="text-xs mt-1">
+              Historical trends will appear after completing more sessions.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -69,7 +106,9 @@ export function HistoricalComparisonCard({ session, pastSessions }: HistoricalCo
           <History className="w-5 h-5" />
           Historical Comparison
         </CardTitle>
-        <CardDescription>Bug trends across {comparison.sessions.length} sessions</CardDescription>
+        <CardDescription>
+          Bug trends across {comparison.sessions.length} sessions
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Trend Summary */}
@@ -185,7 +224,9 @@ export function HistoricalComparisonCard({ session, pastSessions }: HistoricalCo
                     <div className="w-4 h-14 flex items-end">
                       <div
                         className={`w-full rounded-t transition-all ${
-                          isCurrentSession ? "bg-emerald-500" : "bg-emerald-500/60"
+                          isCurrentSession
+                            ? "bg-emerald-500"
+                            : "bg-emerald-500/60"
                         }`}
                         style={{ height: `${height}%` }}
                       />
@@ -202,42 +243,56 @@ export function HistoricalComparisonCard({ session, pastSessions }: HistoricalCo
 
         {/* Session List */}
         <div className="space-y-2">
-          <div className="text-sm font-medium text-muted-foreground">Recent Sessions</div>
+          <div className="text-sm font-medium text-muted-foreground">
+            Recent Sessions
+          </div>
           <div className="space-y-1.5">
-            {comparison.sessions.slice(-5).reverse().map((s) => {
-              const isCurrentSession = s.id === session.id;
-              return (
-                <div
-                  key={s.id}
-                  className={`flex items-center justify-between p-2 rounded text-sm ${
-                    isCurrentSession ? "bg-primary/10 border border-primary/20" : "bg-secondary/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className={`truncate ${isCurrentSession ? "font-medium" : ""}`}>
-                      {s.name}
-                    </span>
-                    {isCurrentSession && (
-                      <Badge variant="secondary" className="text-[10px] shrink-0">Current</Badge>
-                    )}
+            {comparison.sessions
+              .slice(-5)
+              .reverse()
+              .map((s) => {
+                const isCurrentSession = s.id === session.id;
+                return (
+                  <div
+                    key={s.id}
+                    className={`flex items-center justify-between p-2 rounded text-sm ${
+                      isCurrentSession
+                        ? "bg-primary/10 border border-primary/20"
+                        : "bg-secondary/30"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className={`truncate ${isCurrentSession ? "font-medium" : ""}`}
+                      >
+                        {s.name}
+                      </span>
+                      {isCurrentSession && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] shrink-0"
+                        >
+                          Current
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 text-muted-foreground shrink-0">
+                      <span className="flex items-center gap-1">
+                        <Bug className="w-3 h-3 text-[#fb7088]" />
+                        {s.bugCount}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FileText className="w-3 h-3" />
+                        {s.totalNotes}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        {s.testerCount}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-muted-foreground shrink-0">
-                    <span className="flex items-center gap-1">
-                      <Bug className="w-3 h-3 text-[#fb7088]" />
-                      {s.bugCount}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <FileText className="w-3 h-3" />
-                      {s.totalNotes}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      {s.testerCount}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       </CardContent>

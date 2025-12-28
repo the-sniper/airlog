@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 // GET - Check if invite token is valid and return team info
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ token: string }> }
+  { params }: { params: Promise<{ token: string }> },
 ) {
   try {
     const { token } = await params;
@@ -21,7 +21,7 @@ export async function GET(
     if (error || !team) {
       return NextResponse.json(
         { error: "Invalid invite link" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -30,7 +30,7 @@ export async function GET(
     console.error("Error validating team invite:", error);
     return NextResponse.json(
       { error: "Failed to validate invite" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -38,7 +38,7 @@ export async function GET(
 // POST - Register new team member via invite
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ token: string }> }
+  { params }: { params: Promise<{ token: string }> },
 ) {
   try {
     const { token } = await params;
@@ -48,15 +48,12 @@ export async function POST(
     if (!first_name?.trim() || !last_name?.trim()) {
       return NextResponse.json(
         { error: "First name and last name are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!email?.trim()) {
-      return NextResponse.json(
-        { error: "Email is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     const supabase = createAdminClient();
@@ -71,7 +68,7 @@ export async function POST(
     if (teamError || !team) {
       return NextResponse.json(
         { error: "Invalid invite link" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -128,7 +125,7 @@ export async function POST(
       console.error("Error creating team member:", memberError);
       return NextResponse.json(
         { error: "Failed to register" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -139,11 +136,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Error registering team member:", error);
-    return NextResponse.json(
-      { error: "Failed to register" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to register" }, { status: 500 });
   }
 }
-
-

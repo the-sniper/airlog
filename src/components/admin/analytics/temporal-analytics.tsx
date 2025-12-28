@@ -1,23 +1,44 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Clock, TrendingUp, TrendingDown, Activity } from "lucide-react";
 import type { SessionWithDetails } from "@/types";
-import { calculateTemporalAnalytics, calculateParticipationRate } from "@/lib/analytics";
+import {
+  calculateTemporalAnalytics,
+  calculateParticipationRate,
+} from "@/lib/analytics";
 
 interface TemporalAnalyticsCardProps {
   session: SessionWithDetails;
 }
 
 export function TemporalAnalyticsCard({ session }: TemporalAnalyticsCardProps) {
-  const temporal = useMemo(() => calculateTemporalAnalytics(session), [session]);
-  const participationRate = useMemo(() => calculateParticipationRate(session), [session]);
+  const temporal = useMemo(
+    () => calculateTemporalAnalytics(session),
+    [session],
+  );
+  const participationRate = useMemo(
+    () => calculateParticipationRate(session),
+    [session],
+  );
 
-  const maxSegmentCount = Math.max(...temporal.notesByTimeSegment.map((s) => s.count), 1);
-  const earlyVsLate = temporal.earlyNotes > 0 || temporal.lateNotes > 0
-    ? ((temporal.earlyNotes - temporal.lateNotes) / (temporal.earlyNotes + temporal.lateNotes)) * 100
-    : 0;
+  const maxSegmentCount = Math.max(
+    ...temporal.notesByTimeSegment.map((s) => s.count),
+    1,
+  );
+  const earlyVsLate =
+    temporal.earlyNotes > 0 || temporal.lateNotes > 0
+      ? ((temporal.earlyNotes - temporal.lateNotes) /
+          (temporal.earlyNotes + temporal.lateNotes)) *
+        100
+      : 0;
 
   return (
     <Card>
@@ -32,12 +53,20 @@ export function TemporalAnalyticsCard({ session }: TemporalAnalyticsCardProps) {
         {/* Key Metrics */}
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 rounded-lg bg-secondary/30">
-            <div className="text-2xl font-bold">{temporal.sessionDurationFormatted}</div>
-            <div className="text-xs text-muted-foreground">Session Duration</div>
+            <div className="text-2xl font-bold">
+              {temporal.sessionDurationFormatted}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Session Duration
+            </div>
           </div>
           <div className="p-3 rounded-lg bg-secondary/30">
-            <div className="text-2xl font-bold">{Math.round(participationRate)}%</div>
-            <div className="text-xs text-muted-foreground">Participation Rate</div>
+            <div className="text-2xl font-bold">
+              {Math.round(participationRate)}%
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Participation Rate
+            </div>
           </div>
         </div>
 
@@ -50,23 +79,33 @@ export function TemporalAnalyticsCard({ session }: TemporalAnalyticsCardProps) {
             </div>
             <div className="flex gap-1.5 h-20 items-end">
               {temporal.notesByTimeSegment.map((segment, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div
+                  key={i}
+                  className="flex-1 flex flex-col items-center gap-1"
+                >
                   <div className="flex-1 w-full flex flex-col justify-end">
                     {(() => {
                       const nonBug = Math.max(segment.count - segment.bugs, 0);
-                      const totalHeight = (segment.count / maxSegmentCount) * 100;
+                      const totalHeight =
+                        (segment.count / maxSegmentCount) * 100;
                       const bugHeight = (segment.bugs / maxSegmentCount) * 100;
                       const nonBugHeight = Math.max(totalHeight - bugHeight, 0);
                       return (
                         <>
                           <div
                             className="w-full bg-primary/60 rounded-t transition-all duration-300"
-                            style={{ height: `${nonBugHeight}%`, minHeight: nonBug > 0 ? "10px" : "0" }}
+                            style={{
+                              height: `${nonBugHeight}%`,
+                              minHeight: nonBug > 0 ? "10px" : "0",
+                            }}
                           />
                           {segment.bugs > 0 && (
                             <div
                               className="w-full bg-[#fb7088] rounded-b-none transition-all duration-300"
-                              style={{ height: `${bugHeight}%`, minHeight: "8px" }}
+                              style={{
+                                height: `${bugHeight}%`,
+                                minHeight: "8px",
+                              }}
                             />
                           )}
                         </>
@@ -112,8 +151,8 @@ export function TemporalAnalyticsCard({ session }: TemporalAnalyticsCardProps) {
                 {earlyVsLate > 10
                   ? "Front-loaded"
                   : earlyVsLate < -10
-                  ? "Back-loaded"
-                  : "Even distribution"}
+                    ? "Back-loaded"
+                    : "Even distribution"}
               </span>
             </div>
           </div>
@@ -132,10 +171,12 @@ export function TemporalAnalyticsCard({ session }: TemporalAnalyticsCardProps) {
         {/* Peak Activity */}
         {temporal.peakSegment && (
           <div className="text-xs text-muted-foreground">
-            Peak activity: <span className="font-medium text-foreground">{temporal.peakSegment}</span>
+            Peak activity:{" "}
+            <span className="font-medium text-foreground">
+              {temporal.peakSegment}
+            </span>
           </div>
         )}
-
       </CardContent>
     </Card>
   );

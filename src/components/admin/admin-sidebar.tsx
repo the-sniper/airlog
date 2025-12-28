@@ -4,7 +4,21 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, FolderKanban, Users2, LogOut, UserPlus, Menu, Bell, Settings, X, ChevronRight, Sun, Moon, Clock } from "lucide-react";
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Users2,
+  LogOut,
+  UserPlus,
+  Menu,
+  Bell,
+  Settings,
+  X,
+  ChevronRight,
+  Sun,
+  Moon,
+  Clock,
+} from "lucide-react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useTheme } from "@/components/common/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -46,37 +60,52 @@ export function AdminSidebar() {
       <div className="flex flex-col h-full">
         <div className="h-16 flex items-center gap-3 px-6 border-b border-border/50">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.svg" alt="AirLog" width={120} height={32} className="dark:hidden" />
-            <Image src="/logo-dark.svg" alt="AirLog" width={120} height={32} className="hidden dark:block" />
+            <Image
+              src="/logo.svg"
+              alt="AirLog"
+              width={120}
+              height={32}
+              className="dark:hidden"
+            />
+            <Image
+              src="/logo-dark.svg"
+              alt="AirLog"
+              width={120}
+              height={32}
+              className="hidden dark:block"
+            />
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           <Link
             href="/admin"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/admin")
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/admin")
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
           >
             <LayoutDashboard className="w-4 h-4" strokeWidth={1.75} />
             Dashboard
           </Link>
           <Link
             href="/admin/sessions"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/admin/sessions")
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/admin/sessions")
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
           >
             <FolderKanban className="w-4 h-4" strokeWidth={1.75} />
             Sessions
           </Link>
           <Link
             href="/admin/teams"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/admin/teams")
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/admin/teams")
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
           >
             <Users2 className="w-4 h-4" strokeWidth={1.75} />
             Teams
@@ -108,7 +137,10 @@ export function AdminSidebar() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowLogoutDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowLogoutDialog(false)}
+            >
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleLogout}>
@@ -121,7 +153,10 @@ export function AdminSidebar() {
   );
 }
 
-export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false }: { hideBottomNav?: boolean; hideTopHeader?: boolean } = {}) {
+export function AdminMobileHeader({
+  hideBottomNav = false,
+  hideTopHeader = false,
+}: { hideBottomNav?: boolean; hideTopHeader?: boolean } = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -175,8 +210,20 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
         <header className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50">
           <div className="flex items-center justify-between h-full px-4">
             <Link href="/" className="flex items-center gap-3">
-              <Image src="/logo.svg" alt="AirLog" width={90} height={24} className="dark:hidden" />
-              <Image src="/logo-dark.svg" alt="AirLog" width={90} height={24} className="hidden dark:block" />
+              <Image
+                src="/logo.svg"
+                alt="AirLog"
+                width={90}
+                height={24}
+                className="dark:hidden"
+              />
+              <Image
+                src="/logo-dark.svg"
+                alt="AirLog"
+                width={90}
+                height={24}
+                className="hidden dark:block"
+              />
             </Link>
             <div className="flex items-center gap-1">
               {/* Notifications */}
@@ -205,25 +252,40 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
 
       {/* Mobile Drawer */}
       <div
-        className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${drawerOpen ? "pointer-events-auto" : "pointer-events-none"
-          }`}
+        className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${
+          drawerOpen ? "pointer-events-auto" : "pointer-events-none"
+        }`}
         aria-hidden={!drawerOpen}
       >
         <div
-          className={`absolute inset-0 bg-background/70 backdrop-blur-md transition-opacity duration-300 ${drawerOpen ? "opacity-100" : "opacity-0"
-            }`}
+          className={`absolute inset-0 bg-background/70 backdrop-blur-md transition-opacity duration-300 ${
+            drawerOpen ? "opacity-100" : "opacity-0"
+          }`}
           onClick={() => setDrawerOpen(false)}
         />
         <div
           role="dialog"
           aria-modal="true"
-          className={`absolute inset-y-0 right-0 w-[86%] max-w-sm bg-card shadow-2xl border-l border-border/60 rounded-l-3xl flex flex-col transition-transform duration-300 ease-in-out ${drawerOpen ? "translate-x-0" : "translate-x-full"
-            }`}
+          className={`absolute inset-y-0 right-0 w-[86%] max-w-sm bg-card shadow-2xl border-l border-border/60 rounded-l-3xl flex flex-col transition-transform duration-300 ease-in-out ${
+            drawerOpen ? "translate-x-0" : "translate-x-full"
+          }`}
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
             <div className="flex items-center gap-3">
-              <Image src="/logo.svg" alt="AirLog" width={96} height={24} className="dark:hidden" />
-              <Image src="/logo-dark.svg" alt="AirLog" width={96} height={24} className="hidden dark:block" />
+              <Image
+                src="/logo.svg"
+                alt="AirLog"
+                width={96}
+                height={24}
+                className="dark:hidden"
+              />
+              <Image
+                src="/logo-dark.svg"
+                alt="AirLog"
+                width={96}
+                height={24}
+                className="hidden dark:block"
+              />
             </div>
             <Button
               variant="ghost"
@@ -241,18 +303,23 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
               <Link
                 href="/admin"
                 onClick={() => setDrawerOpen(false)}
-                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${isActive("/admin")
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-transparent bg-muted/30 text-foreground hover:border-border"
-                  }`}
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/admin")
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}
+                  >
                     <LayoutDashboard className="w-5 h-5" strokeWidth={1.75} />
                   </div>
                   <div>
                     <p className="font-medium">Dashboard</p>
-                    <p className="text-xs text-muted-foreground">Overview and analytics</p>
+                    <p className="text-xs text-muted-foreground">
+                      Overview and analytics
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -261,18 +328,23 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
               <Link
                 href="/admin/sessions"
                 onClick={() => setDrawerOpen(false)}
-                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${isActive("/admin/sessions")
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-transparent bg-muted/30 text-foreground hover:border-border"
-                  }`}
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/admin/sessions")
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin/sessions") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin/sessions") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}
+                  >
                     <FolderKanban className="w-5 h-5" strokeWidth={1.75} />
                   </div>
                   <div>
                     <p className="font-medium">Sessions</p>
-                    <p className="text-xs text-muted-foreground">Browse and manage sessions</p>
+                    <p className="text-xs text-muted-foreground">
+                      Browse and manage sessions
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -281,18 +353,23 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
               <Link
                 href="/admin/teams"
                 onClick={() => setDrawerOpen(false)}
-                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${isActive("/admin/teams")
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-transparent bg-muted/30 text-foreground hover:border-border"
-                  }`}
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/admin/teams")
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin/teams") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin/teams") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}
+                  >
                     <Users2 className="w-5 h-5" strokeWidth={1.75} />
                   </div>
                   <div>
                     <p className="font-medium">Teams</p>
-                    <p className="text-xs text-muted-foreground">Invite and collaborate</p>
+                    <p className="text-xs text-muted-foreground">
+                      Invite and collaborate
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -315,13 +392,21 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
                   </div>
                   <div>
                     <p className="font-medium">Theme</p>
-                    <p className="text-xs text-muted-foreground">Light or dark mode</p>
+                    <p className="text-xs text-muted-foreground">
+                      Light or dark mode
+                    </p>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-background border border-border/60 flex items-center justify-center text-muted-foreground">
-                  {theme === "auto" && <Clock className="w-4 h-4" strokeWidth={1.75} />}
-                  {theme === "light" && <Sun className="w-4 h-4" strokeWidth={1.75} />}
-                  {theme === "dark" && <Moon className="w-4 h-4" strokeWidth={1.75} />}
+                  {theme === "auto" && (
+                    <Clock className="w-4 h-4" strokeWidth={1.75} />
+                  )}
+                  {theme === "light" && (
+                    <Sun className="w-4 h-4" strokeWidth={1.75} />
+                  )}
+                  {theme === "dark" && (
+                    <Moon className="w-4 h-4" strokeWidth={1.75} />
+                  )}
                 </div>
               </button>
             </div>
@@ -337,7 +422,9 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
               <LogOut className="w-5 h-5" strokeWidth={1.75} />
               <div className="text-left">
                 <p className="font-medium">Sign Out</p>
-                <p className="text-xs text-muted-foreground">End this session securely</p>
+                <p className="text-xs text-muted-foreground">
+                  End this session securely
+                </p>
               </div>
             </Button>
           </div>
@@ -353,10 +440,11 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
           <div className="relative flex items-center justify-around h-full px-6">
             <Link
               href="/admin"
-              className={`flex flex-col items-center gap-1 py-2 transition-all ${isActive("/admin")
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-                }`}
+              className={`flex flex-col items-center gap-1 py-2 transition-all ${
+                isActive("/admin")
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               <LayoutDashboard className="w-6 h-6" strokeWidth={1.5} />
               <span className="text-[10px] font-medium">Dashboard</span>
@@ -364,10 +452,11 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
 
             <Link
               href="/admin/sessions"
-              className={`flex flex-col items-center gap-1 py-2 transition-all ${isActive("/admin/sessions")
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-                }`}
+              className={`flex flex-col items-center gap-1 py-2 transition-all ${
+                isActive("/admin/sessions")
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               <FolderKanban className="w-6 h-6" strokeWidth={1.5} />
               <span className="text-[10px] font-medium">Sessions</span>
@@ -375,10 +464,11 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
 
             <Link
               href="/admin/teams"
-              className={`flex flex-col items-center gap-1 py-2 transition-all ${isActive("/admin/teams")
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-                }`}
+              className={`flex flex-col items-center gap-1 py-2 transition-all ${
+                isActive("/admin/teams")
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               <Users2 className="w-6 h-6" strokeWidth={1.5} />
               <span className="text-[10px] font-medium">Teams</span>
@@ -396,7 +486,10 @@ export function AdminMobileHeader({ hideBottomNav = false, hideTopHeader = false
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowLogoutDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowLogoutDialog(false)}
+            >
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleLogout}>

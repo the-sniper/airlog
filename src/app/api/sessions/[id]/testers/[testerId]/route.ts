@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string; testerId: string }> }
+  { params }: { params: Promise<{ id: string; testerId: string }> },
 ) {
   try {
     const { testerId } = await params;
@@ -18,11 +18,16 @@ export async function PATCH(
     }
     // Allow setting reported_issues array
     if (reported_issues !== undefined) {
-      updates.reported_issues = Array.isArray(reported_issues) ? reported_issues : [];
+      updates.reported_issues = Array.isArray(reported_issues)
+        ? reported_issues
+        : [];
     }
 
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No valid fields to update" },
+        { status: 400 },
+      );
     }
 
     const supabase = createAdminClient();
@@ -41,13 +46,16 @@ export async function PATCH(
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error updating tester:", error);
-    return NextResponse.json({ error: "Failed to update tester" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update tester" },
+      { status: 500 },
+    );
   }
 }
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string; testerId: string }> }
+  { params }: { params: Promise<{ id: string; testerId: string }> },
 ) {
   try {
     const { testerId } = await params;
@@ -66,6 +74,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting tester:", error);
-    return NextResponse.json({ error: "Failed to delete tester" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete tester" },
+      { status: 500 },
+    );
   }
 }

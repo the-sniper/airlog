@@ -1,6 +1,11 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import type { SessionWithDetails, NoteWithDetails, NoteCategory, Scene } from "@/types";
+import type {
+  SessionWithDetails,
+  NoteWithDetails,
+  NoteCategory,
+  Scene,
+} from "@/types";
 
 // Brand colors
 const colors = {
@@ -8,21 +13,21 @@ const colors = {
   primary: "#5271C0",
   primaryLight: "#95B2F8",
   primaryLightest: "#EEF2FF",
-  
+
   // Text
   text: "#2D3F4E",
   textSecondary: "#64748B",
   textMuted: "#94A3B8",
-  
+
   // Backgrounds
   white: "#FFFFFF",
   background: "#F8FAFC",
   backgroundAlt: "#F1F5F9",
-  
+
   // Borders
   border: "#E2E8F0",
   borderLight: "#F1F5F9",
-  
+
   // Category colors
   bug: "#fb7088",
   bugBg: "#fef2f4",
@@ -36,11 +41,18 @@ const colors = {
   otherBg: "#F8FAFC",
 };
 
-const categoryConfig: Record<NoteCategory, { color: string; bg: string; label: string }> = {
+const categoryConfig: Record<
+  NoteCategory,
+  { color: string; bg: string; label: string }
+> = {
   bug: { color: colors.bug, bg: colors.bugBg, label: "Bug" },
   feature: { color: colors.feature, bg: colors.featureBg, label: "Feature" },
   ux: { color: colors.ux, bg: colors.uxBg, label: "UX" },
-  performance: { color: colors.performance, bg: colors.performanceBg, label: "Performance" },
+  performance: {
+    color: colors.performance,
+    bg: colors.performanceBg,
+    label: "Performance",
+  },
   other: { color: colors.other, bg: colors.otherBg, label: "Other" },
 };
 
@@ -541,25 +553,52 @@ interface SceneData {
 
 export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
   // Calculate totals
-  const breakdown: Record<NoteCategory, number> = { bug: 0, feature: 0, ux: 0, performance: 0, other: 0 };
+  const breakdown: Record<NoteCategory, number> = {
+    bug: 0,
+    feature: 0,
+    ux: 0,
+    performance: 0,
+    other: 0,
+  };
   session.notes?.forEach((n) => breakdown[n.category]++);
   const total = session.notes?.length || 0;
 
   // Group by scene
   const sceneData: SceneData[] = (session.scenes || []).map((scene) => {
     const notes = session.notes?.filter((n) => n.scene_id === scene.id) || [];
-    const bd: Record<NoteCategory, number> = { bug: 0, feature: 0, ux: 0, performance: 0, other: 0 };
+    const bd: Record<NoteCategory, number> = {
+      bug: 0,
+      feature: 0,
+      ux: 0,
+      performance: 0,
+      other: 0,
+    };
     notes.forEach((n) => bd[n.category]++);
     return { scene, notes, breakdown: bd };
   });
 
   // Unknown scene
-  const unknownNotes = session.notes?.filter((n) => !n.scene_id || !session.scenes?.find((s) => s.id === n.scene_id)) || [];
+  const unknownNotes =
+    session.notes?.filter(
+      (n) => !n.scene_id || !session.scenes?.find((s) => s.id === n.scene_id),
+    ) || [];
   if (unknownNotes.length > 0) {
-    const bd: Record<NoteCategory, number> = { bug: 0, feature: 0, ux: 0, performance: 0, other: 0 };
+    const bd: Record<NoteCategory, number> = {
+      bug: 0,
+      feature: 0,
+      ux: 0,
+      performance: 0,
+      other: 0,
+    };
     unknownNotes.forEach((n) => bd[n.category]++);
     sceneData.push({
-      scene: { id: "unknown", session_id: session.id, name: "Uncategorized", description: null, order_index: 999 },
+      scene: {
+        id: "unknown",
+        session_id: session.id,
+        name: "Uncategorized",
+        description: null,
+        order_index: 999,
+      },
       notes: unknownNotes,
       breakdown: bd,
     });
@@ -589,16 +628,24 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
               {session.build_version && (
                 <View style={styles.coverMetaItem}>
                   <Text style={styles.coverMetaLabel}>Build</Text>
-                  <Text style={styles.coverMetaValue}>{session.build_version}</Text>
+                  <Text style={styles.coverMetaValue}>
+                    {session.build_version}
+                  </Text>
                 </View>
               )}
               <View style={styles.coverMetaItem}>
                 <Text style={styles.coverMetaLabel}>Completed</Text>
-                <Text style={styles.coverMetaValue}>{(session.first_ended_at || session.ended_at) ? formatDate((session.first_ended_at || session.ended_at)!) : "In Progress"}</Text>
+                <Text style={styles.coverMetaValue}>
+                  {session.first_ended_at || session.ended_at
+                    ? formatDate((session.first_ended_at || session.ended_at)!)
+                    : "In Progress"}
+                </Text>
               </View>
               <View style={styles.coverMetaItem}>
                 <Text style={styles.coverMetaLabel}>Testers</Text>
-                <Text style={styles.coverMetaValue}>{session.testers?.length || 0}</Text>
+                <Text style={styles.coverMetaValue}>
+                  {session.testers?.length || 0}
+                </Text>
               </View>
             </View>
 
@@ -608,7 +655,11 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
                 <Text style={styles.coverStatLabel}>Total Notes</Text>
               </View>
               <View style={[styles.coverStatCard, styles.coverStatHighlight]}>
-                <Text style={[styles.coverStatNumber, styles.coverStatNumberRed]}>{breakdown.bug}</Text>
+                <Text
+                  style={[styles.coverStatNumber, styles.coverStatNumberRed]}
+                >
+                  {breakdown.bug}
+                </Text>
                 <Text style={styles.coverStatLabel}>Bugs Found</Text>
               </View>
               <View style={styles.coverStatCard}>
@@ -616,14 +667,18 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
                 <Text style={styles.coverStatLabel}>Features</Text>
               </View>
               <View style={styles.coverStatCard}>
-                <Text style={styles.coverStatNumber}>{session.scenes?.length || 0}</Text>
+                <Text style={styles.coverStatNumber}>
+                  {session.scenes?.length || 0}
+                </Text>
                 <Text style={styles.coverStatLabel}>Scenes</Text>
               </View>
             </View>
           </View>
 
           <View style={styles.coverFooter}>
-            <Text style={styles.coverFooterText}>Generated {formatDateTime(new Date().toISOString())}</Text>
+            <Text style={styles.coverFooterText}>
+              Generated {formatDateTime(new Date().toISOString())}
+            </Text>
             <Text style={styles.coverFooterText}>Page {pageNum}</Text>
           </View>
         </View>
@@ -644,7 +699,9 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Summary</Text>
-            <Text style={styles.sectionSubtitle}>Testing session overview and key metrics</Text>
+            <Text style={styles.sectionSubtitle}>
+              Testing session overview and key metrics
+            </Text>
           </View>
 
           {session.ai_summary && (
@@ -667,15 +724,21 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
               <Text style={styles.statLabel}>Notes</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={[styles.statNumber, { color: colors.bug }]}>{breakdown.bug}</Text>
+              <Text style={[styles.statNumber, { color: colors.bug }]}>
+                {breakdown.bug}
+              </Text>
               <Text style={styles.statLabel}>Bugs</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={[styles.statNumber, { color: colors.feature }]}>{breakdown.feature}</Text>
+              <Text style={[styles.statNumber, { color: colors.feature }]}>
+                {breakdown.feature}
+              </Text>
               <Text style={styles.statLabel}>Features</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={[styles.statNumber, { color: colors.ux }]}>{breakdown.ux}</Text>
+              <Text style={[styles.statNumber, { color: colors.ux }]}>
+                {breakdown.ux}
+              </Text>
               <Text style={styles.statLabel}>UX</Text>
             </View>
           </View>
@@ -686,28 +749,42 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Category Breakdown</Text>
-            <Text style={styles.sectionSubtitle}>Distribution of feedback by type</Text>
+            <Text style={styles.sectionSubtitle}>
+              Distribution of feedback by type
+            </Text>
           </View>
 
           <View style={styles.categoryList}>
-            {(Object.entries(breakdown) as [NoteCategory, number][]).map(([cat, count]) => {
-              const cfg = categoryConfig[cat];
-              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-              return (
-                <View key={cat} style={styles.categoryItem}>
-                  <View style={[styles.categoryBadge, { backgroundColor: cfg.color }]}>
-                    <Text style={styles.categoryBadgeText}>{cfg.label}</Text>
+            {(Object.entries(breakdown) as [NoteCategory, number][]).map(
+              ([cat, count]) => {
+                const cfg = categoryConfig[cat];
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                return (
+                  <View key={cat} style={styles.categoryItem}>
+                    <View
+                      style={[
+                        styles.categoryBadge,
+                        { backgroundColor: cfg.color },
+                      ]}
+                    >
+                      <Text style={styles.categoryBadgeText}>{cfg.label}</Text>
+                    </View>
+                    <View style={styles.categoryBarOuter}>
+                      <View
+                        style={[
+                          styles.categoryBarInner,
+                          { width: `${pct}%`, backgroundColor: cfg.color },
+                        ]}
+                      />
+                    </View>
+                    <View style={styles.categoryValue}>
+                      <Text style={styles.categoryCount}>{count}</Text>
+                      <Text style={styles.categoryPercent}>{pct}%</Text>
+                    </View>
                   </View>
-                  <View style={styles.categoryBarOuter}>
-                    <View style={[styles.categoryBarInner, { width: `${pct}%`, backgroundColor: cfg.color }]} />
-                  </View>
-                  <View style={styles.categoryValue}>
-                    <Text style={styles.categoryCount}>{count}</Text>
-                    <Text style={styles.categoryPercent}>{pct}%</Text>
-                  </View>
-                </View>
-              );
-            })}
+                );
+              },
+            )}
           </View>
         </View>
 
@@ -733,29 +810,79 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Scenes Overview</Text>
-              <Text style={styles.sectionSubtitle}>Feedback distribution across testing scenes</Text>
+              <Text style={styles.sectionSubtitle}>
+                Feedback distribution across testing scenes
+              </Text>
             </View>
 
             <View style={styles.table}>
               <View style={styles.tableHead}>
-                <Text style={[styles.tableHeadCell, styles.colName]}>Scene</Text>
-                <Text style={[styles.tableHeadCell, styles.colTotal]}>Total</Text>
+                <Text style={[styles.tableHeadCell, styles.colName]}>
+                  Scene
+                </Text>
+                <Text style={[styles.tableHeadCell, styles.colTotal]}>
+                  Total
+                </Text>
                 <Text style={[styles.tableHeadCell, styles.colBug]}>Bugs</Text>
-                <Text style={[styles.tableHeadCell, styles.colFeature]}>Features</Text>
-                <Text style={[styles.tableHeadCell, styles.colOther]}>Other</Text>
+                <Text style={[styles.tableHeadCell, styles.colFeature]}>
+                  Features
+                </Text>
+                <Text style={[styles.tableHeadCell, styles.colOther]}>
+                  Other
+                </Text>
               </View>
               {scenesWithNotes.map((s, i) => (
-                <View key={s.scene.id} style={[styles.tableRow, i === scenesWithNotes.length - 1 ? styles.tableRowLast : {}]}>
-                  <Text style={[styles.tableCell, styles.colName, { fontWeight: "bold" }]}>{s.scene.name}</Text>
-                  <Text style={[styles.tableCell, styles.colTotal]}>{s.notes.length}</Text>
-                  <Text style={[styles.tableCell, styles.colBug, s.breakdown.bug > 0 ? { color: colors.bug, fontWeight: "bold" } : styles.tableCellMuted]}>
+                <View
+                  key={s.scene.id}
+                  style={[
+                    styles.tableRow,
+                    i === scenesWithNotes.length - 1 ? styles.tableRowLast : {},
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      styles.colName,
+                      { fontWeight: "bold" },
+                    ]}
+                  >
+                    {s.scene.name}
+                  </Text>
+                  <Text style={[styles.tableCell, styles.colTotal]}>
+                    {s.notes.length}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      styles.colBug,
+                      s.breakdown.bug > 0
+                        ? { color: colors.bug, fontWeight: "bold" }
+                        : styles.tableCellMuted,
+                    ]}
+                  >
                     {s.breakdown.bug}
                   </Text>
-                  <Text style={[styles.tableCell, styles.colFeature, s.breakdown.feature > 0 ? { color: colors.feature } : styles.tableCellMuted]}>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      styles.colFeature,
+                      s.breakdown.feature > 0
+                        ? { color: colors.feature }
+                        : styles.tableCellMuted,
+                    ]}
+                  >
                     {s.breakdown.feature}
                   </Text>
-                  <Text style={[styles.tableCell, styles.colOther, styles.tableCellMuted]}>
-                    {s.breakdown.ux + s.breakdown.performance + s.breakdown.other}
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      styles.colOther,
+                      styles.tableCellMuted,
+                    ]}
+                  >
+                    {s.breakdown.ux +
+                      s.breakdown.performance +
+                      s.breakdown.other}
                   </Text>
                 </View>
               ))}
@@ -786,16 +913,22 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
 
           <View style={styles.sceneMetaRow}>
             <View style={styles.sceneBadge}>
-              <Text style={styles.sceneBadgeText}>{s.notes.length} {s.notes.length === 1 ? "note" : "notes"}</Text>
+              <Text style={styles.sceneBadgeText}>
+                {s.notes.length} {s.notes.length === 1 ? "note" : "notes"}
+              </Text>
             </View>
             {s.breakdown.bug > 0 && (
               <View style={[styles.sceneBadge, styles.sceneBadgeRed]}>
-                <Text style={[styles.sceneBadgeText, styles.sceneBadgeTextRed]}>{s.breakdown.bug} {s.breakdown.bug === 1 ? "bug" : "bugs"}</Text>
+                <Text style={[styles.sceneBadgeText, styles.sceneBadgeTextRed]}>
+                  {s.breakdown.bug} {s.breakdown.bug === 1 ? "bug" : "bugs"}
+                </Text>
               </View>
             )}
           </View>
 
-          {s.scene.description && <Text style={styles.sceneDesc}>{s.scene.description}</Text>}
+          {s.scene.description && (
+            <Text style={styles.sceneDesc}>{s.scene.description}</Text>
+          )}
 
           {s.notes.map((note) => {
             const cfg = categoryConfig[note.category];
@@ -803,22 +936,36 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
               <View key={note.id} style={styles.noteCard}>
                 <View style={[styles.noteHeader, { backgroundColor: cfg.bg }]}>
                   <View style={styles.noteHeaderLeft}>
-                    <View style={[styles.noteBadge, { backgroundColor: cfg.color }]}>
+                    <View
+                      style={[styles.noteBadge, { backgroundColor: cfg.color }]}
+                    >
                       <Text style={styles.noteBadgeText}>{cfg.label}</Text>
                     </View>
-                    {note.auto_classified && <Text style={styles.noteAuto}>auto</Text>}
+                    {note.auto_classified && (
+                      <Text style={styles.noteAuto}>auto</Text>
+                    )}
                   </View>
                   <View style={styles.noteMeta}>
-                    <Text style={styles.noteTester}>{note.tester?.first_name} {note.tester?.last_name}</Text>
-                    <Text style={styles.noteTime}>{formatDateTime(note.created_at)}</Text>
+                    <Text style={styles.noteTester}>
+                      {note.tester?.first_name} {note.tester?.last_name}
+                    </Text>
+                    <Text style={styles.noteTime}>
+                      {formatDateTime(note.created_at)}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.noteBody}>
-                  <Text style={styles.noteText}>{note.edited_transcript || note.raw_transcript || "No transcript"}</Text>
+                  <Text style={styles.noteText}>
+                    {note.edited_transcript ||
+                      note.raw_transcript ||
+                      "No transcript"}
+                  </Text>
                   {note.ai_summary && (
                     <View style={styles.noteSummaryBox}>
                       <Text style={styles.noteSummaryLabel}>AI Summary</Text>
-                      <Text style={styles.noteSummaryText}>{note.ai_summary}</Text>
+                      <Text style={styles.noteSummaryText}>
+                        {note.ai_summary}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -847,7 +994,9 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
           </View>
 
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyText}>No notes were recorded during this session.</Text>
+            <Text style={styles.emptyText}>
+              No notes were recorded during this session.
+            </Text>
           </View>
 
           <View style={styles.footer}>

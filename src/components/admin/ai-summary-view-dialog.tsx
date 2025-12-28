@@ -27,56 +27,79 @@ function FormattedSummary({ text }: { text: string }) {
 
   lines.forEach((line, index) => {
     const trimmed = line.trim();
-    
+
     // Warning header like **⚠️ Transcription Quality Issue**
-    if (trimmed.startsWith("**⚠️") || (trimmed.startsWith("**") && trimmed.toLowerCase().includes("quality issue"))) {
-      const headerText = trimmed.replace(/^\*\*/, "").replace(/\*\*$/, "").replace(/:$/, "");
+    if (
+      trimmed.startsWith("**⚠️") ||
+      (trimmed.startsWith("**") &&
+        trimmed.toLowerCase().includes("quality issue"))
+    ) {
+      const headerText = trimmed
+        .replace(/^\*\*/, "")
+        .replace(/\*\*$/, "")
+        .replace(/:$/, "");
       elements.push(
-        <div key={index} className="mt-3 first:mt-0 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-          <h4 className="font-semibold text-yellow-600 dark:text-yellow-400">{headerText}</h4>
-        </div>
+        <div
+          key={index}
+          className="mt-3 first:mt-0 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20"
+        >
+          <h4 className="font-semibold text-yellow-600 dark:text-yellow-400">
+            {headerText}
+          </h4>
+        </div>,
       );
       return;
     }
-    
+
     // Bold headers like **Summary:** or **Actionable Items:**
     if (trimmed.startsWith("**") && trimmed.includes(":**")) {
       const headerMatch = trimmed.match(/^\*\*(.+?):\*\*\s*(.*)?$/);
       if (headerMatch) {
         const headerText = headerMatch[1];
-        const isWarning = headerText.includes("⚠️") || headerText.toLowerCase().includes("suggestion");
+        const isWarning =
+          headerText.includes("⚠️") ||
+          headerText.toLowerCase().includes("suggestion");
         elements.push(
-          <div key={index} className={`mt-3 first:mt-0 ${isWarning ? "text-yellow-600 dark:text-yellow-400" : ""}`}>
-            <h4 className={`font-semibold ${isWarning ? "" : "text-foreground"}`}>{headerText}:</h4>
+          <div
+            key={index}
+            className={`mt-3 first:mt-0 ${isWarning ? "text-yellow-600 dark:text-yellow-400" : ""}`}
+          >
+            <h4
+              className={`font-semibold ${isWarning ? "" : "text-foreground"}`}
+            >
+              {headerText}:
+            </h4>
             {headerMatch[2] && (
-              <p className="text-sm text-muted-foreground mt-1">{headerMatch[2]}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {headerMatch[2]}
+              </p>
             )}
-          </div>
+          </div>,
         );
         return;
       }
     }
-    
+
     // Bullet points
     if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
       const bulletContent = trimmed.slice(2);
       // Check for bold text within bullet
       const formattedContent = bulletContent.replace(
         /\*\*(.+?)\*\*/g,
-        '<strong class="font-semibold text-foreground">$1</strong>'
+        '<strong class="font-semibold text-foreground">$1</strong>',
       );
       elements.push(
         <div key={index} className="flex gap-2 ml-2 mt-1.5">
           <span className="text-primary shrink-0">•</span>
-          <span 
+          <span
             className="text-sm text-muted-foreground flex-1"
             dangerouslySetInnerHTML={{ __html: formattedContent }}
           />
-        </div>
+        </div>,
       );
       return;
     }
-    
+
     // Empty lines
     if (trimmed === "") {
       if (elements.length > 0) {
@@ -84,18 +107,18 @@ function FormattedSummary({ text }: { text: string }) {
       }
       return;
     }
-    
+
     // Regular text - check for bold
     const formattedText = trimmed.replace(
       /\*\*(.+?)\*\*/g,
-      '<strong class="font-semibold text-foreground">$1</strong>'
+      '<strong class="font-semibold text-foreground">$1</strong>',
     );
     elements.push(
-      <p 
-        key={index} 
+      <p
+        key={index}
         className="text-sm text-muted-foreground mt-1"
         dangerouslySetInnerHTML={{ __html: formattedText }}
-      />
+      />,
     );
   });
 

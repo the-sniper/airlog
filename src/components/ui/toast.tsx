@@ -16,7 +16,7 @@ const ToastViewport = React.forwardRef<
     ref={ref}
     className={cn(
       "fixed z-[100] flex max-h-screen w-full flex-col gap-2 p-0",
-      className
+      className,
     )}
     {...props}
   />
@@ -28,22 +28,26 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-border bg-card/95 text-foreground shadow-xl backdrop-blur-md",
-        success: "border-emerald-400/50 bg-emerald-50/95 text-emerald-800 dark:border-emerald-400/40 dark:bg-emerald-950/95 dark:text-emerald-300 shadow-emerald-500/20",
-        destructive: "border-rose-400/50 bg-rose-50/95 text-rose-800 dark:border-rose-400/40 dark:bg-rose-950/95 dark:text-rose-300 shadow-rose-500/30",
-        warning: "border-amber-400/50 bg-amber-50/95 text-amber-800 dark:border-amber-400/40 dark:bg-amber-950/95 dark:text-amber-300 shadow-amber-500/20",
+        default:
+          "border-border bg-card/95 text-foreground shadow-xl backdrop-blur-md",
+        success:
+          "border-emerald-400/50 bg-emerald-50/95 text-emerald-800 dark:border-emerald-400/40 dark:bg-emerald-950/95 dark:text-emerald-300 shadow-emerald-500/20",
+        destructive:
+          "border-rose-400/50 bg-rose-50/95 text-rose-800 dark:border-rose-400/40 dark:bg-rose-950/95 dark:text-rose-300 shadow-rose-500/30",
+        warning:
+          "border-amber-400/50 bg-amber-50/95 text-amber-800 dark:border-amber-400/40 dark:bg-amber-950/95 dark:text-amber-300 shadow-amber-500/20",
       },
     },
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
-  VariantProps<typeof toastVariants>
+    VariantProps<typeof toastVariants>
 >(({ className, variant, ...props }, ref) => {
   return (
     <ToastPrimitives.Root
@@ -63,7 +67,7 @@ const ToastAction = React.forwardRef<
     ref={ref}
     className={cn(
       "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-      className
+      className,
     )}
     {...props}
   />
@@ -78,7 +82,7 @@ const ToastClose = React.forwardRef<
     ref={ref}
     className={cn(
       "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100",
-      className
+      className,
     )}
     toast-close=""
     {...props}

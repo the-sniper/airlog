@@ -2,15 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentAdmin } from "@/lib/auth";
 
-export async function PATCH(req: NextRequest, { params }: { params: { noteId: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { noteId: string } },
+) {
   const { noteId } = params;
   const body = await req.json();
   const supabase = createAdminClient();
-  const { data } = await supabase.from("notes").update(body).eq("id", noteId).select("*, scene:scenes (*), tester:testers (*)").single();
+  const { data } = await supabase
+    .from("notes")
+    .update(body)
+    .eq("id", noteId)
+    .select("*, scene:scenes (*), tester:testers (*)")
+    .single();
   return NextResponse.json(data);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string; noteId: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string; noteId: string } },
+) {
   const { noteId } = params;
   const supabase = createAdminClient();
 
@@ -56,7 +67,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   // Delete the note
-  const { error: deleteError } = await supabase.from("notes").delete().eq("id", noteId);
+  const { error: deleteError } = await supabase
+    .from("notes")
+    .delete()
+    .eq("id", noteId);
 
   if (deleteError) {
     return NextResponse.json({ error: deleteError.message }, { status: 500 });

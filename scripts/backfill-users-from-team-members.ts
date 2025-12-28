@@ -17,7 +17,9 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !serviceRoleKey) {
   // eslint-disable-next-line no-console
-  console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+  console.error(
+    "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY",
+  );
   process.exit(1);
 }
 
@@ -25,7 +27,12 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-type TeamMember = { first_name: string; last_name: string; email: string | null; created_at: string };
+type TeamMember = {
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  created_at: string;
+};
 type UserRow = { id: string; email: string };
 
 function randomPassword() {
@@ -48,9 +55,12 @@ async function main() {
     .from("users")
     .select("id,email");
   if (usersError) throw usersError;
-  const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u as UserRow]));
+  const userByEmail = new Map(
+    users.map((u) => [u.email.toLowerCase(), u as UserRow]),
+  );
 
-  const created: Array<{ email: string; password: string; userId: string }> = [];
+  const created: Array<{ email: string; password: string; userId: string }> =
+    [];
 
   for (const tm of teamMembers as TeamMember[]) {
     if (!tm.email) continue;
@@ -71,7 +81,8 @@ async function main() {
       .select("id,email")
       .maybeSingle();
 
-    if (insertError || !inserted) throw insertError || new Error("Insert failed");
+    if (insertError || !inserted)
+      throw insertError || new Error("Insert failed");
     userByEmail.set(email, inserted as UserRow);
     created.push({ email: inserted.email, password, userId: inserted.id });
   }
