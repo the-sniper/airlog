@@ -1,4 +1,4 @@
-# 🎤 Echo Test (AirLog) - Voice-Based User Testing Platform
+# 🎤 AirLog - Voice-Based User Testing Platform
 
 A modern, full-stack Next.js web application for capturing and organizing tester feedback during user testing sessions using voice recordings, automatic transcription, and AI-powered analysis.
 
@@ -9,43 +9,43 @@ A modern, full-stack Next.js web application for capturing and organizing tester
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🎯 Session Management
+### Session Management
 
 - **Create & Manage Sessions** – Define test sessions with names, descriptions, build versions, and multiple scenes/tasks
 - **Session Lifecycle** – Draft → Active → Completed state machine with admin controls
 - **Shareable Join Codes** – Generate unique session codes for testers to join
 - **Real-time Tester Tracking** – Monitor who has joined, left, or is actively testing
 
-### 🎙️ Voice Recording & Transcription
+### Voice Recording & Transcription
 
 - **Browser-Based Recording** – One-click audio capture with pause/resume controls
 - **Whisper Integration** – Self-hosted OpenAI Whisper for automatic speech-to-text
 - **Editable Transcripts** – Review and edit transcriptions while preserving originals
 - **Audio Playback** – Listen to recordings directly within the app
 
-### 🤖 AI-Powered Features
+### AI-Powered Features
 
 - **Auto-Classification** – Notes automatically tagged as Bug, Feature, UX, Performance, or Other
 - **AI Summaries** – Generate intelligent session summaries and per-note insights using OpenAI
 - **Smart Categorization** – Keyword and semantic analysis for accurate classification
 
-### 👥 Team Management
+### Team Management
 
 - **Team Creation** – Organize testers into reusable teams
 - **Member Management** – Add/remove team members with email invitations
 - **Bulk Invites** – Add entire teams to sessions with one click
 - **Team-Based Analytics** – Track team performance across sessions
 
-### 🔐 Authentication & Authorization
+### Authentication & Authorization
 
 - **Dual Auth System** – Separate admin and tester authentication flows
 - **JWT-Based Sessions** – Secure token-based authentication using `jose`
 - **Password Management** – Signup, login, and password reset with email verification
 - **Protected Routes** – Middleware-based route protection for admin and tester areas
 
-### 📊 Analytics Dashboard
+### Analytics Dashboard
 
 - **Session Statistics** – Total notes, category breakdowns, scene distribution
 - **Tester Engagement** – Leaderboards and participation metrics
@@ -53,26 +53,26 @@ A modern, full-stack Next.js web application for capturing and organizing tester
 - **Category Insights** – Visual breakdown of feedback categories
 - **Historical Comparison** – Compare sessions across different time periods
 
-### 📄 Report Generation
+### Report Generation
 
 - **PDF Export** – Professional PDF reports with `@react-pdf/renderer`
 - **Shareable Reports** – Generate public report links with unique tokens
 - **Email Reports** – Send reports directly to stakeholders via Resend
 - **Session Summaries** – AI-generated executive summaries
 
-### 🔔 Real-Time Features
+### Real-Time Features
 
 - **Tester Notifications** – In-app notification system for session invites
 - **Auto-Polling** – Real-time updates for active sessions (10-second intervals)
 - **Live Weather Banner** – Dynamic weather display with effects (rain, snow, fog, etc.)
 
-### 📱 Progressive Web App (PWA)
+### Progressive Web App (PWA)
 
 - **Installable** – Add to home screen on mobile devices
 - **Service Worker** – Offline-capable with caching strategies
 - **Push-Ready** – Architecture supports push notifications
 
-### 🎨 UI/UX
+### UI/UX
 
 - **Dark/Light Mode** – System-aware theme with manual toggle
 - **Responsive Design** – Mobile-first design with adaptive layouts
@@ -80,7 +80,7 @@ A modern, full-stack Next.js web application for capturing and organizing tester
 - **shadcn/ui Components** – Consistent, accessible UI components
 - **Weather Effects** – Animated backgrounds (rain, snow, clouds, fog, thunder)
 
-### 🛡️ Bias Prevention
+### Bias Prevention
 
 - **Isolated Feedback** – Testers only see their own notes during active sessions
 - **Post-Session Reveal** – All feedback visible only after session ends
@@ -88,7 +88,7 @@ A modern, full-stack Next.js web application for capturing and organizing tester
 
 ---
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 echo_test/
@@ -139,7 +139,7 @@ echo_test/
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Category             | Technology                          |
 | -------------------- | ----------------------------------- |
@@ -159,7 +159,7 @@ echo_test/
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
 - **Node.js** 18+
 - **npm** or **yarn**
@@ -170,7 +170,7 @@ echo_test/
 
 ---
 
-## 🔧 Environment Variables
+## Environment Variables
 
 Create a `.env.local` file in the root directory:
 
@@ -227,7 +227,7 @@ OPENAI_API_KEY=sk-your-openai-api-key
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ```bash
 # Clone the repository
@@ -251,7 +251,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🐳 Running the Full Stack
+## Running the Full Stack
 
 ### 1. Start the Whisper Service
 
@@ -268,7 +268,7 @@ npm run dev
 
 ---
 
-## 📜 Available Scripts
+## Available Scripts
 
 | Command          | Description               |
 | ---------------- | ------------------------- |
@@ -280,7 +280,7 @@ npm run dev
 
 ---
 
-## 👤 User Flows
+## User Flows
 
 ### Admin Flow
 
@@ -304,7 +304,7 @@ npm run dev
 
 ---
 
-## 🗃️ Database Schema
+## Database Schema
 
 The application uses 23 database migrations located in `supabase/migrations/`. Key tables include:
 
@@ -323,7 +323,7 @@ The application uses 23 database migrations located in `supabase/migrations/`. K
 
 ---
 
-## 🔒 Security
+## Security
 
 - **JWT Authentication** – Separate tokens for admin/tester with configurable secrets
 - **Middleware Protection** – Routes protected at the edge with Next.js middleware
@@ -333,7 +333,7 @@ The application uses 23 database migrations located in `supabase/migrations/`. K
 
 ---
 
-## 📱 PWA Features
+## PWA Features
 
 - **Service Worker** – Caching for offline access (`public/sw.js`)
 - **Install Prompt** – Custom install banner for mobile users
@@ -341,13 +341,13 @@ The application uses 23 database migrations located in `supabase/migrations/`. K
 
 ---
 
-## 📄 License
+## License
 
 MIT
 
 ---
 
-## 🗓️ Version History
+## Version History
 
 | Version | Date     | Changes                                           |
 | ------- | -------- | ------------------------------------------------- |
