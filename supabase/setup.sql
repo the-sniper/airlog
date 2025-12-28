@@ -1,5 +1,5 @@
 -- ============================================================================
--- Echo Test Database Setup
+-- Airlog Database Setup
 -- Complete schema for setting up a new database from scratch
 -- Combines all migrations: 001-015
 -- ============================================================================

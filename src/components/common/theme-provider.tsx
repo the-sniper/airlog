@@ -28,7 +28,7 @@ function isDarkTimeOfDay(): boolean {
 export function ThemeProvider({
   children,
   defaultTheme = "light",
-  storageKey = "echo-test-theme",
+  storageKey = "airlog-theme",
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");

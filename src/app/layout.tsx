@@ -107,7 +107,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('echo-test-theme') || 'light';
+                  var theme = localStorage.getItem('airlog-theme') || 'light';
                   if (theme === 'system') {
                     theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                   }
@@ -123,7 +123,7 @@ export default function RootLayout({
       <body
         className={`${jakarta.variable} ${mono.variable} font-sans antialiased`}
       >
-        <ThemeProvider defaultTheme="light" storageKey="echo-test-theme">
+        <ThemeProvider defaultTheme="light" storageKey="airlog-theme">
           <PWAProvider>
             {children}
             <InstallBanner />

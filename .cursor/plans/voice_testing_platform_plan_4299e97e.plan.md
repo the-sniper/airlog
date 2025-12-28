@@ -79,7 +79,7 @@ Create [`SCOPE.md`](SCOPE.md) documenting:
 ## Step 2: Project Setup
 
 ```
-echo_test/
+airlog/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── (admin)/            # Admin routes

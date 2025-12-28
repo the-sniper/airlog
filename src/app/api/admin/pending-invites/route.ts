@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
     await transporter.sendMail({
       from: fromEmail,
       to: normalizedEmail,
-      subject: `You're invited to join Echo`,
+      subject: `You're invited to join Airlog`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #4f6fc5; font-size: 24px; margin-bottom: 24px;">You've Been Invited!</h1>
