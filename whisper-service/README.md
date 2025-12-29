@@ -1,10 +1,15 @@
 # Whisper Transcription Service
 
-A self-hosted speech-to-text service using OpenAI's Whisper model, containerized with Docker for easy deployment.
+A self-hosted speech-to-text service using `faster-whisper`, containerized with Docker for easy deployment.
 
 ## Overview
 
-This service provides a REST API endpoint that accepts audio files and returns transcribed text. It uses the `openai-whisper` library with the "base" model for a good balance of speed and accuracy.
+This service provides a REST API endpoint that accepts audio files and returns transcribed text. It uses `faster-whisper` (CTranslate2-based) with the "small" model and several accuracy optimizations:
+
+- **VAD Filter**: Filters out non-speech segments to reduce hallucinations
+- **Initial Prompt**: Pre-loaded with QA/testing terminology for better domain accuracy
+- **Context Continuity**: Uses previous text context for more coherent transcriptions
+- **Tuned Thresholds**: Optimized no-speech and log probability thresholds
 
 ## Prerequisites
 
@@ -18,6 +23,9 @@ This service provides a REST API endpoint that accepts audio files and returns t
 ```bash
 # Start the service
 docker-compose up -d
+
+# Rebuild after changes
+docker-compose up -d --build
 
 # View logs
 docker-compose logs -f
@@ -40,7 +48,7 @@ docker run -d -p 9000:9000 --name whisper whisper-service
 
 | Variable        | Default | Description                                           |
 | --------------- | ------- | ----------------------------------------------------- |
-| `WHISPER_MODEL` | `base`  | Whisper model size (tiny, base, small, medium, large) |
+| `WHISPER_MODEL` | `small` | Whisper model size (tiny, base, small, medium, large) |
 | `PORT`          | `9000`  | Port to run the service on                            |
 
 ### Model Sizes
@@ -57,7 +65,7 @@ To use a different model, update the `docker-compose.yml`:
 
 ```yaml
 environment:
-  - WHISPER_MODEL=small
+  - WHISPER_MODEL=medium
 ```
 
 ## API Reference
