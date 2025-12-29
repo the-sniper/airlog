@@ -9,6 +9,13 @@ CORS(app)
 MODEL_SIZE = os.environ.get("WHISPER_MODEL", "small")
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
 
+# Domain-specific prompt to help with QA/testing terminology
+INITIAL_PROMPT = (
+    "This is user feedback from software testing. "
+    "Common terms: bug, crash, error, freeze, glitch, broken, not working, "
+    "feature request, suggestion, improvement, UI, UX, confusing, slow, lag, performance."
+)
+
 @app.route("/health", methods=["GET"])
 def health(): return jsonify({"status": "healthy", "model": MODEL_SIZE})
 
@@ -20,7 +27,18 @@ def transcribe():
         with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as f:
             audio_file.save(f.name)
             temp_path = f.name
-        segments, info = model.transcribe(temp_path, beam_size=5, language="en", word_timestamps=True)
+        segments, info = model.transcribe(
+            temp_path,
+            beam_size=5,
+            language="en",
+            word_timestamps=True,
+            vad_filter=True,
+            vad_parameters=dict(min_silence_duration_ms=500),
+            condition_on_previous_text=True,
+            initial_prompt=INITIAL_PROMPT,
+            no_speech_threshold=0.6,
+            log_prob_threshold=-1.0,
+        )
         text = ""
         words = []
         for seg in segments:
@@ -36,3 +54,4 @@ def transcribe():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__": app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 9000)))
+
