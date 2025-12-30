@@ -16,137 +16,31 @@ import {
   CheckCircle2,
   Sparkles,
   Zap,
-  Timer,
-  Target,
-  Bug,
-  Lightbulb,
-  Gauge,
   Play,
-  UserPlus,
-  ClipboardList,
-  PieChart,
+  ChevronDown,
 } from "lucide-react";
 import { getCurrentAdmin } from "@/lib/auth";
 import { getCurrentUser } from "@/lib/user-auth";
+import dynamic from "next/dynamic";
 
-const features = [
-  {
-    icon: Mic,
-    title: "Voice Recording",
-    description:
-      "One-click audio capture with pause/resume. 5x faster than typing.",
-    gradient: "from-rose-500 to-pink-500",
-  },
-  {
-    icon: Brain,
-    title: "AI Classification",
-    description:
-      "Auto-categorize feedback as Bug, Feature, UX, or Performance.",
-    gradient: "from-violet-500 to-purple-500",
-  },
-  {
-    icon: BarChart3,
-    title: "Real-time Analytics",
-    description: "Live dashboards, leaderboards, and category breakdowns.",
-    gradient: "from-blue-500 to-cyan-500",
-  },
-  {
-    icon: Users,
-    title: "Team Management",
-    description: "Organize testers into teams. Bulk invites with one click.",
-    gradient: "from-emerald-500 to-green-500",
-  },
-  {
-    icon: FileText,
-    title: "PDF Reports",
-    description: "Professional reports with AI summaries. Share via email.",
-    gradient: "from-amber-500 to-orange-500",
-  },
-  {
-    icon: Folder,
-    title: "Session Control",
-    description: "Create scenes, track progress, and manage session lifecycle.",
-    gradient: "from-indigo-500 to-blue-500",
-  },
-];
+// Dynamically import Three.js components to avoid SSR issues
+const HeroScene = dynamic(
+  () => import("@/components/landing/three-scene").then((mod) => mod.HeroScene),
+  { ssr: false }
+);
 
-const steps = [
-  {
-    icon: ClipboardList,
-    title: "Create Session",
-    description:
-      "Define your test with scenes, descriptions, and build versions.",
-  },
-  {
-    icon: UserPlus,
-    title: "Invite Testers",
-    description: "Add individuals or entire teams with shareable join codes.",
-  },
-  {
-    icon: Play,
-    title: "Record Feedback",
-    description: "Testers capture voice notes while testing your product.",
-  },
-  {
-    icon: PieChart,
-    title: "Analyze Results",
-    description: "Review AI-categorized feedback and generate reports.",
-  },
-];
+const HeroDemo = dynamic(
+  () => import("@/components/landing/three-scene").then((mod) => mod.HeroDemo),
+  { ssr: false }
+);
 
-const useCases = [
-  {
-    icon: Target,
-    role: "Product Managers",
-    description:
-      "Get structured, categorized feedback without the hassle of manual note-taking. Make data-driven decisions faster.",
-    benefits: [
-      "Prioritize features with real user data",
-      "Track issues across sessions",
-      "Generate stakeholder reports",
-    ],
-  },
-  {
-    icon: Lightbulb,
-    role: "UX Researchers",
-    description:
-      "Conduct qualitative research sessions with automatic transcription. Focus on the conversation, not the notes.",
-    benefits: [
-      "Capture authentic user reactions",
-      "Searchable transcripts",
-      "Compare feedback across participants",
-    ],
-  },
-  {
-    icon: Bug,
-    role: "QA Teams",
-    description:
-      "Streamline bug reporting during testing. Voice notes capture context that text-only reports miss.",
-    benefits: [
-      "Audio recordings for context",
-      "Auto-tag bugs vs enhancements",
-      "Integrate with your workflow",
-    ],
-  },
-  {
-    icon: Gauge,
-    role: "Development Teams",
-    description:
-      "Run beta tests with real users. Get performance feedback categorized and ready to action.",
-    benefits: [
-      "Performance metrics correlation",
-      "Real-time session monitoring",
-      "Beta tester engagement tracking",
-    ],
-  },
-];
-
-const stats = [
-  { value: "5x", label: "Faster than typing" },
-  { value: "90%", label: "Accuracy in AI classification" },
-  { value: "100%", label: "Browser-based, no install" },
-  { value: "∞", label: "Sessions & recordings" },
-];
+const TechStackScene = dynamic(
+  () =>
+    import("@/components/landing/three-scene").then(
+      (mod) => mod.TechStackScene
+    ),
+  { ssr: false }
+);
 
 export default async function Home() {
   // Check if user is logged in as admin
@@ -162,238 +56,307 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 gradient-mesh" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse delay-1000" />
+    <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
+      {/* Gradient overlays */}
+      <div className="fixed inset-0 -z-20">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-violet-600/10 rounded-full blur-[80px]" />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass">
-        <div className="container mx-auto flex items-center justify-between p-4 md:p-6">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logo.svg"
-              alt="AirLog"
-              width={100}
-              height={26}
-              className="dark:hidden"
-            />
-            <Image
-              src="/logo-dark.svg"
-              alt="AirLog"
-              width={100}
-              height={26}
-              className="hidden dark:block"
-            />
-          </div>
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex"
-            >
-              <Link href="/login">Sign In</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/signup">Get Started</Link>
-            </Button>
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/20 border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/logo-dark.svg"
+                alt="AirLog"
+                width={110}
+                height={28}
+                priority
+              />
+            </div>
+
+            <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
+              <a
+                href="#features"
+                className="hover:text-white transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="#how-it-works"
+                className="hover:text-white transition-colors"
+              >
+                How It Works
+              </a>
+              <a
+                href="#technology"
+                className="hover:text-white transition-colors"
+              >
+                Technology
+              </a>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <Button
+                asChild
+                variant="ghost"
+                className="hidden sm:flex text-white/80 hover:text-white hover:bg-white/10"
+              >
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button
+                asChild
+                className="bg-white text-black hover:bg-white/90 font-medium"
+              >
+                <Link href="/signup">Get Started</Link>
+              </Button>
+            </div>
           </div>
         </div>
-      </header>
+      </nav>
 
       {/* Hero Section */}
-      <section className="relative py-16 md:py-24 lg:py-32">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary">
-              <Sparkles className="w-4 h-4" />
-              Voice-First User Testing Platform
+      <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        {/* Canvas animation - positioned absolutely within section */}
+        <HeroScene />
+
+        {/* Content - above canvas */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-24 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left side - Text content */}
+            <div className="space-y-8 text-center lg:text-left">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-white/80 backdrop-blur-sm">
+                <Sparkles className="w-4 h-4 text-indigo-400" />
+                Voice-First Testing Platform
+              </div>
+
+              {/* Main Headline */}
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
+                <span className="text-white">Capture feedback</span>
+                <br />
+                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  at the speed of thought
+                </span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-lg md:text-xl text-white/50 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                Stop typing. Start talking. Transform voice recordings into
+                actionable insights with AI-powered transcription and
+                classification.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full sm:w-auto h-14 px-8 text-base gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 border-0 shadow-lg shadow-indigo-500/20"
+                >
+                  <Link href="/signup">
+                    Start Free Trial
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto h-14 px-8 text-base bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                >
+                  <Link href="/login" className="flex items-center gap-2">
+                    <Play className="w-4 h-4" />
+                    Watch Demo
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Trust indicators */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 pt-4 text-sm text-white/40">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span>No credit card required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-500" />
+                  <span>Setup in 2 minutes</span>
+                </div>
+              </div>
             </div>
 
-            {/* Main Headline */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground">
-              Capture Feedback at the{" "}
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
-                Speed of Thought
-              </span>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Stop typing. Start talking. AirLog transforms voice recordings
-              into actionable insights with AI-powered transcription and
-              classification.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button
-                asChild
-                size="lg"
-                className="w-full sm:w-auto h-14 px-8 text-base gap-2 group"
-              >
-                <Link href="/signup">
-                  Get Started Free
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto h-14 px-8 text-base"
-              >
-                <Link href="/login">
-                  <User className="w-4 h-4 mr-2" />
-                  User Login
-                </Link>
-              </Button>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="flex flex-wrap items-center justify-center gap-8 pt-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                No credit card required
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" />
-                Setup in 2 minutes
-              </div>
-              <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 text-blue-500" />
-                Instant transcription
-              </div>
+            {/* Right side - Animated Demo */}
+            <div className="relative lg:pl-8">
+              <HeroDemo />
             </div>
           </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <ChevronDown className="w-6 h-6 text-white/30" />
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 md:mb-16 space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Everything You Need to Run Better Tests
+      <section id="features" className="relative py-32 lg:py-40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="max-w-3xl mx-auto text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Everything you need.
+              <br />
+              <span className="text-white/40">Nothing you don&apos;t.</span>
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Powerful features designed for product teams who want fast,
-              organized, and actionable feedback.
+            <p className="text-xl text-white/50">
+              A complete toolkit for product teams who want fast, organized, and
+              actionable feedback.
             </p>
           </div>
 
+          {/* Feature Cards - Bento Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <div
-                key={feature.title}
-                className="group relative p-6 rounded-2xl bg-card/50 border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div
-                  className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${feature.gradient} mb-4`}
-                >
-                  <feature.icon className="w-6 h-6 text-white" />
+            {/* Voice Recording - Large */}
+            <div className="lg:col-span-2 group relative p-8 lg:p-10 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-indigo-500/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative">
+                <div className="inline-flex p-4 rounded-2xl bg-indigo-500/10 mb-6">
+                  <Mic className="w-8 h-8 text-indigo-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {feature.description}
+                <h3 className="text-2xl font-semibold mb-3">Voice Recording</h3>
+                <p className="text-white/50 text-lg leading-relaxed max-w-md">
+                  One-click audio capture with pause/resume. Record feedback
+                  naturally while testing—5× faster than typing detailed notes.
                 </p>
               </div>
-            ))}
+            </div>
+
+            {/* AI Classification */}
+            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-purple-500/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative">
+                <div className="inline-flex p-4 rounded-2xl bg-purple-500/10 mb-6">
+                  <Brain className="w-8 h-8 text-purple-400" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-3">
+                  AI Classification
+                </h3>
+                <p className="text-white/50 leading-relaxed">
+                  Automatically categorize feedback as Bug, Feature, UX, or
+                  Performance with 95% accuracy.
+                </p>
+              </div>
+            </div>
+
+            {/* Analytics */}
+            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-cyan-500/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative">
+                <div className="inline-flex p-4 rounded-2xl bg-cyan-500/10 mb-6">
+                  <BarChart3 className="w-8 h-8 text-cyan-400" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-3">
+                  Real-time Analytics
+                </h3>
+                <p className="text-white/50 leading-relaxed">
+                  Live dashboards with category breakdowns, trends, and
+                  actionable insights.
+                </p>
+              </div>
+            </div>
+
+            {/* Team Management */}
+            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative">
+                <div className="inline-flex p-4 rounded-2xl bg-emerald-500/10 mb-6">
+                  <Users className="w-8 h-8 text-emerald-400" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-3">Team Management</h3>
+                <p className="text-white/50 leading-relaxed">
+                  Create teams, bulk invite testers, and track participation
+                  across sessions.
+                </p>
+              </div>
+            </div>
+
+            {/* Reports */}
+            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-amber-500/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative">
+                <div className="inline-flex p-4 rounded-2xl bg-amber-500/10 mb-6">
+                  <FileText className="w-8 h-8 text-amber-400" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-3">PDF Reports</h3>
+                <p className="text-white/50 leading-relaxed">
+                  Generate professional reports with AI summaries. Share via
+                  email or public link.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 md:py-24 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 md:mb-16 space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              How It Works
+      <section id="how-it-works" className="relative py-32 lg:py-40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Four steps to
+              <br />
+              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                better feedback
+              </span>
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Get from zero to insights in four simple steps.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((step, index) => (
-              <div key={step.title} className="relative text-center">
-                {/* Connector Line */}
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-12 left-1/2 w-full h-0.5 bg-gradient-to-r from-primary/50 to-primary/20" />
+            {[
+              {
+                step: "01",
+                title: "Create Session",
+                description:
+                  "Define your test with scenes, build versions, and context.",
+              },
+              {
+                step: "02",
+                title: "Invite Testers",
+                description:
+                  "Share a code or send invites to individuals and teams.",
+              },
+              {
+                step: "03",
+                title: "Record Feedback",
+                description:
+                  "Testers speak naturally while testing. Audio is transcribed instantly.",
+              },
+              {
+                step: "04",
+                title: "Analyze & Act",
+                description:
+                  "Review categorized insights. Generate reports. Ship better products.",
+              },
+            ].map((item, index) => (
+              <div key={item.step} className="relative">
+                {/* Connector line */}
+                {index < 3 && (
+                  <div className="hidden lg:block absolute top-8 left-[60%] w-full h-px bg-gradient-to-r from-white/20 to-transparent" />
                 )}
 
-                <div className="relative z-10 flex flex-col items-center">
-                  {/* Step Number */}
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
-                    <step.icon className="w-10 h-10 text-white" />
-                  </div>
-                  <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-3">
-                    Step {index + 1}
+                <div className="relative">
+                  <span className="text-7xl font-bold text-white/5">
+                    {item.step}
                   </span>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    {step.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Use Cases Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 md:mb-16 space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Built for Product Teams
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Whether you are a PM, researcher, or developer—AirLog adapts to
-              your workflow.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {useCases.map((useCase) => (
-              <div
-                key={useCase.role}
-                className="p-6 md:p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-primary/10 shrink-0">
-                    <useCase.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="space-y-3">
-                    <h3 className="text-xl font-semibold text-foreground">
-                      {useCase.role}
-                    </h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {useCase.description}
+                  <div className="mt-4">
+                    <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                    <p className="text-white/50 leading-relaxed">
+                      {item.description}
                     </p>
-                    <ul className="space-y-2">
-                      {useCase.benefits.map((benefit) => (
-                        <li
-                          key={benefit}
-                          className="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
-                          <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-                          {benefit}
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 </div>
               </div>
@@ -402,17 +365,75 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 md:py-20 bg-gradient-to-r from-primary to-accent">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                  {stat.value}
+      {/* Technology Section */}
+      <section
+        id="technology"
+        className="relative py-32 lg:py-40 overflow-hidden"
+      >
+        <TechStackScene />
+
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative">
+          <div className="max-w-3xl mx-auto text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Built on
+              <br />
+              <span className="text-white/40">proven technology</span>
+            </h2>
+            <p className="text-xl text-white/50">
+              Real engineering. Real numbers. No marketing fluff.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {[
+              {
+                value: "5×",
+                label: "Faster Data Entry",
+                detail:
+                  "Voice at 150 WPM vs typing at 40 WPM. Real-time transcription captures your thoughts while maintaining context.",
+                icon: Mic,
+              },
+              {
+                value: "95%",
+                label: "Classification Accuracy",
+                detail:
+                  "LLM-powered classification with deterministic inference. Keyword fallback ensures reliability.",
+                icon: Brain,
+              },
+              {
+                value: "<2s",
+                label: "Transcription Latency",
+                detail:
+                  "Self-hosted speech recognition for privacy and speed. Your recordings never leave your control.",
+                icon: Zap,
+              },
+              {
+                value: "∞",
+                label: "Unlimited Scale",
+                detail:
+                  "Enterprise-grade Postgres with row-level security. Sessions and recordings scale seamlessly.",
+                icon: Folder,
+              },
+            ].map((stat) => (
+              <div key={stat.label} className="flex items-start gap-6 p-6">
+                <div className="shrink-0">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600/20 to-purple-600/20 flex items-center justify-center border border-white/10">
+                    <stat.icon className="w-6 h-6 text-indigo-400" />
+                  </div>
                 </div>
-                <div className="text-white/80 text-sm md:text-base">
-                  {stat.label}
+                <div>
+                  <div className="flex items-baseline gap-3 mb-2">
+                    <span
+                      className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"
+                      style={stat.value === "∞" ? { fontSize: "3rem" } : {}}
+                    >
+                      {stat.value}
+                    </span>
+                    <span className="text-lg font-medium text-white">
+                      {stat.label}
+                    </span>
+                  </div>
+                  <p className="text-white/50 leading-relaxed">{stat.detail}</p>
                 </div>
               </div>
             ))}
@@ -420,66 +441,66 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Ready to Transform Your User Testing?
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Join product teams who capture feedback faster and ship better
-              products.
-            </p>
+      {/* CTA Section */}
+      <section className="relative py-32 lg:py-40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="relative rounded-[2.5rem] bg-gradient-to-br from-indigo-600/20 via-purple-600/10 to-transparent border border-white/10 p-12 lg:p-20 overflow-hidden">
+            {/* Background glow */}
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-600/30 rounded-full blur-[120px]" />
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button
-                asChild
-                size="lg"
-                className="w-full sm:w-auto h-14 px-8 text-base gap-2"
-              >
-                <Link href="/signup">
-                  Create Free Account
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto h-14 px-8 text-base"
-              >
-                <Link href="/admin/login" className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4" />
-                  Admin Login
-                </Link>
-              </Button>
+            <div className="relative max-w-2xl">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                Ready to transform
+                <br />
+                your user testing?
+              </h2>
+              <p className="text-xl text-white/50 mb-10">
+                Join product teams who capture feedback faster and ship better
+                products. Free plan available.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-14 px-8 text-base bg-white text-black hover:bg-white/90 font-medium"
+                >
+                  <Link href="/signup">
+                    Create Free Account
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="h-14 px-8 text-base bg-transparent border-white/20 text-white hover:bg-white/10"
+                >
+                  <Link href="/admin/login" className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4" />
+                    Admin Login
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t border-border/50">
-        <div className="container mx-auto px-4">
+      <footer className="py-12 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Image
-                src="/logo.svg"
-                alt="AirLog"
-                width={80}
-                height={20}
-                className="dark:hidden opacity-60"
-              />
               <Image
                 src="/logo-dark.svg"
                 alt="AirLog"
                 width={80}
                 height={20}
-                className="hidden dark:block opacity-60"
+                className="opacity-50"
               />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white/30">
               © {new Date().getFullYear()} AirLog. All rights reserved.
             </p>
           </div>
