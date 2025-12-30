@@ -142,7 +142,7 @@ export default async function Home() {
               </Button>
               <Button
                 asChild
-                className="bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 font-medium"
+                className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white font-medium border-0"
               >
                 <Link href="/signup">Get Started</Link>
               </Button>
