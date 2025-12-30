@@ -56,7 +56,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0d0c" },
   ],
 };
 
@@ -99,7 +99,7 @@ export default function RootLayout({
         <meta name="application-name" content="AirLog" />
 
         {/* Microsoft Tiles */}
-        <meta name="msapplication-TileColor" content="#0a0a0a" />
+        <meta name="msapplication-TileColor" content="#0b0d0c" />
         <meta name="msapplication-tap-highlight" content="no" />
 
         <script

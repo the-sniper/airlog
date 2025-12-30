@@ -10,9 +10,9 @@ import type {
 // Brand colors
 const colors = {
   // Primary brand
-  primary: "#5271C0",
-  primaryLight: "#95B2F8",
-  primaryLightest: "#EEF2FF",
+  primary: "#14B8A6",
+  primaryLight: "#99F6E4",
+  primaryLightest: "#F0FDFA",
 
   // Text
   text: "#2D3F4E",
@@ -580,7 +580,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
   // Unknown scene
   const unknownNotes =
     session.notes?.filter(
-      (n) => !n.scene_id || !session.scenes?.find((s) => s.id === n.scene_id),
+      (n) => !n.scene_id || !session.scenes?.find((s) => s.id === n.scene_id)
     ) || [];
   if (unknownNotes.length > 0) {
     const bd: Record<NoteCategory, number> = {
@@ -783,7 +783,7 @@ export function SessionReportPDF({ session }: { session: SessionWithDetails }) {
                     </View>
                   </View>
                 );
-              },
+              }
             )}
           </View>
         </View>

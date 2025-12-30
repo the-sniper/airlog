@@ -31,8 +31,8 @@ const feedbackExamples = [
   {
     text: "Would be great to have dark mode support here",
     category: "Feature",
-    categoryColor: "rgb(99, 102, 241)", // indigo-500
-    bgColor: "rgba(99, 102, 241, 0.15)",
+    categoryColor: "rgb(139, 92, 246)", // violet-500
+    bgColor: "rgba(139, 92, 246, 0.15)",
     confidence: 91,
   },
   {
@@ -211,10 +211,10 @@ export function HeroDemo() {
                       phase === "recording"
                         ? "bg-gradient-to-br from-red-500 to-red-600 shadow-red-500/30"
                         : phase === "transcribing"
-                        ? "bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30"
+                        ? "bg-gradient-to-br from-violet-500 to-violet-600 shadow-violet-500/30"
                         : phase === "categorizing" || phase === "complete"
                         ? "bg-gradient-to-br from-teal-500 to-teal-600 shadow-teal-500/30"
-                        : "bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30"
+                        : "bg-gradient-to-br from-violet-500 to-violet-600 shadow-violet-500/30"
                     }`}
                   >
                     <Mic className="w-5 h-5 text-white" />
@@ -240,7 +240,7 @@ export function HeroDemo() {
                       </span>
                     )}
                     {phase === "transcribing" && (
-                      <span className="flex items-center gap-1 text-indigo-400">
+                      <span className="flex items-center gap-1 text-violet-400">
                         <Sparkles className="w-3 h-3" />
                         AI transcribing...
                       </span>
@@ -301,8 +301,8 @@ export function HeroDemo() {
                         phase === "recording"
                           ? "bg-gradient-to-t from-red-500 to-red-300"
                           : phase === "transcribing"
-                          ? "bg-gradient-to-t from-indigo-500/70 to-indigo-300/70"
-                          : "bg-gradient-to-t from-indigo-500/30 to-indigo-300/30"
+                          ? "bg-gradient-to-t from-violet-500/70 to-violet-300/70"
+                          : "bg-gradient-to-t from-violet-500/30 to-violet-300/30"
                       }`}
                       style={{
                         height: `${Math.max(4, height * 52)}px`,
@@ -324,7 +324,7 @@ export function HeroDemo() {
                     phase === "transcribing" ||
                     phase === "categorizing" ||
                     phase === "complete"
-                      ? "bg-indigo-500/20 border border-indigo-500/20"
+                      ? "bg-violet-500/20 border border-violet-500/20"
                       : "bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5"
                   }`}
                 >
@@ -333,7 +333,7 @@ export function HeroDemo() {
                       phase === "transcribing" ||
                       phase === "categorizing" ||
                       phase === "complete"
-                        ? "text-indigo-400"
+                        ? "text-violet-400"
                         : "text-slate-400 dark:text-white/30"
                     }`}
                   />
@@ -350,7 +350,7 @@ export function HeroDemo() {
                     )}
                     {phase === "transcribing" &&
                       transcribedText.length < example.text.length && (
-                        <span className="inline-block w-0.5 h-4 bg-indigo-400 ml-0.5 animate-pulse" />
+                        <span className="inline-block w-0.5 h-4 bg-violet-400 ml-0.5 animate-pulse" />
                       )}
                   </div>
                 </div>
@@ -412,7 +412,7 @@ export function HeroDemo() {
           {/* Dashboard header */}
           <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+              <TrendingUp className="w-3.5 h-3.5 text-teal-500 dark:text-teal-400" />
               <span className="text-xs font-medium text-slate-700 dark:text-white/70">
                 Session Analytics
               </span>
@@ -540,9 +540,9 @@ export function HowItWorksAnimation() {
       icon: Sparkles,
       title: "Transcribe",
       description: "AI converts speech to text",
-      activeColor: "text-indigo-400",
-      activeBg: "bg-indigo-500/10",
-      activeBorder: "border-indigo-500/20",
+      activeColor: "text-violet-400",
+      activeBg: "bg-violet-500/10",
+      activeBorder: "border-violet-500/20",
     },
     {
       icon: Tag,
@@ -556,9 +556,9 @@ export function HowItWorksAnimation() {
       icon: TrendingUp,
       title: "Analyze",
       description: "Get actionable insights",
-      activeColor: "text-indigo-400",
-      activeBg: "bg-indigo-500/10",
-      activeBorder: "border-indigo-500/20",
+      activeColor: "text-teal-400",
+      activeBg: "bg-teal-500/10",
+      activeBorder: "border-teal-500/20",
     },
   ];
 
@@ -654,9 +654,9 @@ export function AnimatedStats() {
       {stats.map((stat, idx) => (
         <div
           key={idx}
-          className="p-6 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 hover:border-indigo-500/20 transition-colors"
+          className="p-6 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 hover:border-teal-500/20 transition-colors"
         >
-          <div className="text-4xl font-bold text-indigo-500 dark:text-indigo-400 mb-2">
+          <div className="text-4xl font-bold text-teal-500 dark:text-teal-400 mb-2">
             {stat.value}
           </div>
           <div className="text-base font-medium text-slate-700 dark:text-white/80 mb-1">
@@ -734,7 +734,7 @@ export function HeroScene() {
         0,
         canvas.width * 0.4
       );
-      topLeftGlow.addColorStop(0, "rgba(99, 102, 241, 0.03)");
+      topLeftGlow.addColorStop(0, "rgba(20, 184, 166, 0.03)");
       topLeftGlow.addColorStop(1, "transparent");
       ctx.fillStyle = topLeftGlow;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -747,7 +747,7 @@ export function HeroScene() {
         canvas.height,
         canvas.width * 0.35
       );
-      bottomRightGlow.addColorStop(0, "rgba(99, 102, 241, 0.025)");
+      bottomRightGlow.addColorStop(0, "rgba(20, 184, 166, 0.025)");
       bottomRightGlow.addColorStop(1, "transparent");
       ctx.fillStyle = bottomRightGlow;
       ctx.fillRect(0, 0, canvas.width, canvas.height);

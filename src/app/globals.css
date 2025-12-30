@@ -43,83 +43,83 @@
   display: none;
 }
 
-/* Light Mode - Alpine Echo inspired */
+/* Light Mode - Clean with Teal Accents */
 :root {
-  --background: 220 30% 97%;
-  --foreground: 224 50% 18%;
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
   --card: 0 0% 100%;
-  --card-foreground: 224 50% 18%;
+  --card-foreground: 222 47% 11%;
   --popover: 0 0% 100%;
-  --popover-foreground: 224 50% 18%;
+  --popover-foreground: 222 47% 11%;
 
-  /* Primary: #5271C0 - Alpine Blue */
-  --primary: 224 50% 54%;
+  /* Primary: Teal */
+  --primary: 175 80% 40%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary - Light mode */
-  --secondary: 220 30% 92%;
-  --secondary-foreground: 224 50% 25%;
+  /* Secondary */
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222 47% 11.2%;
 
-  /* Muted - Light mode */
-  --muted: 220 30% 92%;
-  --muted-foreground: 220 20% 45%;
+  /* Muted */
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
 
-  /* Accent: #95B2F8 - Light blue */
-  --accent: 222 89% 78%;
-  --accent-foreground: 224 50% 18%;
+  /* Accent */
+  --accent: 175 40% 94%;
+  --accent-foreground: 175 80% 40%;
 
   --destructive: 0 72% 50%;
   --destructive-foreground: 0 0% 100%;
 
-  /* Borders - Light mode */
-  --border: 220 20% 88%;
-  --input: 220 20% 88%;
-  --ring: 224 50% 54%;
+  /* Borders */
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 175 80% 40%;
   --radius: 0.75rem;
 
   /* Additional semantic colors */
   --success: 152 60% 40%;
   --warning: 38 92% 50%;
-  --info: 222 70% 55%;
+  --info: 190 70% 45%;
 }
 
-/* Dark Mode - Deep Ocean (#111824 based) */
+/* Dark Mode - Deep Forest/Slate */
 .dark {
-  --background: 218 36% 10%;
-  --foreground: 218 25% 93%;
-  --card: 218 36% 13%;
-  --card-foreground: 218 25% 93%;
-  --popover: 218 36% 13%;
-  --popover-foreground: 218 25% 93%;
+  --background: 150 10% 5%;
+  --foreground: 210 40% 98%;
+  --card: 150 10% 7%;
+  --card-foreground: 210 40% 98%;
+  --popover: 150 10% 7%;
+  --popover-foreground: 210 40% 98%;
 
-  /* Primary: #5271C0 - Alpine Blue */
-  --primary: 224 50% 54%;
-  --primary-foreground: 205 30% 98%;
+  /* Primary: Teal */
+  --primary: 175 80% 40%;
+  --primary-foreground: 0 0% 100%;
 
-  /* Secondary based on #111824 shades */
-  --secondary: 218 36% 16%;
-  --secondary-foreground: 218 25% 90%;
+  /* Secondary */
+  --secondary: 150 10% 12%;
+  --secondary-foreground: 210 40% 98%;
 
-  /* Muted based on #111824 shades */
-  --muted: 218 36% 16%;
-  --muted-foreground: 218 25% 55%;
+  /* Muted */
+  --muted: 150 10% 12%;
+  --muted-foreground: 215 20.2% 65.1%;
 
-  /* Accent: #95B2F8 - Light blue */
-  --accent: 222 89% 78%;
-  --accent-foreground: 218 36% 10%;
+  /* Accent */
+  --accent: 150 10% 15%;
+  --accent-foreground: 210 40% 98%;
 
-  --destructive: 0 72% 55%;
+  --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
 
-  /* Borders based on #111824 shades */
-  --border: 218 30% 22%;
-  --input: 218 30% 22%;
-  --ring: 224 50% 54%;
+  /* Borders */
+  --border: 150 10% 15%;
+  --input: 150 10% 15%;
+  --ring: 175 80% 40%;
 
   /* Additional semantic colors */
   --success: 152 60% 45%;
   --warning: 38 92% 50%;
-  --info: 222 89% 78%;
+  --info: 190 70% 60%;
 }
 
 * {
@@ -156,38 +156,38 @@ body[data-scroll-locked] {
 .gradient-mesh {
   background: radial-gradient(
       at 27% 37%,
-      hsla(224, 50%, 54%, 0.08) 0px,
+      hsla(175, 80%, 40%, 0.15) 0px,
       transparent 50%
     ),
-    radial-gradient(at 97% 21%, hsla(222, 89%, 78%, 0.06) 0px, transparent 50%),
-    radial-gradient(at 52% 99%, hsla(220, 42%, 70%, 0.08) 0px, transparent 50%),
-    radial-gradient(at 10% 29%, hsla(244, 35%, 70%, 0.06) 0px, transparent 50%);
+    radial-gradient(at 97% 21%, hsla(175, 40%, 94%, 0.5) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(175, 40%, 90%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(210, 40%, 96%, 0.5) 0px, transparent 50%);
 }
 
 /* Gradient mesh - Dark mode */
 .dark .gradient-mesh {
   background: radial-gradient(
       at 27% 37%,
-      hsla(224, 50%, 54%, 0.15) 0px,
+      hsla(175, 80%, 40%, 0.15) 0px,
       transparent 50%
     ),
-    radial-gradient(at 97% 21%, hsla(222, 89%, 78%, 0.08) 0px, transparent 50%),
-    radial-gradient(at 52% 99%, hsla(218, 36%, 22%, 0.12) 0px, transparent 50%),
-    radial-gradient(at 10% 29%, hsla(218, 36%, 16%, 0.1) 0px, transparent 50%);
+    radial-gradient(at 97% 21%, hsla(150, 20%, 15%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(150, 20%, 10%, 0.2) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(150, 20%, 12%, 0.2) 0px, transparent 50%);
 }
 
 /* Glassmorphism - Light mode */
 .glass {
   background: hsla(0, 0%, 100%, 0.8);
   backdrop-filter: blur(16px);
-  border: 1px solid hsla(220, 20%, 80%, 0.5);
+  border: 1px solid hsla(214.3, 31.8%, 91.4%, 0.5);
 }
 
 /* Glassmorphism - Dark mode */
 .dark .glass {
-  background: hsla(218, 36%, 13%, 0.8);
+  background: hsla(150, 10%, 7%, 0.8);
   backdrop-filter: blur(16px);
-  border: 1px solid hsla(218, 30%, 35%, 0.15);
+  border: 1px solid hsla(150, 10%, 15%, 0.5);
 }
 
 /* Recording indicator */
@@ -261,29 +261,29 @@ body[data-scroll-locked] {
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(220 30% 95%);
+  background: hsl(210 40% 96.1%);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(220 20% 80%);
+  background: hsl(215.4 16.3% 46.9% / 0.5);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(220 20% 70%);
+  background: hsl(215.4 16.3% 46.9% / 0.8);
 }
 
 /* Smooth scrollbar - Dark mode */
 .dark ::-webkit-scrollbar-track {
-  background: hsl(205 75% 7%);
+  background: hsl(150 10% 5%);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: hsl(205 45% 22%);
+  background: hsl(150 10% 20%);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: hsl(205 45% 28%);
+  background: hsl(150 10% 25%);
 }
 
 /* Icon styling utility */
@@ -296,19 +296,19 @@ body[data-scroll-locked] {
   background: linear-gradient(
     135deg,
     hsl(var(--foreground)) 0%,
-    hsl(220 30% 70%) 100%
+    hsl(215.4 16.3% 46.9%) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Primary gradient for special elements - Alpine Echo gradient */
+/* Primary gradient for special elements - Teal gradient */
 .bg-gradient-primary {
   background: linear-gradient(
     135deg,
-    hsl(224 50% 54%) 0%,
-    hsl(222 89% 78%) 100%
+    hsl(var(--primary)) 0%,
+    hsl(var(--accent)) 100%
   );
 }
 
