@@ -34,6 +34,20 @@ const HeroDemo = dynamic(
   { ssr: false }
 );
 
+const HowItWorksAnimation = dynamic(
+  () =>
+    import("@/components/landing/three-scene").then(
+      (mod) => mod.HowItWorksAnimation
+    ),
+  { ssr: false }
+);
+
+const AnimatedStats = dynamic(
+  () =>
+    import("@/components/landing/three-scene").then((mod) => mod.AnimatedStats),
+  { ssr: false }
+);
+
 const TechStackScene = dynamic(
   () =>
     import("@/components/landing/three-scene").then(
@@ -302,10 +316,10 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="relative py-32 lg:py-40">
+      {/* How It Works Section - Animated */}
+      <section id="how-it-works" className="relative py-24 lg:py-32">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center mb-20">
+          <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Four steps to
               <br />
@@ -313,55 +327,30 @@ export default async function Home() {
                 better feedback
               </span>
             </h2>
+            <p className="text-lg text-white/50">
+              From voice to actionable insights in seconds
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Create Session",
-                description:
-                  "Define your test with scenes, build versions, and context.",
-              },
-              {
-                step: "02",
-                title: "Invite Testers",
-                description:
-                  "Share a code or send invites to individuals and teams.",
-              },
-              {
-                step: "03",
-                title: "Record Feedback",
-                description:
-                  "Testers speak naturally while testing. Audio is transcribed instantly.",
-              },
-              {
-                step: "04",
-                title: "Analyze & Act",
-                description:
-                  "Review categorized insights. Generate reports. Ship better products.",
-              },
-            ].map((item, index) => (
-              <div key={item.step} className="relative">
-                {/* Connector line */}
-                {index < 3 && (
-                  <div className="hidden lg:block absolute top-8 left-[60%] w-full h-px bg-gradient-to-r from-white/20 to-transparent" />
-                )}
-
-                <div className="relative">
-                  <span className="text-7xl font-bold text-white/5">
-                    {item.step}
-                  </span>
-                  <div className="mt-4">
-                    <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                    <p className="text-white/50 leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="relative">
+            <HowItWorksAnimation />
           </div>
+        </div>
+      </section>
+
+      {/* Stats Section - Animated counters */}
+      <section className="relative py-24 lg:py-32">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Built for{" "}
+              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                speed and accuracy
+              </span>
+            </h2>
+            <p className="text-white/50">Real metrics, real results</p>
+          </div>
+          <AnimatedStats />
         </div>
       </section>
 
