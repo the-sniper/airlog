@@ -21,6 +21,8 @@
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.15",
     "@react-pdf/renderer": "^3.4.4",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
     "bcryptjs": "^3.0.3",
@@ -39,6 +41,7 @@
     "resend": "^6.4.2",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "three": "^0.182.0",
     "uuid": "^11.0.3"
   },
   "devDependencies": {
