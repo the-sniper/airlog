@@ -133,9 +133,7 @@ body {
   background: hsl(var(--background));
   -webkit-font-smoothing: antialiased;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
   overflow-x: hidden;
 }
 
@@ -156,8 +154,11 @@ body[data-scroll-locked] {
 
 /* Gradient mesh - Light mode */
 .gradient-mesh {
-  background:
-    radial-gradient(at 27% 37%, hsla(224, 50%, 54%, 0.08) 0px, transparent 50%),
+  background: radial-gradient(
+      at 27% 37%,
+      hsla(224, 50%, 54%, 0.08) 0px,
+      transparent 50%
+    ),
     radial-gradient(at 97% 21%, hsla(222, 89%, 78%, 0.06) 0px, transparent 50%),
     radial-gradient(at 52% 99%, hsla(220, 42%, 70%, 0.08) 0px, transparent 50%),
     radial-gradient(at 10% 29%, hsla(244, 35%, 70%, 0.06) 0px, transparent 50%);
@@ -165,8 +166,11 @@ body[data-scroll-locked] {
 
 /* Gradient mesh - Dark mode */
 .dark .gradient-mesh {
-  background:
-    radial-gradient(at 27% 37%, hsla(224, 50%, 54%, 0.15) 0px, transparent 50%),
+  background: radial-gradient(
+      at 27% 37%,
+      hsla(224, 50%, 54%, 0.15) 0px,
+      transparent 50%
+    ),
     radial-gradient(at 97% 21%, hsla(222, 89%, 78%, 0.08) 0px, transparent 50%),
     radial-gradient(at 52% 99%, hsla(218, 36%, 22%, 0.12) 0px, transparent 50%),
     radial-gradient(at 10% 29%, hsla(218, 36%, 16%, 0.1) 0px, transparent 50%);
@@ -312,4 +316,26 @@ body[data-scroll-locked] {
 .mask-gradient-right {
   -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
   mask-image: linear-gradient(to right, black 90%, transparent 100%);
+}
+
+/* Gradient text animation */
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient-flow 3s ease infinite;
+}
+
+/* Animation delay utilities */
+.delay-1000 {
+  animation-delay: 1s;
 }
