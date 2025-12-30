@@ -17,8 +17,8 @@ const feedbackExamples = [
   {
     text: "The login button is really hard to find on mobile...",
     category: "UX Issue",
-    categoryColor: "rgb(139, 92, 246)", // purple-500
-    bgColor: "rgba(139, 92, 246, 0.15)",
+    categoryColor: "rgb(20, 184, 166)", // teal-500
+    bgColor: "rgba(20, 184, 166, 0.15)",
     confidence: 94,
   },
   {
@@ -167,12 +167,12 @@ export function HeroDemo() {
 
   return (
     <div className="relative w-full max-w-lg mx-auto">
-      {/* Subtle gradient border glow - REDUCED opacity */}
-      <div className="absolute -inset-[1px] bg-gradient-to-r from-indigo-500/30 via-purple-500/20 to-indigo-500/30 rounded-2xl blur-sm" />
-      <div className="absolute -inset-[1px] bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl" />
+      {/* Subtle gradient border */}
+      <div className="absolute -inset-[1px] bg-gradient-to-r from-teal-500/15 via-cyan-500/10 to-teal-500/15 rounded-2xl blur-sm" />
+      <div className="absolute -inset-[1px] bg-gradient-to-r from-teal-500/10 to-cyan-500/10 rounded-2xl" />
 
       {/* Main demo card */}
-      <div className="relative bg-[#0a0a12] rounded-2xl overflow-hidden">
+      <div className="relative bg-[#0a0a12] rounded-2xl overflow-hidden border border-white/5">
         {/* Window chrome / title bar */}
         <div className="flex items-center justify-between px-4 py-3 bg-white/[0.03] border-b border-white/5">
           <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export function HeroDemo() {
                       : phase === "transcribing"
                       ? "bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30"
                       : phase === "categorizing" || phase === "complete"
-                      ? "bg-gradient-to-br from-purple-500 to-purple-600 shadow-purple-500/30"
+                      ? "bg-gradient-to-br from-teal-500 to-teal-600 shadow-teal-500/30"
                       : "bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30"
                   }`}
                 >
@@ -245,7 +245,7 @@ export function HeroDemo() {
                     </span>
                   )}
                   {phase === "categorizing" && (
-                    <span className="flex items-center gap-1 text-purple-400">
+                    <span className="flex items-center gap-1 text-teal-400">
                       <Sparkles className="w-3 h-3 animate-spin" />
                       Analyzing content...
                     </span>
@@ -283,69 +283,32 @@ export function HeroDemo() {
             </div>
           </div>
 
-          {/* Waveform visualization - Sleek mirrored design */}
-          <div className="relative h-16 mb-5 rounded-xl bg-gradient-to-b from-white/[0.02] to-transparent overflow-hidden">
-            {/* Subtle glow behind waveform */}
-            <div
-              className={`absolute inset-0 blur-xl transition-opacity duration-300 ${
-                phase === "recording"
-                  ? "opacity-40"
-                  : phase === "transcribing"
-                  ? "opacity-30"
-                  : "opacity-0"
-              }`}
-              style={{
-                background:
-                  phase === "recording"
-                    ? "radial-gradient(ellipse at center, rgba(239,68,68,0.3) 0%, transparent 70%)"
-                    : "radial-gradient(ellipse at center, rgba(129,140,248,0.3) 0%, transparent 70%)",
-              }}
-            />
-
-            {/* Mirrored waveform bars */}
-            <div className="absolute inset-0 flex items-center justify-center px-3">
-              {Array.from({ length: 64 }).map((_, i) => {
+          {/* Waveform visualization */}
+          <div className="relative h-16 mb-5 rounded-xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 overflow-hidden">
+            {/* Waveform bars - full width */}
+            <div className="absolute inset-0 flex items-center justify-between px-3">
+              {Array.from({ length: 60 }).map((_, i) => {
                 const height = getWaveHeight(i);
                 return (
                   <div
                     key={i}
-                    className="flex-1 flex flex-col items-center justify-center mx-[0.5px]"
-                  >
-                    {/* Top bar */}
-                    <div
-                      className={`w-[2px] rounded-t-full transition-all duration-75 ${
-                        phase === "recording"
-                          ? "bg-gradient-to-t from-red-400/80 to-red-300"
-                          : phase === "transcribing"
-                          ? "bg-gradient-to-t from-indigo-400/80 to-indigo-300"
-                          : "bg-gradient-to-t from-indigo-400/20 to-indigo-300/20"
-                      }`}
-                      style={{
-                        height: `${Math.max(1, height * 24)}px`,
-                        opacity: phase === "idle" ? 0.5 : 1,
-                      }}
-                    />
-                    {/* Bottom bar (mirrored) */}
-                    <div
-                      className={`w-[2px] rounded-b-full transition-all duration-75 ${
-                        phase === "recording"
-                          ? "bg-gradient-to-b from-red-400/80 to-red-300/40"
-                          : phase === "transcribing"
-                          ? "bg-gradient-to-b from-indigo-400/80 to-indigo-300/40"
-                          : "bg-gradient-to-b from-indigo-400/20 to-indigo-300/10"
-                      }`}
-                      style={{
-                        height: `${Math.max(1, height * 24)}px`,
-                        opacity: phase === "idle" ? 0.5 : 1,
-                      }}
-                    />
-                  </div>
+                    className={`flex-1 mx-[1px] rounded-full transition-all duration-100 ${
+                      phase === "recording"
+                        ? "bg-gradient-to-t from-red-500 to-red-300"
+                        : phase === "transcribing"
+                        ? "bg-gradient-to-t from-indigo-500/70 to-indigo-300/70"
+                        : "bg-gradient-to-t from-indigo-500/30 to-indigo-300/30"
+                    }`}
+                    style={{
+                      height: `${Math.max(4, height * 52)}px`,
+                      opacity: phase === "idle" ? 0.4 : 1,
+                    }}
+                  />
                 );
               })}
             </div>
-
-            {/* Center line accent */}
-            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            {/* Center line */}
+            <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           </div>
 
           {/* Transcription area with premium styling */}
@@ -393,19 +356,19 @@ export function HeroDemo() {
           <div
             className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-500 border ${
               showCategory
-                ? "opacity-100 translate-y-0 bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20"
+                ? "opacity-100 translate-y-0 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20"
                 : "opacity-0 translate-y-2 bg-transparent border-transparent"
             }`}
           >
-            <div className="w-9 h-9 rounded-lg bg-purple-500/20 border border-purple-500/20 flex items-center justify-center shrink-0">
-              <Tag className="w-4 h-4 text-purple-400" />
+            <div className="w-9 h-9 rounded-lg bg-teal-500/20 border border-teal-500/20 flex items-center justify-center shrink-0">
+              <Tag className="w-4 h-4 text-teal-400" />
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1.5">
                 <div className="text-[10px] uppercase tracking-wider text-white/40 font-medium">
                   AI Classification
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-purple-400">
+                <div className="flex items-center gap-1 text-[10px] text-teal-400">
                   <Zap className="w-3 h-3" />
                   {confidenceAnim}% confidence
                 </div>
@@ -424,7 +387,7 @@ export function HeroDemo() {
                 {/* Confidence bar */}
                 <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-700"
+                    className="h-full bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full transition-all duration-700"
                     style={{ width: `${confidenceAnim}%` }}
                   />
                 </div>
@@ -576,9 +539,9 @@ export function HowItWorksAnimation() {
       icon: Tag,
       title: "Classify",
       description: "Smart categorization by type",
-      activeColor: "text-purple-400",
-      activeBg: "bg-purple-500/10",
-      activeBorder: "border-purple-500/20",
+      activeColor: "text-teal-400",
+      activeBg: "bg-teal-500/10",
+      activeBorder: "border-teal-500/20",
     },
     {
       icon: TrendingUp,

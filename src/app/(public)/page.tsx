@@ -70,16 +70,25 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
-      {/* Gradient overlays */}
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0f1419] text-slate-900 dark:text-white overflow-x-hidden transition-colors duration-300">
+      {/* Subtle dot grid pattern */}
+      <div
+        className="fixed inset-0 -z-30 opacity-[0.04] dark:opacity-[0.03]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* Gradient overlays - teal/cyan theme */}
       <div className="fixed inset-0 -z-20">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[100px]" />
-        <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-violet-600/10 rounded-full blur-[80px]" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-teal-400/10 dark:bg-teal-600/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-cyan-400/8 dark:bg-cyan-600/10 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-emerald-400/5 dark:bg-emerald-600/8 rounded-full blur-[80px]" />
       </div>
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/20 border-b border-white/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-black/20 border-b border-slate-200 dark:border-white/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-3">
@@ -89,25 +98,34 @@ export default async function Home() {
                 width={110}
                 height={28}
                 priority
+                className="dark:block hidden"
+              />
+              <Image
+                src="/logo.svg"
+                alt="AirLog"
+                width={110}
+                height={28}
+                priority
+                className="dark:hidden block"
               />
             </div>
 
-            <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
+            <div className="hidden md:flex items-center gap-8 text-sm text-slate-600 dark:text-white/60">
               <a
                 href="#features"
-                className="hover:text-white transition-colors"
+                className="hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Features
               </a>
               <a
                 href="#how-it-works"
-                className="hover:text-white transition-colors"
+                className="hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 How It Works
               </a>
               <a
                 href="#technology"
-                className="hover:text-white transition-colors"
+                className="hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Technology
               </a>
@@ -118,13 +136,13 @@ export default async function Home() {
               <Button
                 asChild
                 variant="ghost"
-                className="hidden sm:flex text-white/80 hover:text-white hover:bg-white/10"
+                className="hidden sm:flex text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
               >
                 <Link href="/login">Sign In</Link>
               </Button>
               <Button
                 asChild
-                className="bg-white text-black hover:bg-white/90 font-medium"
+                className="bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 font-medium"
               >
                 <Link href="/signup">Get Started</Link>
               </Button>
@@ -144,22 +162,24 @@ export default async function Home() {
             {/* Left side - Text content */}
             <div className="space-y-8 text-center lg:text-left">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-white/80 backdrop-blur-sm">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-700 dark:text-white/80 backdrop-blur-sm">
+                <Sparkles className="w-4 h-4 text-teal-500" />
                 Voice-First Testing Platform
               </div>
 
               {/* Main Headline */}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
-                <span className="text-white">Capture feedback</span>
+                <span className="text-slate-900 dark:text-white">
+                  Capture feedback
+                </span>
                 <br />
-                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
                   at the speed of thought
                 </span>
               </h1>
 
               {/* Subtitle */}
-              <p className="text-lg md:text-xl text-white/50 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-lg md:text-xl text-slate-600 dark:text-white/50 max-w-lg mx-auto lg:mx-0 leading-relaxed">
                 Stop typing. Start talking. Transform voice recordings into
                 actionable insights with AI-powered transcription and
                 classification.
@@ -170,7 +190,7 @@ export default async function Home() {
                 <Button
                   asChild
                   size="lg"
-                  className="w-full sm:w-auto h-14 px-8 text-base gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 border-0 shadow-lg shadow-indigo-500/20"
+                  className="w-full sm:w-auto h-14 px-8 text-base gap-3 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 border-0 shadow-lg shadow-teal-500/20"
                 >
                   <Link href="/signup">
                     Start Free Trial
@@ -181,7 +201,7 @@ export default async function Home() {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto h-14 px-8 text-base bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                  className="w-full sm:w-auto h-14 px-8 text-base bg-transparent border-slate-300 dark:border-white/20 text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-400 dark:hover:border-white/30"
                 >
                   <Link href="/login" className="flex items-center gap-2">
                     <Play className="w-4 h-4" />
@@ -191,7 +211,7 @@ export default async function Home() {
               </div>
 
               {/* Trust indicators */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 pt-4 text-sm text-white/40">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 pt-4 text-sm text-slate-500 dark:text-white/40">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                   <span>No credit card required</span>
@@ -212,7 +232,7 @@ export default async function Home() {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronDown className="w-6 h-6 text-white/30" />
+          <ChevronDown className="w-6 h-6 text-slate-400 dark:text-white/30" />
         </div>
       </section>
 
@@ -224,9 +244,11 @@ export default async function Home() {
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Everything you need.
               <br />
-              <span className="text-white/40">Nothing you don&apos;t.</span>
+              <span className="text-slate-400 dark:text-white/40">
+                Nothing you don&apos;t.
+              </span>
             </h2>
-            <p className="text-xl text-white/50">
+            <p className="text-xl text-slate-600 dark:text-white/50">
               A complete toolkit for product teams who want fast, organized, and
               actionable feedback.
             </p>
@@ -235,14 +257,14 @@ export default async function Home() {
           {/* Feature Cards - Bento Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Voice Recording - Large */}
-            <div className="lg:col-span-2 group relative p-8 lg:p-10 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-indigo-500/30 transition-all duration-500 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="lg:col-span-2 group relative p-8 lg:p-10 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-teal-500/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
-                <div className="inline-flex p-4 rounded-2xl bg-indigo-500/10 mb-6">
-                  <Mic className="w-8 h-8 text-indigo-400" />
+                <div className="inline-flex p-4 rounded-2xl bg-teal-500/10 mb-6">
+                  <Mic className="w-8 h-8 text-teal-400" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-3">Voice Recording</h3>
-                <p className="text-white/50 text-lg leading-relaxed max-w-md">
+                <p className="text-slate-600 dark:text-white/50 text-lg leading-relaxed max-w-md">
                   One-click audio capture with pause/resume. Record feedback
                   naturally while testing—5× faster than typing detailed notes.
                 </p>
@@ -250,16 +272,16 @@ export default async function Home() {
             </div>
 
             {/* AI Classification */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-purple-500/30 transition-all duration-500 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-teal-500/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
-                <div className="inline-flex p-4 rounded-2xl bg-purple-500/10 mb-6">
-                  <Brain className="w-8 h-8 text-purple-400" />
+                <div className="inline-flex p-4 rounded-2xl bg-teal-500/10 mb-6">
+                  <Brain className="w-8 h-8 text-teal-400" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-3">
                   AI Classification
                 </h3>
-                <p className="text-white/50 leading-relaxed">
+                <p className="text-slate-600 dark:text-white/50 leading-relaxed">
                   Automatically categorize feedback as Bug, Feature, UX, or
                   Performance with 95% accuracy.
                 </p>
@@ -267,7 +289,7 @@ export default async function Home() {
             </div>
 
             {/* Analytics */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-cyan-500/30 transition-all duration-500 overflow-hidden">
+            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-cyan-500/30 transition-all duration-500 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="inline-flex p-4 rounded-2xl bg-cyan-500/10 mb-6">
@@ -276,7 +298,7 @@ export default async function Home() {
                 <h3 className="text-2xl font-semibold mb-3">
                   Real-time Analytics
                 </h3>
-                <p className="text-white/50 leading-relaxed">
+                <p className="text-slate-600 dark:text-white/50 leading-relaxed">
                   Live dashboards with category breakdowns, trends, and
                   actionable insights.
                 </p>
@@ -284,14 +306,14 @@ export default async function Home() {
             </div>
 
             {/* Team Management */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden">
+            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="inline-flex p-4 rounded-2xl bg-emerald-500/10 mb-6">
                   <Users className="w-8 h-8 text-emerald-400" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-3">Team Management</h3>
-                <p className="text-white/50 leading-relaxed">
+                <p className="text-slate-600 dark:text-white/50 leading-relaxed">
                   Create teams, bulk invite testers, and track participation
                   across sessions.
                 </p>
@@ -299,14 +321,14 @@ export default async function Home() {
             </div>
 
             {/* Reports */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-amber-500/30 transition-all duration-500 overflow-hidden">
+            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-amber-500/30 transition-all duration-500 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="inline-flex p-4 rounded-2xl bg-amber-500/10 mb-6">
                   <FileText className="w-8 h-8 text-amber-400" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-3">PDF Reports</h3>
-                <p className="text-white/50 leading-relaxed">
+                <p className="text-slate-600 dark:text-white/50 leading-relaxed">
                   Generate professional reports with AI summaries. Share via
                   email or public link.
                 </p>
@@ -323,11 +345,11 @@ export default async function Home() {
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Four steps to
               <br />
-              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-teal-500 to-cyan-500 bg-clip-text text-transparent">
                 better feedback
               </span>
             </h2>
-            <p className="text-lg text-white/50">
+            <p className="text-lg text-slate-600 dark:text-white/50">
               From voice to actionable insights in seconds
             </p>
           </div>
@@ -344,11 +366,13 @@ export default async function Home() {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Built for{" "}
-              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-teal-500 to-cyan-500 bg-clip-text text-transparent">
                 speed and accuracy
               </span>
             </h2>
-            <p className="text-white/50">Real metrics, real results</p>
+            <p className="text-slate-600 dark:text-white/50">
+              Real metrics, real results
+            </p>
           </div>
           <AnimatedStats />
         </div>
@@ -366,9 +390,11 @@ export default async function Home() {
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Built on
               <br />
-              <span className="text-white/40">proven technology</span>
+              <span className="text-slate-400 dark:text-white/40">
+                proven technology
+              </span>
             </h2>
-            <p className="text-xl text-white/50">
+            <p className="text-xl text-slate-600 dark:text-white/50">
               Real engineering. Real numbers. No marketing fluff.
             </p>
           </div>
@@ -406,23 +432,23 @@ export default async function Home() {
             ].map((stat) => (
               <div key={stat.label} className="flex items-start gap-6 p-6">
                 <div className="shrink-0">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600/20 to-purple-600/20 flex items-center justify-center border border-white/10">
-                    <stat.icon className="w-6 h-6 text-indigo-400" />
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 flex items-center justify-center border border-slate-200 dark:border-white/10">
+                    <stat.icon className="w-6 h-6 text-teal-500" />
                   </div>
                 </div>
                 <div>
                   <div className="flex items-baseline gap-3 mb-2">
                     <span
-                      className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"
+                      className="text-4xl font-bold bg-gradient-to-r from-teal-500 to-cyan-500 bg-clip-text text-transparent"
                       style={stat.value === "∞" ? { fontSize: "3rem" } : {}}
                     >
                       {stat.value}
                     </span>
-                    <span className="text-lg font-medium text-white">
-                      {stat.label}
-                    </span>
+                    <span className="text-lg font-medium">{stat.label}</span>
                   </div>
-                  <p className="text-white/50 leading-relaxed">{stat.detail}</p>
+                  <p className="text-slate-600 dark:text-white/50 leading-relaxed">
+                    {stat.detail}
+                  </p>
                 </div>
               </div>
             ))}
@@ -433,9 +459,9 @@ export default async function Home() {
       {/* CTA Section */}
       <section className="relative py-32 lg:py-40">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="relative rounded-[2.5rem] bg-gradient-to-br from-indigo-600/20 via-purple-600/10 to-transparent border border-white/10 p-12 lg:p-20 overflow-hidden">
+          <div className="relative rounded-[2.5rem] bg-gradient-to-br from-teal-500/10 dark:from-teal-600/15 via-cyan-500/5 dark:via-cyan-600/8 to-transparent border border-slate-200 dark:border-white/10 p-12 lg:p-20 overflow-hidden">
             {/* Background glow */}
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-600/30 rounded-full blur-[120px]" />
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-400/15 dark:bg-teal-600/20 rounded-full blur-[120px]" />
 
             <div className="relative max-w-2xl">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -443,7 +469,7 @@ export default async function Home() {
                 <br />
                 your user testing?
               </h2>
-              <p className="text-xl text-white/50 mb-10">
+              <p className="text-xl text-slate-600 dark:text-white/50 mb-10">
                 Join product teams who capture feedback faster and ship better
                 products. Free plan available.
               </p>
@@ -452,7 +478,7 @@ export default async function Home() {
                 <Button
                   asChild
                   size="lg"
-                  className="h-14 px-8 text-base bg-white text-black hover:bg-white/90 font-medium"
+                  className="h-14 px-8 text-base bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 font-medium"
                 >
                   <Link href="/signup">
                     Create Free Account
@@ -463,7 +489,7 @@ export default async function Home() {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="h-14 px-8 text-base bg-transparent border-white/20 text-white hover:bg-white/10"
+                  className="h-14 px-8 text-base bg-transparent border-slate-300 dark:border-white/20 text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10"
                 >
                   <Link href="/admin/login" className="flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4" />
@@ -477,7 +503,7 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-white/5">
+      <footer className="py-12 border-t border-slate-200 dark:border-white/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -486,10 +512,17 @@ export default async function Home() {
                 alt="AirLog"
                 width={80}
                 height={20}
-                className="opacity-50"
+                className="opacity-50 dark:block hidden"
+              />
+              <Image
+                src="/logo.svg"
+                alt="AirLog"
+                width={80}
+                height={20}
+                className="opacity-50 dark:hidden block"
               />
             </div>
-            <p className="text-sm text-white/30">
+            <p className="text-sm text-slate-500 dark:text-white/30">
               © {new Date().getFullYear()} AirLog. All rights reserved.
             </p>
           </div>
