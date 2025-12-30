@@ -9,6 +9,7 @@ import {
   Loader2,
   AlertTriangle,
   GripVertical,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,14 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PollQuestionType } from "@/types";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +59,15 @@ import { CSS } from "@dnd-kit/utilities";
 interface SceneInput {
   name: string;
   description: string | null;
+  poll_questions?: PollQuestionInput[];
+}
+
+interface PollQuestionInput {
+  id: string;
+  question: string;
+  question_type: PollQuestionType;
+  options: string[];
+  required: boolean;
 }
 
 function renderTextWithLinks(text: string) {
@@ -74,7 +92,7 @@ function renderTextWithLinks(text: string) {
         className="text-primary hover:underline break-words"
       >
         {label}
-      </a>,
+      </a>
     );
     lastIndex = regex.lastIndex;
   }
@@ -101,7 +119,7 @@ function FormattedDescription({ text }: { text: string }) {
               <span>{renderTextWithLinks(item)}</span>
             </li>
           ))}
-        </ul>,
+        </ul>
       );
       currentList = [];
     }
@@ -120,7 +138,7 @@ function FormattedDescription({ text }: { text: string }) {
       elements.push(
         <p key={`text-${index}`} className="text-xs">
           {renderTextWithLinks(trimmed)}
-        </p>,
+        </p>
       );
     }
   });
@@ -209,6 +227,9 @@ export default function NewSessionPage() {
   const [newSceneName, setNewSceneName] = useState("");
   const [newSceneDescription, setNewSceneDescription] = useState("");
   const newSceneDescriptionRef = useRef<HTMLTextAreaElement | null>(null);
+  const [newScenePollQuestions, setNewScenePollQuestions] = useState<
+    PollQuestionInput[]
+  >([]);
   const [issueOptions, setIssueOptions] = useState<string[]>([]);
   const [newIssueOption, setNewIssueOption] = useState("");
 
@@ -224,12 +245,13 @@ export default function NewSessionPage() {
   function openAddSceneDialog() {
     setNewSceneName("");
     setNewSceneDescription("");
+    setNewScenePollQuestions([]);
     setAddSceneDialog(true);
   }
 
   function insertIntoNewSceneDescription(
     snippet: string,
-    startOnNewLine = false,
+    startOnNewLine = false
   ) {
     const textarea = newSceneDescriptionRef.current;
     if (textarea) {
@@ -256,15 +278,29 @@ export default function NewSessionPage() {
 
   function handleAddScene() {
     if (newSceneName.trim()) {
+      // Filter out empty poll questions
+      const validPollQuestions = newScenePollQuestions
+        .filter((q) => q.question.trim() && q.options.some((o) => o.trim()))
+        .map((q) => ({
+          id: q.id,
+          question: q.question.trim(),
+          question_type: q.question_type,
+          options: q.options.filter((o) => o.trim()),
+          required: q.required,
+        }));
+
       setScenes([
         ...scenes,
         {
           name: newSceneName.trim(),
           description: newSceneDescription.trim() || null,
+          poll_questions:
+            validPollQuestions.length > 0 ? validPollQuestions : undefined,
         },
       ]);
       setNewSceneName("");
       setNewSceneDescription("");
+      setNewScenePollQuestions([]);
       setAddSceneDialog(false);
     }
   }
@@ -286,7 +322,7 @@ export default function NewSessionPage() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    }),
+    })
   );
 
   function addIssueOption(option: string) {
@@ -313,7 +349,7 @@ export default function NewSessionPage() {
   }
 
   function handleDescriptionKeyDown(
-    e: React.KeyboardEvent<HTMLTextAreaElement>,
+    e: React.KeyboardEvent<HTMLTextAreaElement>
   ) {
     const isUndo =
       (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z" && !e.shiftKey;
@@ -593,7 +629,7 @@ export default function NewSessionPage() {
             )}
             {issueOptions.length > 0 &&
               defaultIssueOptions.some(
-                (option) => !issueOptions.includes(option),
+                (option) => !issueOptions.includes(option)
               ) && (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">Add more:</p>
@@ -635,7 +671,7 @@ export default function NewSessionPage() {
       </form>
 
       <Dialog open={addSceneDialog} onOpenChange={setAddSceneDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Scene</DialogTitle>
             <DialogDescription>
@@ -679,7 +715,7 @@ export default function NewSessionPage() {
                     onClick={() =>
                       insertIntoNewSceneDescription(
                         "[Link text](https://)",
-                        false,
+                        false
                       )
                     }
                   >
@@ -701,12 +737,203 @@ export default function NewSessionPage() {
                 Tip: Use • or - for bullet points
               </p>
             </div>
+
+            {/* Poll Questions Section */}
+            <div className="space-y-3 py-4 border-t border-border/40">
+              <div className="flex items-center justify-between">
+                <Label>
+                  Poll Questions{" "}
+                  <span className="text-muted-foreground font-normal">
+                    (optional)
+                  </span>
+                </Label>
+                {newScenePollQuestions.length === 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setNewScenePollQuestions([
+                        ...newScenePollQuestions,
+                        {
+                          id: crypto.randomUUID(),
+                          question: "",
+                          question_type: "radio",
+                          options: ["", ""],
+                          required: false,
+                        },
+                      ])
+                    }
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Add Question
+                  </Button>
+                )}
+              </div>
+
+              {newScenePollQuestions.length === 0 && (
+                <p className="text-sm text-muted-foreground py-2">
+                  No poll questions added. Click &quot;Add Question&quot; to
+                  create a poll for testers.
+                </p>
+              )}
+
+              {newScenePollQuestions.map((q, qIndex) => (
+                <div
+                  key={q.id}
+                  className="p-4 rounded-lg border border-border/40 bg-secondary/30 space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 space-y-2">
+                      <Input
+                        placeholder="Enter your question..."
+                        value={q.question}
+                        onChange={(e) => {
+                          const updated = [...newScenePollQuestions];
+                          updated[qIndex].question = e.target.value;
+                          setNewScenePollQuestions(updated);
+                        }}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() =>
+                        setNewScenePollQuestions(
+                          newScenePollQuestions.filter((_, i) => i !== qIndex)
+                        )
+                      }
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <Select
+                      value={q.question_type}
+                      onValueChange={(value: PollQuestionType) => {
+                        const updated = [...newScenePollQuestions];
+                        updated[qIndex].question_type = value;
+                        setNewScenePollQuestions(updated);
+                      }}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="radio">Single Choice</SelectItem>
+                        <SelectItem value="checkbox">
+                          Multiple Choice
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={q.required}
+                        onChange={(e) => {
+                          const updated = [...newScenePollQuestions];
+                          updated[qIndex].required = e.target.checked;
+                          setNewScenePollQuestions(updated);
+                        }}
+                        className="rounded"
+                      />
+                      Required
+                    </label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      Options
+                    </Label>
+                    {q.options.map((opt, optIndex) => (
+                      <div key={optIndex} className="flex items-center gap-2">
+                        <div className="w-4 h-4 flex items-center justify-center text-muted-foreground">
+                          {q.question_type === "radio" ? (
+                            <div className="w-3 h-3 rounded-full border-2 border-current" />
+                          ) : (
+                            <div className="w-3 h-3 rounded border-2 border-current" />
+                          )}
+                        </div>
+                        <Input
+                          className="flex-1"
+                          placeholder={`Option ${optIndex + 1}`}
+                          value={opt}
+                          onChange={(e) => {
+                            const updated = [...newScenePollQuestions];
+                            updated[qIndex].options[optIndex] = e.target.value;
+                            setNewScenePollQuestions(updated);
+                          }}
+                        />
+                        {q.options.length > 2 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => {
+                              const updated = [...newScenePollQuestions];
+                              updated[qIndex].options = updated[
+                                qIndex
+                              ].options.filter((_, i) => i !== optIndex);
+                              setNewScenePollQuestions(updated);
+                            }}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        const updated = [...newScenePollQuestions];
+                        updated[qIndex].options.push("");
+                        setNewScenePollQuestions(updated);
+                      }}
+                    >
+                      <Plus className="w-3 h-3 mr-1" /> Add Option
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              {newScenePollQuestions.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() =>
+                    setNewScenePollQuestions([
+                      ...newScenePollQuestions,
+                      {
+                        id: crypto.randomUUID(),
+                        question: "",
+                        question_type: "radio",
+                        options: ["", ""],
+                        required: false,
+                      },
+                    ])
+                  }
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Add Question
+                </Button>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button
               type="button"
               variant="ghost"
-              onClick={() => setAddSceneDialog(false)}
+              onClick={() => {
+                setAddSceneDialog(false);
+                setNewScenePollQuestions([]);
+              }}
             >
               Cancel
             </Button>

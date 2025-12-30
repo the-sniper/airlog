@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import type { NoteCategory } from "@/types";
+import { trackOpenAIUsage } from "@/lib/track-usage";
 
 // Initialize OpenAI client (will use OPENAI_API_KEY from env)
 const openai = new OpenAI({
@@ -82,6 +83,7 @@ export async function POST(req: NextRequest) {
 
   // Try LLM classification first
   if (process.env.OPENAI_API_KEY) {
+    const startTime = Date.now();
     try {
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -93,6 +95,11 @@ export async function POST(req: NextRequest) {
         max_tokens: 150,
         response_format: { type: "json_object" },
       });
+
+      const durationMs = Date.now() - startTime;
+      
+      // Track usage (fire and forget)
+      trackOpenAIUsage("classify", completion.usage, durationMs);
 
       const content = completion.choices[0]?.message?.content;
       if (content) {
@@ -109,6 +116,8 @@ export async function POST(req: NextRequest) {
         }
       }
     } catch (error) {
+      const durationMs = Date.now() - startTime;
+      trackOpenAIUsage("classify", undefined, durationMs, false, String(error));
       console.error("LLM classification failed, falling back to keywords:", error);
     }
   }
