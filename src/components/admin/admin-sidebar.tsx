@@ -18,6 +18,7 @@ import {
   Sun,
   Moon,
   Clock,
+  Gauge,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useTheme } from "@/components/common/theme-provider";
@@ -109,6 +110,17 @@ export function AdminSidebar() {
           >
             <Users2 className="w-4 h-4" strokeWidth={1.75} />
             Teams
+          </Link>
+          <Link
+            href="/admin/usage"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/admin/usage")
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
+          >
+            <Gauge className="w-4 h-4" strokeWidth={1.75} />
+            Usage
           </Link>
         </nav>
         <div className="p-4 border-t border-border/50 space-y-3">
@@ -311,7 +323,11 @@ export function AdminMobileHeader({
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isActive("/admin")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background border border-border/60 text-muted-foreground"
+                    }`}
                   >
                     <LayoutDashboard className="w-5 h-5" strokeWidth={1.75} />
                   </div>
@@ -336,7 +352,11 @@ export function AdminMobileHeader({
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin/sessions") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isActive("/admin/sessions")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background border border-border/60 text-muted-foreground"
+                    }`}
                   >
                     <FolderKanban className="w-5 h-5" strokeWidth={1.75} />
                   </div>
@@ -361,7 +381,11 @@ export function AdminMobileHeader({
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive("/admin/teams") ? "bg-primary text-primary-foreground" : "bg-background border border-border/60 text-muted-foreground"}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isActive("/admin/teams")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background border border-border/60 text-muted-foreground"
+                    }`}
                   >
                     <Users2 className="w-5 h-5" strokeWidth={1.75} />
                   </div>
@@ -369,6 +393,35 @@ export function AdminMobileHeader({
                     <p className="font-medium">Teams</p>
                     <p className="text-xs text-muted-foreground">
                       Invite and collaborate
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </Link>
+
+              <Link
+                href="/admin/usage"
+                onClick={() => setDrawerOpen(false)}
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/admin/usage")
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isActive("/admin/usage")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background border border-border/60 text-muted-foreground"
+                    }`}
+                  >
+                    <Gauge className="w-5 h-5" strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <p className="font-medium">Usage</p>
+                    <p className="text-xs text-muted-foreground">
+                      Monitor API costs
                     </p>
                   </div>
                 </div>
@@ -472,6 +525,18 @@ export function AdminMobileHeader({
             >
               <Users2 className="w-6 h-6" strokeWidth={1.5} />
               <span className="text-[10px] font-medium">Teams</span>
+            </Link>
+
+            <Link
+              href="/admin/usage"
+              className={`flex flex-col items-center gap-1 py-2 transition-all ${
+                isActive("/admin/usage")
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Gauge className="w-6 h-6" strokeWidth={1.5} />
+              <span className="text-[10px] font-medium">Usage</span>
             </Link>
           </div>
         </nav>

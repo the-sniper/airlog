@@ -24,7 +24,6 @@ const TESTER_PROTECTED_ROUTES = [
   "/sessions",
   "/profile",
   "/teams",
-  "/report",
 ];
 // Tester auth routes (should redirect to dashboard if already authenticated)
 const TESTER_AUTH_ROUTES = ["/login", "/signup", "/reset-password"];
@@ -125,8 +124,6 @@ export const config = {
     "/profile/:path*",
     "/teams",
     "/teams/:path*",
-    "/report",
-    "/report/:path*",
     // Auth routes
     "/login",
     "/login/:path*",
@@ -134,5 +131,6 @@ export const config = {
     "/signup/:path*",
     "/reset-password",
     "/reset-password/:path*",
+    // Note: /report routes are intentionally excluded to allow public access to shared reports
   ],
 };

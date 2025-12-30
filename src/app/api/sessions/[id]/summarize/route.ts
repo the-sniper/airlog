@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import OpenAI from "openai";
+import { trackOpenAIUsage } from "@/lib/track-usage";
 
 export const dynamic = "force-dynamic";
 
@@ -192,6 +193,7 @@ Brief 2-3 sentence overview of the key findings. If many notes are unclear, ment
 
 IMPORTANT: Be generous with including notes as actionable items. Most tester feedback, even if brief or general, provides useful signal. Only flag notes that are literally unusable (test phrases, gibberish, transcription errors). Do NOT flag notes just for being "vague" - vague feedback is still feedback.`;
 
+    const startTime = Date.now();
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -208,6 +210,9 @@ IMPORTANT: Be generous with including notes as actionable items. Most tester fee
       temperature: 0.7,
       max_tokens: 3000,
     });
+
+    const durationMs = Date.now() - startTime;
+    trackOpenAIUsage("session-summarize", completion.usage, durationMs);
 
     const summary = completion.choices[0]?.message?.content || "";
 

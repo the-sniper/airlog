@@ -198,32 +198,40 @@ SMTP_FROM="Echo Test <your-email@gmail.com>"
 ADMIN_JWT_SECRET=your-secure-admin-secret
 USER_JWT_SECRET=your-secure-user-secret
 
-# OpenAI (for AI summaries)
-OPENAI_API_KEY=sk-your-openai-api-key
+# OpenAI Configuration
+# Use a project key (sk-proj-*) for AI features like summarization
+OPENAI_API_KEY=sk-proj-your-openai-api-key
+
+# Optional: Admin key (sk-admin-*) for usage/billing queries
+# If not set, usage API will try OPENAI_API_KEY (may fail if not admin key)
+OPENAI_ADMIN_KEY=sk-admin-your-admin-key
 ```
 
 ### Variable Reference
 
-| Variable                        | Public | Description                               |
-| ------------------------------- | ------ | ----------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Yes    | Your Supabase project URL                 |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes    | Public anon key (subject to RLS policies) |
-| `SUPABASE_SERVICE_ROLE_KEY`     | **No** | Service role key (server-side only)       |
-| `WHISPER_API_URL`               | **No** | URL to the Whisper transcription service  |
-| `NEXT_PUBLIC_APP_URL`           | Yes    | Your app URL for generating links         |
-| `SMTP_HOST`                     | **No** | SMTP server hostname                      |
-| `SMTP_PORT`                     | **No** | SMTP server port (typically 587 for TLS)  |
-| `SMTP_SECURE`                   | **No** | Use SSL/TLS directly (false for STARTTLS) |
-| `SMTP_USER`                     | **No** | SMTP authentication username              |
-| `SMTP_PASS`                     | **No** | SMTP authentication password/app password |
-| `SMTP_FROM`                     | **No** | Sender email with display name            |
-| `ADMIN_JWT_SECRET`              | **No** | Secret for admin JWT tokens               |
-| `USER_JWT_SECRET`               | **No** | Secret for tester JWT tokens              |
-| `OPENAI_API_KEY`                | **No** | OpenAI API key for AI features            |
+| Variable                        | Public | Description                                                            |
+| ------------------------------- | ------ | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Yes    | Your Supabase project URL                                              |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes    | Public anon key (subject to RLS policies)                              |
+| `SUPABASE_SERVICE_ROLE_KEY`     | **No** | Service role key (server-side only)                                    |
+| `WHISPER_API_URL`               | **No** | URL to the Whisper transcription service                               |
+| `NEXT_PUBLIC_APP_URL`           | Yes    | Your app URL for generating links                                      |
+| `SMTP_HOST`                     | **No** | SMTP server hostname                                                   |
+| `SMTP_PORT`                     | **No** | SMTP server port (typically 587 for TLS)                               |
+| `SMTP_SECURE`                   | **No** | Use SSL/TLS directly (false for STARTTLS)                              |
+| `SMTP_USER`                     | **No** | SMTP authentication username                                           |
+| `SMTP_PASS`                     | **No** | SMTP authentication password/app password                              |
+| `SMTP_FROM`                     | **No** | Sender email with display name                                         |
+| `ADMIN_JWT_SECRET`              | **No** | Secret for admin JWT tokens                                            |
+| `USER_JWT_SECRET`               | **No** | Secret for tester JWT tokens                                           |
+| `OPENAI_API_KEY`                | **No** | OpenAI project API key for AI features (summarization, classification) |
+| `OPENAI_ADMIN_KEY`              | **No** | OpenAI admin API key for usage/billing queries (optional)              |
 
-> ⚠️ **Important**: Never expose secrets (`SUPABASE_SERVICE_ROLE_KEY`, `*_JWT_SECRET`, `OPENAI_API_KEY`, `SMTP_PASS`) to the client.
+> ⚠️ **Important**: Never expose secrets (`SUPABASE_SERVICE_ROLE_KEY`, `*_JWT_SECRET`, `OPENAI_*_KEY`, `SMTP_PASS`) to the client.
 >
 > 💡 **Gmail Tip**: Use an [App Password](https://support.google.com/accounts/answer/185833) instead of your account password for `SMTP_PASS`.
+>
+> 💡 **OpenAI Keys**: Use a **project key** (`sk-proj-*`) for `OPENAI_API_KEY`. Admin keys (`sk-admin-*`) do NOT work with the Chat Completions API. For usage/billing queries in the admin dashboard, set `OPENAI_ADMIN_KEY` with an admin key.
 
 ---
 
