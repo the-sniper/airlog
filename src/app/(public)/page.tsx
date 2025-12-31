@@ -157,10 +157,10 @@ export default async function Home() {
         <HeroScene />
 
         {/* Content - above canvas */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-24 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-24 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left side - Text content */}
-            <div className="space-y-8 text-center lg:text-left">
+            <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-700 dark:text-white/80 backdrop-blur-sm">
                 <Sparkles className="w-4 h-4 text-teal-500" />
@@ -180,7 +180,7 @@ export default async function Home() {
 
               {/* Subtitle */}
               <p className="text-lg md:text-xl text-slate-600 dark:text-white/50 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                Stop typing. Start talking. Transform voice recordings into
+                Stop writing. Start talking. Transform voice recordings into
                 actionable insights with AI-powered transcription and
                 classification.
               </p>
@@ -231,16 +231,16 @@ export default async function Home() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="hidden lg:block absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <ChevronDown className="w-6 h-6 text-slate-400 dark:text-white/30" />
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative py-32 lg:py-40">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <section id="features" className="relative py-16 lg:py-40">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
           {/* Section Header */}
-          <div className="max-w-3xl mx-auto text-center mb-20">
+          <div className="max-w-3xl mx-auto text-center mb-12 lg:mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Everything you need.
               <br />
@@ -255,9 +255,9 @@ export default async function Home() {
           </div>
 
           {/* Feature Cards - Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Voice Recording - Large */}
-            <div className="lg:col-span-2 group relative p-8 lg:p-10 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-teal-500/30 transition-all duration-500 overflow-hidden">
+            <div className="lg:col-span-2 group relative p-6 lg:p-10 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-teal-500/30 transition-all duration-500 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="inline-flex p-4 rounded-2xl bg-teal-500/10 mb-6">
@@ -272,7 +272,7 @@ export default async function Home() {
             </div>
 
             {/* AI Classification */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-teal-500/30 transition-all duration-500 overflow-hidden">
+            <div className="group relative p-6 lg:p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-teal-500/30 transition-all duration-500 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-teal-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="inline-flex p-4 rounded-2xl bg-teal-500/10 mb-6">
@@ -289,7 +289,7 @@ export default async function Home() {
             </div>
 
             {/* Analytics */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-cyan-500/30 transition-all duration-500 overflow-hidden">
+            <div className="group relative p-6 lg:p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-cyan-500/30 transition-all duration-500 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="inline-flex p-4 rounded-2xl bg-cyan-500/10 mb-6">
@@ -306,7 +306,7 @@ export default async function Home() {
             </div>
 
             {/* Team Management */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden">
+            <div className="group relative p-6 lg:p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="inline-flex p-4 rounded-2xl bg-emerald-500/10 mb-6">
@@ -321,7 +321,7 @@ export default async function Home() {
             </div>
 
             {/* Reports */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-amber-500/30 transition-all duration-500 overflow-hidden">
+            <div className="group relative p-6 lg:p-8 rounded-3xl bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent border border-slate-200 dark:border-white/10 hover:border-amber-500/30 transition-all duration-500 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
                 <div className="inline-flex p-4 rounded-2xl bg-amber-500/10 mb-6">
@@ -339,8 +339,8 @@ export default async function Home() {
       </section>
 
       {/* How It Works Section - Animated */}
-      <section id="how-it-works" className="relative py-24 lg:py-32">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <section id="how-it-works" className="relative py-16 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Four steps to
@@ -361,10 +361,10 @@ export default async function Home() {
       </section>
 
       {/* Stats Section - Animated counters */}
-      <section className="relative py-24 lg:py-32">
-        <div className="max-w-5xl mx-auto px-6 lg:px-8">
+      <section className="relative py-16 lg:py-32">
+        <div className="max-w-5xl mx-auto px-4 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Built for{" "}
               <span className="bg-gradient-to-r from-teal-500 to-cyan-500 bg-clip-text text-transparent">
                 speed and accuracy
@@ -381,12 +381,12 @@ export default async function Home() {
       {/* Technology Section */}
       <section
         id="technology"
-        className="relative py-32 lg:py-40 overflow-hidden"
+        className="relative py-16 lg:py-40 overflow-hidden"
       >
         <TechStackScene />
 
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative">
-          <div className="max-w-3xl mx-auto text-center mb-20">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 relative">
+          <div className="max-w-3xl mx-auto text-center mb-12 lg:mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Built on
               <br />
@@ -399,7 +399,7 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
             {[
               {
                 value: "5×",
@@ -430,21 +430,26 @@ export default async function Home() {
                 icon: Folder,
               },
             ].map((stat) => (
-              <div key={stat.label} className="flex items-start gap-6 p-6">
+              <div
+                key={stat.label}
+                className="flex items-start gap-4 lg:gap-6 p-4 lg:p-6"
+              >
                 <div className="shrink-0">
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 flex items-center justify-center border border-slate-200 dark:border-white/10">
                     <stat.icon className="w-6 h-6 text-teal-500" />
                   </div>
                 </div>
                 <div>
-                  <div className="flex items-baseline gap-3 mb-2">
+                  <div className="flex flex-col lg:flex-row lg:items-baseline gap-1 lg:gap-3 mb-2">
                     <span
-                      className="text-4xl font-bold bg-gradient-to-r from-teal-500 to-cyan-500 bg-clip-text text-transparent"
-                      style={stat.value === "∞" ? { fontSize: "3rem" } : {}}
+                      className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-teal-500 to-cyan-500 bg-clip-text text-transparent"
+                      style={stat.value === "∞" ? { fontSize: "2.5rem" } : {}}
                     >
                       {stat.value}
                     </span>
-                    <span className="text-lg font-medium">{stat.label}</span>
+                    <span className="text-base lg:text-lg font-medium">
+                      {stat.label}
+                    </span>
                   </div>
                   <p className="text-slate-600 dark:text-white/50 leading-relaxed">
                     {stat.detail}
@@ -457,9 +462,9 @@ export default async function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-32 lg:py-40">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="relative rounded-[2.5rem] bg-gradient-to-br from-teal-500/10 dark:from-teal-600/15 via-cyan-500/5 dark:via-cyan-600/8 to-transparent border border-slate-200 dark:border-white/10 p-12 lg:p-20 overflow-hidden">
+      <section className="relative py-16 lg:py-40">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="relative rounded-3xl lg:rounded-[2.5rem] bg-gradient-to-br from-teal-500/10 dark:from-teal-600/15 via-cyan-500/5 dark:via-cyan-600/8 to-transparent border border-slate-200 dark:border-white/10 p-8 lg:p-20 overflow-hidden">
             {/* Background glow */}
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-400/15 dark:bg-teal-600/20 rounded-full blur-[120px]" />
 

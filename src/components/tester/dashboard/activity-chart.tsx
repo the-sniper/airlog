@@ -59,12 +59,12 @@ export function ActivityChart({ data }: ActivityChartProps) {
                   <linearGradient id="colorNotes" x1="0" y1="0" x2="0" y2="1">
                     <stop
                       offset="5%"
-                      stopColor="hsl(224, 50%, 54%)"
+                      stopColor="hsl(152, 60%, 45%)"
                       stopOpacity={0.3}
                     />
                     <stop
                       offset="95%"
-                      stopColor="hsl(224, 50%, 54%)"
+                      stopColor="hsl(152, 60%, 45%)"
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -102,7 +102,7 @@ export function ActivityChart({ data }: ActivityChartProps) {
                 <Area
                   type="monotone"
                   dataKey="count"
-                  stroke="hsl(224, 50%, 54%)"
+                  stroke="hsl(152, 60%, 45%)"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorNotes)"

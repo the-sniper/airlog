@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,7 +53,7 @@ export default function ResetPasswordPage() {
         const data = await res.json().catch(() => ({}));
         setError(
           data.error ||
-            "Reset password is not available yet. Please try again later.",
+            "Reset password is not available yet. Please try again later."
         );
         setLoading(false);
         return;
@@ -77,7 +78,10 @@ export default function ResetPasswordPage() {
       </div>
 
       <div className="w-full max-w-md relative">
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
+        <Link
+          href="/"
+          className="absolute -top-16 left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <Image
             src="/logo.svg"
             alt="AirLog"
@@ -92,7 +96,7 @@ export default function ResetPasswordPage() {
             height={32}
             className="hidden dark:block"
           />
-        </div>
+        </Link>
 
         <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
           <CardHeader className="text-center pb-2">

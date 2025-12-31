@@ -132,7 +132,10 @@ function LoginForm() {
 
       <div className="w-full max-w-md relative">
         {/* Logo */}
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
+        <Link
+          href="/"
+          className="absolute -top-16 left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <Image
             src="/logo.svg"
             alt="AirLog"
@@ -147,7 +150,7 @@ function LoginForm() {
             height={24}
             className="hidden dark:block md:w-[150px] md:h-[40px]"
           />
-        </div>
+        </Link>
 
         <Card className="glass border-border/50 shadow-2xl shadow-primary/5 backdrop-blur-xl">
           <CardHeader className="text-center pb-2">

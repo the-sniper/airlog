@@ -67,7 +67,7 @@ function LoginForm() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(
-          data.error || "Login is not available yet. Please try again later.",
+          data.error || "Login is not available yet. Please try again later."
         );
         setLoading(false);
         return;
@@ -111,7 +111,9 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => !isInviteFlow && setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className={`pl-9 h-11 ${isInviteFlow ? "bg-secondary/50 cursor-not-allowed" : ""}`}
+                className={`pl-9 h-11 ${
+                  isInviteFlow ? "bg-secondary/50 cursor-not-allowed" : ""
+                }`}
                 required
                 autoComplete="email"
                 readOnly={!!isInviteFlow}
@@ -247,7 +249,10 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-md relative">
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
+        <Link
+          href="/"
+          className="absolute -top-16 left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <Image
             src="/logo.svg"
             alt="AirLog"
@@ -262,7 +267,7 @@ export default function LoginPage() {
             height={32}
             className="hidden dark:block"
           />
-        </div>
+        </Link>
 
         <Suspense fallback={<LoginFormFallback />}>
           <LoginForm />
