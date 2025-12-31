@@ -708,14 +708,14 @@ export function HeroScene() {
     }
     const particles: Particle[] = [];
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 100; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.1,
-        vy: (Math.random() - 0.5) * 0.1,
-        size: Math.random() * 1.5 + 0.5,
-        alpha: Math.random() * 0.2 + 0.05,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: (Math.random() - 0.5) * 0.15,
+        size: Math.random() * 2 + 0.5,
+        alpha: Math.random() * 0.25 + 0.08,
       });
     }
 

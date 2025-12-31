@@ -71,20 +71,53 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0f1419] text-slate-900 dark:text-white overflow-x-hidden transition-colors duration-300">
-      {/* Subtle dot grid pattern */}
+      {/* Plus/Cross pattern for entire landing page */}
       <div
-        className="fixed inset-0 -z-30 opacity-[0.04] dark:opacity-[0.03]"
+        className="fixed inset-0 -z-30 opacity-[0.05] dark:opacity-[0.04]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-          backgroundSize: "32px 32px",
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2364748b' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }}
       />
 
-      {/* Gradient overlays - teal/cyan theme */}
-      <div className="fixed inset-0 -z-20">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-teal-400/10 dark:bg-teal-600/15 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-cyan-400/8 dark:bg-cyan-600/10 rounded-full blur-[100px]" />
-        <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-emerald-400/5 dark:bg-emerald-600/8 rounded-full blur-[80px]" />
+      {/* Flowing aurora gradient overlays */}
+      <div className="fixed inset-0 -z-20 overflow-hidden">
+        {/* Primary teal aurora */}
+        <div
+          className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] rounded-full blur-[150px] animate-pulse"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(20, 184, 166, 0.15) 0%, transparent 70%)",
+            animationDuration: "8s",
+          }}
+        />
+        {/* Cyan mid-section glow */}
+        <div
+          className="absolute top-1/3 right-0 w-[600px] h-[600px] rounded-full blur-[120px] animate-pulse"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 70%)",
+            animationDuration: "10s",
+            animationDelay: "2s",
+          }}
+        />
+        {/* Emerald bottom glow */}
+        <div
+          className="absolute -bottom-1/4 left-1/3 w-[700px] h-[700px] rounded-full blur-[130px] animate-pulse"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(16, 185, 129, 0.10) 0%, transparent 70%)",
+            animationDuration: "12s",
+            animationDelay: "4s",
+          }}
+        />
+        {/* Accent orb */}
+        <div
+          className="absolute top-2/3 right-1/4 w-[400px] h-[400px] rounded-full blur-[100px]"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(20, 184, 166, 0.08) 0%, transparent 70%)",
+          }}
+        />
       </div>
 
       {/* Navigation */}
@@ -153,6 +186,15 @@ export default async function Home() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        {/* Dense dotted pattern - Hero only */}
+        <div
+          className="absolute inset-0 z-[1] opacity-[0.12] dark:opacity-[0.08] pointer-events-none"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1.5px, transparent 0)`,
+            backgroundSize: "16px 16px",
+          }}
+        />
+
         {/* Canvas animation - positioned absolutely within section */}
         <HeroScene />
 
@@ -234,11 +276,28 @@ export default async function Home() {
         <div className="hidden lg:block absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <ChevronDown className="w-6 h-6 text-slate-400 dark:text-white/30" />
         </div>
+
+        {/* Bottom fade for smooth transition to next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-b from-transparent to-slate-50 dark:to-[#0f1419] pointer-events-none" />
       </section>
 
       {/* Features Section */}
       <section id="features" className="relative py-16 lg:py-40">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+        {/* Grid line pattern with top fade */}
+        <div
+          className="absolute inset-0 opacity-[0.025] dark:opacity-[0.015] pointer-events-none"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, currentColor 1px, transparent 1px),
+              linear-gradient(to bottom, currentColor 1px, transparent 1px)
+            `,
+            backgroundSize: "80px 80px",
+            maskImage: "linear-gradient(to bottom, transparent, black 150px)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, transparent, black 150px)",
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 relative">
           {/* Section Header */}
           <div className="max-w-3xl mx-auto text-center mb-12 lg:mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -340,7 +399,18 @@ export default async function Home() {
 
       {/* How It Works Section - Animated */}
       <section id="how-it-works" className="relative py-16 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+        {/* Grid line pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.025] dark:opacity-[0.015] pointer-events-none"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, currentColor 1px, transparent 1px),
+              linear-gradient(to bottom, currentColor 1px, transparent 1px)
+            `,
+            backgroundSize: "80px 80px",
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 relative">
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Four steps to
@@ -362,7 +432,18 @@ export default async function Home() {
 
       {/* Stats Section - Animated counters */}
       <section className="relative py-16 lg:py-32">
-        <div className="max-w-5xl mx-auto px-4 lg:px-8">
+        {/* Fine grid line pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.025] dark:opacity-[0.015] pointer-events-none"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, currentColor 1px, transparent 1px),
+              linear-gradient(to bottom, currentColor 1px, transparent 1px)
+            `,
+            backgroundSize: "80px 80px",
+          }}
+        />
+        <div className="max-w-5xl mx-auto px-4 lg:px-8 relative">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Built for{" "}
@@ -383,6 +464,17 @@ export default async function Home() {
         id="technology"
         className="relative py-16 lg:py-40 overflow-hidden"
       >
+        {/* Grid line pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.025] dark:opacity-[0.015] pointer-events-none"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, currentColor 1px, transparent 1px),
+              linear-gradient(to bottom, currentColor 1px, transparent 1px)
+            `,
+            backgroundSize: "80px 80px",
+          }}
+        />
         <TechStackScene />
 
         <div className="max-w-7xl mx-auto px-4 lg:px-8 relative">
@@ -463,7 +555,18 @@ export default async function Home() {
 
       {/* CTA Section */}
       <section className="relative py-16 lg:py-40">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+        {/* Grid line pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.025] dark:opacity-[0.015] pointer-events-none"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, currentColor 1px, transparent 1px),
+              linear-gradient(to bottom, currentColor 1px, transparent 1px)
+            `,
+            backgroundSize: "80px 80px",
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 relative">
           <div className="relative rounded-3xl lg:rounded-[2.5rem] bg-gradient-to-br from-teal-500/10 dark:from-teal-600/15 via-cyan-500/5 dark:via-cyan-600/8 to-transparent border border-slate-200 dark:border-white/10 p-8 lg:p-20 overflow-hidden">
             {/* Background glow */}
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-400/15 dark:bg-teal-600/20 rounded-full blur-[120px]" />

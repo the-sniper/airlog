@@ -86,7 +86,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<MeResponse["user"] | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
-    null,
+    null
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -165,7 +165,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full gradient-mesh">
+    <main className="flex-1 pt-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full gradient-mesh">
       <div className="space-y-6">
         {/* Welcome Section */}
         {dashboardData && (
