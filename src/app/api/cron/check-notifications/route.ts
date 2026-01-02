@@ -3,7 +3,7 @@ import { checkNotificationTriggers } from "@/lib/notification-checker";
 
 /**
  * Cron endpoint to check notifications periodically
- * Called by Vercel Cron every 30 minutes
+ * Called by Vercel Cron every 24 hours (daily)
  */
 export async function GET(req: NextRequest) {
   try {

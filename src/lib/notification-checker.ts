@@ -78,7 +78,7 @@ async function checkServiceHealth(): Promise<void> {
     const { data: recentUsage } = await supabase
       .from("service_usage")
       .select("*")
-      .gte("created_at", new Date(Date.now() - 3600000).toISOString()) // Last hour
+      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
       .order("created_at", { ascending: false });
 
     if (!recentUsage || recentUsage.length === 0) return;
@@ -110,7 +110,7 @@ async function checkServiceHealth(): Promise<void> {
           type: "service_health",
           severity: "critical",
           title: `${service} Service Failure`,
-          message: `${service} is experiencing a high failure rate: ${errorRate.toFixed(1)}% (${stats.errors}/${stats.total} requests failed in the last hour).`,
+          message: `${service} is experiencing a high failure rate: ${errorRate.toFixed(1)}% (${stats.errors}/${stats.total} requests failed in the last 24 hours).`,
           metadata: {
             service,
             error_rate: errorRate.toFixed(1),
@@ -124,7 +124,7 @@ async function checkServiceHealth(): Promise<void> {
           type: "service_health",
           severity: "warning",
           title: `${service} Service Degraded`,
-          message: `${service} is experiencing elevated errors: ${errorRate.toFixed(1)}% (${stats.errors}/${stats.total} requests failed in the last hour).`,
+          message: `${service} is experiencing elevated errors: ${errorRate.toFixed(1)}% (${stats.errors}/${stats.total} requests failed in the last 24 hours).`,
           metadata: {
             service,
             error_rate: errorRate.toFixed(1),
@@ -311,22 +311,22 @@ async function checkErrorRates(): Promise<void> {
 
     // This would typically check application logs or error tracking
     // For now, we'll check for deleted notes as a proxy for issues
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const { data: recentDeletes } = await supabase
       .from("deleted_notes")
       .select("id")
-      .gte("deleted_at", oneHourAgo.toISOString());
+      .gte("deleted_at", oneDayAgo.toISOString());
 
     if (recentDeletes && recentDeletes.length >= 10) {
       await createNotification({
         type: "data_quality",
         severity: "warning",
         title: "High Note Deletion Rate",
-        message: `${recentDeletes.length} notes were deleted in the last hour. This may indicate data quality issues or user confusion.`,
+        message: `${recentDeletes.length} notes were deleted in the last 24 hours. This may indicate data quality issues or user confusion.`,
         metadata: {
           count: recentDeletes.length,
-          timeframe: "1 hour",
+          timeframe: "24 hours",
         },
       });
     }
