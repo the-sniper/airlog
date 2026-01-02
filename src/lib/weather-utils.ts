@@ -35,7 +35,7 @@ export function getWeatherGradient(
   // Clear/Default
   return isDay
     ? "from-blue-400 via-sky-400 to-blue-200"
-    : "from-primary/90 via-primary to-accent/80";
+    : "from-slate-800 via-gray-900 to-slate-950";
 }
 
 /**

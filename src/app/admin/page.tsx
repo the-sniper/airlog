@@ -37,7 +37,7 @@ import { cn } from "@/lib/utils";
 
 export default function AdminDashboard() {
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
-    null,
+    null
   );
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState<"7d" | "30d" | "all">("30d");
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
       <div
         className={cn(
           "relative rounded-xl overflow-hidden border border-border/50 bg-gradient-to-br transition-all duration-1000",
-          gradientClass,
+          gradientClass
         )}
       >
         {/* Weather Effects Background */}
@@ -168,16 +168,31 @@ export default function AdminDashboard() {
                 "flex h-10 w-10 items-center justify-center rounded-xl backdrop-blur-sm border",
                 isLightBg
                   ? "bg-slate-800/10 border-slate-400/30"
-                  : "bg-white/20 border-white/30",
+                  : "bg-white/20 border-white/30"
               )}
             >
               <LayoutDashboard className={cn("h-5 w-5", textColors.primary)} />
             </div>
             <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <WeatherIcon
+                  className={cn("w-3.5 h-3.5", textColors.secondary)}
+                />
+                <span
+                  className={cn("text-xs font-medium", textColors.secondary)}
+                >
+                  {!weather.loading && weather.condition && (
+                    <span className="capitalize mr-1">
+                      {weather.condition.replace("_", " ") + " |"}
+                    </span>
+                  )}
+                  {formattedDate}
+                </span>
+              </div>
               <h1
                 className={cn(
                   "text-2xl font-bold tracking-tight",
-                  textColors.primary,
+                  textColors.primary
                 )}
               >
                 Dashboard
@@ -199,7 +214,7 @@ export default function AdminDashboard() {
                   "h-9 backdrop-blur-sm border",
                   isLightBg
                     ? "bg-slate-800/10 border-slate-400/30"
-                    : "bg-white/10 border-white/20",
+                    : "bg-white/10 border-white/20"
                 )}
               >
                 <TabsTrigger
@@ -208,7 +223,7 @@ export default function AdminDashboard() {
                     "text-xs px-3",
                     isLightBg
                       ? "text-slate-600 data-[state=active]:text-slate-800 data-[state=active]:bg-slate-800/10"
-                      : "text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20",
+                      : "text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20"
                   )}
                 >
                   7 days
@@ -219,7 +234,7 @@ export default function AdminDashboard() {
                     "text-xs px-3",
                     isLightBg
                       ? "text-slate-600 data-[state=active]:text-slate-800 data-[state=active]:bg-slate-800/10"
-                      : "text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20",
+                      : "text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20"
                   )}
                 >
                   30 days
@@ -230,7 +245,7 @@ export default function AdminDashboard() {
                     "text-xs px-3",
                     isLightBg
                       ? "text-slate-600 data-[state=active]:text-slate-800 data-[state=active]:bg-slate-800/10"
-                      : "text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20",
+                      : "text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20"
                   )}
                 >
                   All time
@@ -246,7 +261,7 @@ export default function AdminDashboard() {
                 "shrink-0 h-9 w-9 backdrop-blur-sm",
                 isLightBg
                   ? "bg-slate-800/10 border-slate-400/30 text-slate-700 hover:bg-slate-800/20 hover:text-slate-900"
-                  : "bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white",
+                  : "bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
               )}
             >
               <RefreshCw
@@ -254,14 +269,6 @@ export default function AdminDashboard() {
               />
             </Button>
           </div>
-        </div>
-
-        {/* Date and Weather Display */}
-        <div className="relative z-10 flex items-center justify-end gap-2 px-4 pb-1 md:px-6 md:pb-2">
-          <WeatherIcon className={cn("w-3.5 h-3.5", textColors.secondary)} />
-          <span className={cn("text-xs font-medium", textColors.secondary)}>
-            {formattedDate}
-          </span>
         </div>
       </div>
 

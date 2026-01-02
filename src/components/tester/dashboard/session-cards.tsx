@@ -81,31 +81,45 @@ export function SessionCards({ sessions }: SessionCardsProps) {
                 key={session.id}
                 className="group p-4 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-all duration-200 border border-transparent hover:border-border/50"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium truncate">{session.name}</h4>
-                      <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 text-xs flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0 w-full">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <h4 className="font-medium truncate text-base">
+                        {session.name}
+                      </h4>
+                      <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] px-1.5 py-0.5 h-5 flex items-center gap-1.5 shadow-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse shadow-[0_0_8px_currentColor]" />
                         Active
                       </Badge>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>Added {formatDate(session.createdAt)}</span>
+                      <span className="flex items-center gap-1.5">
+                        <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                        {formatDate(session.createdAt)}
+                      </span>
                       {session.notesCount > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Mic className="w-3 h-3" />
-                          {session.notesCount} note
-                          {session.notesCount !== 1 ? "s" : ""}
-                        </span>
+                        <>
+                          <span className="text-muted-foreground/30">•</span>
+                          <span className="flex items-center gap-1.5 font-medium text-foreground/80">
+                            <Mic className="w-3 h-3 text-primary" />
+                            {session.notesCount} note
+                            {session.notesCount !== 1 ? "s" : ""}
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>
 
-                  <Link href={`/join/${session.joinCode}`}>
-                    <Button size="sm" className="gap-1.5">
-                      Join
-                      <ChevronRight className="w-4 h-4" />
+                  <Link
+                    href={`/join/${session.joinCode}`}
+                    className="w-full sm:w-auto"
+                  >
+                    <Button
+                      size="sm"
+                      className="gap-2 w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 h-9 font-medium"
+                    >
+                      Join Session
+                      <ChevronRight className="w-4 h-4 opacity-70" />
                     </Button>
                   </Link>
                 </div>

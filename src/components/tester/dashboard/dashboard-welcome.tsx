@@ -75,7 +75,7 @@ export function DashboardWelcome({
       <div
         className={cn(
           "absolute inset-0 bg-gradient-to-br transition-all duration-1000",
-          gradientClass,
+          gradientClass
         )}
       />
 
@@ -111,13 +111,13 @@ export function DashboardWelcome({
               "w-16 h-16 md:w-20 md:h-20 rounded-2xl backdrop-blur-md flex items-center justify-center border shadow-lg transition-colors duration-500",
               isLightBg
                 ? "bg-white/40 border-slate-200/50 shadow-slate-200/20"
-                : "bg-white/20 border-white/30 shadow-primary/20",
+                : "bg-white/20 border-white/30 shadow-primary/20"
             )}
           >
             <span
               className={cn(
                 "text-2xl md:text-3xl font-bold transition-colors duration-500",
-                textColors.primary,
+                textColors.primary
               )}
             >
               {initials}
@@ -131,22 +131,27 @@ export function DashboardWelcome({
             <WeatherIcon
               className={cn(
                 "w-4 h-4 transition-colors duration-500",
-                textColors.secondary,
+                textColors.secondary
               )}
             />
             <span
               className={cn(
                 "text-sm font-medium transition-colors duration-500",
-                textColors.secondary,
+                textColors.secondary
               )}
             >
+              {!loading && condition && (
+                <span className="capitalize mr-1">
+                  {condition.replace("_", " ") + " |"}
+                </span>
+              )}
               {date}
             </span>
           </div>
           <h1
             className={cn(
               "text-2xl md:text-3xl font-bold mb-2 transition-colors duration-500",
-              textColors.primary,
+              textColors.primary
             )}
           >
             {greeting}, {firstName}!
@@ -154,7 +159,7 @@ export function DashboardWelcome({
           <p
             className={cn(
               "text-sm md:text-base max-w-lg leading-relaxed transition-colors duration-500",
-              textColors.muted,
+              textColors.muted
             )}
           >
             Welcome to your testing dashboard. Here&apos;s an overview of your
@@ -167,7 +172,7 @@ export function DashboardWelcome({
       <div
         className={cn(
           "absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent to-transparent transition-colors duration-500",
-          isLightBg ? "via-slate-400/30" : "via-white/30",
+          isLightBg ? "via-slate-400/30" : "via-white/30"
         )}
       />
     </div>
