@@ -5,6 +5,10 @@ const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
+      screens: {
+        xxs: "360px",
+        xs: "480px",
+      },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],

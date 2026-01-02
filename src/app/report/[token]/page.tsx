@@ -87,7 +87,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
                 {headerMatch[2]}
               </p>
             )}
-          </div>,
+          </div>
         );
         return;
       }
@@ -105,7 +105,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
             {headerMatch[2] && (
               <p className="text-sm text-muted-foreground">{headerMatch[2]}</p>
             )}
-          </div>,
+          </div>
         );
         return;
       }
@@ -143,11 +143,11 @@ function SessionSummaryContent({ summary }: { summary: string }) {
               dangerouslySetInnerHTML={{
                 __html: content.replace(
                   /\*\*(.+?)\*\*/g,
-                  '<strong class="font-semibold">$1</strong>',
+                  '<strong class="font-semibold">$1</strong>'
                 ),
               }}
             />
-          </div>,
+          </div>
         );
         return;
       }
@@ -167,7 +167,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
           className="text-xs text-muted-foreground ml-16 -mt-2 mb-3 italic"
         >
           Reported by: {reporter}
-        </p>,
+        </p>
       );
       return;
     }
@@ -181,7 +181,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
           className="text-xs text-yellow-600 dark:text-yellow-400 ml-4 -mt-1 mb-2 italic"
         >
           Issue: {issue}
-        </p>,
+        </p>
       );
       return;
     }
@@ -191,7 +191,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
       const bulletContent = trimmed.slice(2);
       const formattedContent = bulletContent.replace(
         /\*\*(.+?)\*\*/g,
-        '<strong class="font-semibold">$1</strong>',
+        '<strong class="font-semibold">$1</strong>'
       );
       elements.push(
         <div key={index} className="flex gap-2 ml-2 mt-2">
@@ -200,7 +200,7 @@ function SessionSummaryContent({ summary }: { summary: string }) {
             className="text-sm text-muted-foreground flex-1"
             dangerouslySetInnerHTML={{ __html: formattedContent }}
           />
-        </div>,
+        </div>
       );
       return;
     }
@@ -213,14 +213,14 @@ function SessionSummaryContent({ summary }: { summary: string }) {
     // Regular text
     const formattedText = trimmed.replace(
       /\*\*(.+?)\*\*/g,
-      '<strong class="font-semibold">$1</strong>',
+      '<strong class="font-semibold">$1</strong>'
     );
     elements.push(
       <p
         key={index}
         className="text-sm text-muted-foreground mt-2"
         dangerouslySetInnerHTML={{ __html: formattedText }}
-      />,
+      />
     );
   });
 
@@ -244,7 +244,7 @@ export default function PublicReportPage({
   const [sceneFilter, setSceneFilter] = useState<string>("all");
   const [testerFilter, setTesterFilter] = useState<string>("all");
   const [groupBy, setGroupBy] = useState<"scene" | "tester" | "category">(
-    "scene",
+    "scene"
   );
   const [noteFiltersOpen, setNoteFiltersOpen] = useState(false);
 
@@ -270,7 +270,7 @@ export default function PublicReportPage({
         setLoading(false);
       }
     },
-    [token],
+    [token]
   );
 
   useEffect(() => {
@@ -448,32 +448,44 @@ export default function PublicReportPage({
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logo.svg"
-              alt="AirLog"
-              width={80}
-              height={80}
-              className="dark:hidden"
-            />
-            <Image
-              src="/logo-dark.svg"
-              alt="AirLog"
-              width={80}
-              height={80}
-              className="hidden dark:block"
-            />
-            <span className="font-semibold text-lg">OnSite Session Report</span>
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10 w-full overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="shrink-0">
+              <Image
+                src="/logo.svg"
+                alt="AirLog"
+                width={80}
+                height={28}
+                className="dark:hidden w-[70px] sm:w-[80px] h-auto"
+              />
+              <Image
+                src="/logo-dark.svg"
+                alt="AirLog"
+                width={80}
+                height={28}
+                className="hidden dark:block w-[70px] sm:w-[80px] h-auto"
+              />
+            </div>
+            <div className="h-4 w-px bg-border hidden xs:block shrink-0" />
+            <span className="font-semibold text-sm sm:text-base md:text-lg truncate">
+              <span className="hidden xs:inline">OnSite Session </span>Report
+            </span>
           </div>
-          <Button onClick={generatePDF} disabled={generating} size="sm">
+          <Button
+            onClick={generatePDF}
+            disabled={generating}
+            size="sm"
+            className="shrink-0 h-8 sm:h-9 px-2 sm:px-4"
+          >
             {generating ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
             ) : (
-              <Download className="w-4 h-4" />
+              <Download className="w-3 h-3 sm:w-4 sm:h-4" />
             )}
-            Export PDF
+            <span className="ml-1.5 sm:ml-2">
+              <span className="hidden xxs:inline">Export </span>PDF
+            </span>
           </Button>
         </div>
       </header>
@@ -521,7 +533,7 @@ export default function PublicReportPage({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
                   <div className="p-4 rounded-lg bg-secondary/30">
                     <div className="text-3xl font-bold">
                       {stats?.total || 0}
@@ -555,7 +567,7 @@ export default function PublicReportPage({
                       {session.testers?.reduce(
                         (total: number, tester: Tester) =>
                           total + (tester.reported_issues?.length || 0),
-                        0,
+                        0
                       ) || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -575,7 +587,10 @@ export default function PublicReportPage({
                 <div className="space-y-3">
                   {Object.entries(stats?.categoryBreakdown || {}).map(
                     ([category, count]) => (
-                      <div key={category} className="flex items-center gap-3">
+                      <div
+                        key={category}
+                        className="grid grid-cols-[100px_1fr_24px] xxs:grid-cols-[120px_1fr_32px] items-center gap-2 sm:gap-3"
+                      >
                         <Badge
                           variant={
                             category as
@@ -585,23 +600,25 @@ export default function PublicReportPage({
                               | "performance"
                               | "secondary"
                           }
-                          className="w-32 justify-center"
+                          className="w-full justify-center text-[10px] xxs:text-xs"
                         >
                           {getCategoryLabel(category)}
                         </Badge>
-                        <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 xxs:h-2 bg-secondary rounded-full overflow-hidden">
                           <div
                             className="h-full bg-primary rounded-full transition-all duration-500"
                             style={{
-                              width: `${stats?.total ? (count / stats.total) * 100 : 0}%`,
+                              width: `${
+                                stats?.total ? (count / stats.total) * 100 : 0
+                              }%`,
                             }}
                           />
                         </div>
-                        <span className="text-sm font-mono w-8 text-right">
+                        <span className="text-[10px] xxs:text-sm font-mono text-right">
                           {count}
                         </span>
                       </div>
-                    ),
+                    )
                   )}
                 </div>
               </CardContent>
@@ -624,14 +641,14 @@ export default function PublicReportPage({
                     if (issueStats[issue]) {
                       issueStats[issue].count++;
                       issueStats[issue].testers.push(
-                        `${tester.first_name} ${tester.last_name}`,
+                        `${tester.first_name} ${tester.last_name}`
                       );
                     }
                   });
                 });
                 const totalTesters = session.testers?.length || 0;
                 const reportedIssues = Object.entries(issueStats).filter(
-                  ([, s]) => s.count > 0,
+                  ([, s]) => s.count > 0
                 );
 
                 if (reportedIssues.length === 0) return null;
@@ -698,26 +715,26 @@ export default function PublicReportPage({
                                 key={issue}
                                 className="p-3 rounded-lg bg-secondary/30 border border-border"
                               >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
+                                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2 sm:gap-3">
                                     {getIcon()}
                                     <span className="text-sm font-medium">
                                       {issue}
                                     </span>
                                   </div>
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-16 h-1.5 bg-secondary/50 rounded-full overflow-hidden">
+                                  <div className="flex items-center justify-between xs:justify-end gap-3 w-full xs:w-auto">
+                                    <div className="w-20 xxs:w-24 xs:w-16 h-1.5 bg-secondary/50 rounded-full overflow-hidden">
                                       <div
                                         className={`h-full ${colors.bar} rounded-full`}
                                         style={{ width: `${percentage}%` }}
                                       />
                                     </div>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground tabular-nums">
                                       {stats.count}/{totalTesters}
                                     </span>
                                   </div>
                                 </div>
-                                <p className="text-xs text-muted-foreground/70 mt-1.5 ml-7">
+                                <p className="text-[10px] xxs:text-xs text-muted-foreground/70 mt-1.5 ml-6 xxs:ml-7">
                                   {stats.testers.join(", ")}
                                 </p>
                               </div>
@@ -755,7 +772,7 @@ export default function PublicReportPage({
                 pollSceneFilter === "all"
                   ? allPollQuestions
                   : allPollQuestions.filter(
-                      (q) => q.sceneId === pollSceneFilter,
+                      (q) => q.sceneId === pollSceneFilter
                     );
 
               const totalTesters = session.testers?.length || 0;
@@ -880,7 +897,7 @@ export default function PublicReportPage({
 
                         questionResponses.forEach((response) => {
                           const tester = session.testers?.find(
-                            (t: Tester) => t.id === response.tester_id,
+                            (t: Tester) => t.id === response.tester_id
                           );
                           const testerName = tester
                             ? `${tester.first_name} ${tester.last_name}`
@@ -1081,7 +1098,7 @@ export default function PublicReportPage({
                                               >
                                                 {scene.name}
                                               </SelectItem>
-                                            ),
+                                            )
                                           )}
                                         </SelectContent>
                                       </Select>
@@ -1109,7 +1126,7 @@ export default function PublicReportPage({
                                                 {tester.first_name}{" "}
                                                 {tester.last_name}
                                               </SelectItem>
-                                            ),
+                                            )
                                           )}
                                         </SelectContent>
                                       </Select>
@@ -1123,7 +1140,7 @@ export default function PublicReportPage({
                                   value={groupBy}
                                   onValueChange={(v) =>
                                     setGroupBy(
-                                      v as "scene" | "tester" | "category",
+                                      v as "scene" | "tester" | "category"
                                     )
                                   }
                                 >
