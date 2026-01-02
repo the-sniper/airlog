@@ -620,14 +620,14 @@ export default async function Home() {
                 alt="AirLog"
                 width={80}
                 height={20}
-                className="opacity-50 dark:block hidden"
+                className="dark:block hidden"
               />
               <Image
                 src="/logo.svg"
                 alt="AirLog"
                 width={80}
                 height={20}
-                className="opacity-50 dark:hidden block"
+                className="dark:hidden block"
               />
             </div>
             <p className="text-sm text-slate-500 dark:text-white/30">
