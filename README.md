@@ -180,6 +180,10 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
+# Supabase Management API (for usage monitoring in admin dashboard)
+SUPABASE_ACCESS_TOKEN=your-access-token
+SUPABASE_PROJECT_REF=your-project-ref
+
 # Whisper Service URL (local Docker container)
 WHISPER_API_URL=http://localhost:9000
 
@@ -205,6 +209,10 @@ OPENAI_API_KEY=sk-proj-your-openai-api-key
 # Optional: Admin key (sk-admin-*) for usage/billing queries
 # If not set, usage API will try OPENAI_API_KEY (may fail if not admin key)
 OPENAI_ADMIN_KEY=sk-admin-your-admin-key
+
+# Fly.io Configuration (for Whisper hosting monitoring)
+FLY_API_TOKEN=your-fly-api-token
+FLY_APP_NAME=your-app-name
 ```
 
 ### Variable Reference
@@ -214,6 +222,8 @@ OPENAI_ADMIN_KEY=sk-admin-your-admin-key
 | `NEXT_PUBLIC_SUPABASE_URL`      | Yes    | Your Supabase project URL                                              |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes    | Public anon key (subject to RLS policies)                              |
 | `SUPABASE_SERVICE_ROLE_KEY`     | **No** | Service role key (server-side only)                                    |
+| `SUPABASE_ACCESS_TOKEN`         | **No** | Supabase Management API token for usage monitoring (optional)          |
+| `SUPABASE_PROJECT_REF`          | **No** | Supabase project reference ID for usage monitoring (optional)          |
 | `WHISPER_API_URL`               | **No** | URL to the Whisper transcription service                               |
 | `NEXT_PUBLIC_APP_URL`           | Yes    | Your app URL for generating links                                      |
 | `SMTP_HOST`                     | **No** | SMTP server hostname                                                   |
@@ -226,8 +236,10 @@ OPENAI_ADMIN_KEY=sk-admin-your-admin-key
 | `USER_JWT_SECRET`               | **No** | Secret for tester JWT tokens                                           |
 | `OPENAI_API_KEY`                | **No** | OpenAI project API key for AI features (summarization, classification) |
 | `OPENAI_ADMIN_KEY`              | **No** | OpenAI admin API key for usage/billing queries (optional)              |
+| `FLY_API_TOKEN`                 | **No** | Fly.io API token for machine monitoring (optional)                     |
+| `FLY_APP_NAME`                  | **No** | Fly.io app name for Whisper service monitoring (optional)              |
 
-> ⚠️ **Important**: Never expose secrets (`SUPABASE_SERVICE_ROLE_KEY`, `*_JWT_SECRET`, `OPENAI_*_KEY`, `SMTP_PASS`) to the client.
+> ⚠️ **Important**: Never expose secrets (`SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ACCESS_TOKEN`, `*_JWT_SECRET`, `OPENAI_*_KEY`, `SMTP_PASS`, `FLY_API_TOKEN`) to the client.
 >
 > 💡 **Gmail Tip**: Use an [App Password](https://support.google.com/accounts/answer/185833) instead of your account password for `SMTP_PASS`.
 >
