@@ -226,8 +226,23 @@ interface FlyMachineStatus {
   totalMachines: number;
   runningMachines: number;
   appName: string | null;
+  estimatedMonthlyCost: number; // Estimated based on machine configs
   error?: string;
 }
+
+// Fly.io pricing (as of 2024) - approximate monthly costs assuming 24/7 running
+// These are based on per-second billing rates converted to monthly
+// Shared CPU: ~$1.94/month for shared-cpu-1x with 256MB base
+// Memory: ~$0.50/GB/month additional (very cheap)
+// Note: Machines that are stopped are NOT charged!
+const FLY_PRICING = {
+  // Base cost for shared-cpu-1x includes 256MB
+  sharedCpuBase: 1.94, // per month for shared-cpu-1x with 256MB
+  // Performance CPU base  
+  performanceCpuBase: 31, // per month for performance-1x
+  // Additional memory beyond base 256MB
+  memoryPerGB: 0.50, // per GB per month (Fly's memory is cheap)
+};
 
 // Fetch Fly.io machine status
 async function fetchFlyMachines(): Promise<FlyMachineStatus> {
@@ -240,6 +255,7 @@ async function fetchFlyMachines(): Promise<FlyMachineStatus> {
       totalMachines: 0,
       runningMachines: 0,
       appName: null,
+      estimatedMonthlyCost: 0,
       error: "Add FLY_API_TOKEN and FLY_APP_NAME to .env.local",
     };
   }
@@ -264,26 +280,58 @@ async function fetchFlyMachines(): Promise<FlyMachineStatus> {
         totalMachines: 0,
         runningMachines: 0,
         appName,
+        estimatedMonthlyCost: 0,
         error: `API error: ${response.status}`,
       };
     }
 
     const machines: FlyMachine[] = await response.json();
     
-    const formattedMachines = machines.map((m) => ({
-      id: m.id,
-      name: m.name || m.id.slice(0, 8),
-      state: m.state,
-      region: m.region,
-      cpu: m.config?.guest?.cpu_kind || "shared",
-      memory: m.config?.guest?.memory_mb ? `${m.config.guest.memory_mb}MB` : "256MB",
-    }));
+    // Calculate estimated monthly cost based on machine configurations
+    // Only running machines are charged - stopped machines are free!
+    let estimatedMonthlyCost = 0;
+    
+    const formattedMachines = machines.map((m) => {
+      const cpuKind = m.config?.guest?.cpu_kind || "shared";
+      const memoryMb = m.config?.guest?.memory_mb || 256;
+      const isRunning = m.state === "started";
+      
+      // Only calculate cost for running machines
+      if (isRunning) {
+        if (cpuKind === "performance") {
+          // Performance CPU base cost
+          estimatedMonthlyCost += FLY_PRICING.performanceCpuBase;
+          // Add memory cost (performance includes more base memory)
+          const additionalMemoryGb = Math.max(0, (memoryMb - 2048) / 1024);
+          estimatedMonthlyCost += additionalMemoryGb * FLY_PRICING.memoryPerGB;
+        } else {
+          // Shared CPU base cost (includes 256MB)
+          estimatedMonthlyCost += FLY_PRICING.sharedCpuBase;
+          // Add cost for memory beyond the base 256MB
+          const additionalMemoryGb = Math.max(0, (memoryMb - 256) / 1024);
+          estimatedMonthlyCost += additionalMemoryGb * FLY_PRICING.memoryPerGB;
+        }
+      }
+      
+      return {
+        id: m.id,
+        name: m.name || m.id.slice(0, 8),
+        state: m.state,
+        region: m.region,
+        cpu: cpuKind,
+        memory: `${memoryMb}MB`,
+      };
+    });
+
+    // Round to 2 decimal places
+    estimatedMonthlyCost = Math.round(estimatedMonthlyCost * 100) / 100;
 
     return {
       machines: formattedMachines,
       totalMachines: machines.length,
       runningMachines: machines.filter((m) => m.state === "started").length,
       appName,
+      estimatedMonthlyCost,
     };
   } catch (error) {
     console.error("Error fetching Fly.io machines:", error);
@@ -292,6 +340,7 @@ async function fetchFlyMachines(): Promise<FlyMachineStatus> {
       totalMachines: 0,
       runningMachines: 0,
       appName,
+      estimatedMonthlyCost: 0,
       error: "Failed to fetch machine status",
     };
   }

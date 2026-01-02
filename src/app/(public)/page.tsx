@@ -325,7 +325,7 @@ export default async function Home() {
                 <h3 className="text-2xl font-semibold mb-3">Voice Recording</h3>
                 <p className="text-slate-600 dark:text-white/50 text-lg leading-relaxed max-w-md">
                   One-click audio capture with pause/resume. Record feedback
-                  naturally while testing—5× faster than typing detailed notes.
+                  naturally while testing, 5× faster than typing detailed notes.
                 </p>
               </div>
             </div>
@@ -430,9 +430,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Stats Section - Animated counters */}
+      {/* Stats Section - Animated counters - COMMENTED OUT
       <section className="relative py-16 lg:py-32">
-        {/* Fine grid line pattern */}
         <div
           className="absolute inset-0 opacity-[0.025] dark:opacity-[0.015] pointer-events-none"
           style={{
@@ -458,6 +457,7 @@ export default async function Home() {
           <AnimatedStats />
         </div>
       </section>
+      */}
 
       {/* Technology Section */}
       <section
@@ -494,10 +494,10 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
             {[
               {
-                value: "5×",
-                label: "Faster Data Entry",
+                value: "99+",
+                label: "Languages Supported",
                 detail:
-                  "Voice at 150 WPM vs typing at 40 WPM. Real-time transcription captures your thoughts while maintaining context.",
+                  "Whisper AI powers multilingual transcription. Capture feedback from global testing teams in their native language.",
                 icon: Mic,
               },
               {
@@ -532,10 +532,10 @@ export default async function Home() {
                   </div>
                 </div>
                 <div>
-                  <div className="flex flex-col lg:flex-row lg:items-baseline gap-1 lg:gap-3 mb-2">
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-3 mb-2">
                     <span
                       className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-teal-500 to-cyan-500 bg-clip-text text-transparent"
-                      style={stat.value === "∞" ? { fontSize: "2.5rem" } : {}}
+                      style={stat.value === "∞" ? { fontSize: "4rem" } : {}}
                     >
                       {stat.value}
                     </span>

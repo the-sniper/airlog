@@ -99,6 +99,7 @@ interface FlyioData {
   totalMachines: number;
   runningMachines: number;
   appName: string | null;
+  estimatedMonthlyCost: number;
   error?: string;
 }
 
@@ -263,7 +264,7 @@ function ServiceCard({
       <Tooltip content="No API calls recorded in the last 30 days">
         <Badge
           variant="outline"
-          className="text-muted-foreground border-muted-foreground/30 bg-muted-foreground/10 cursor-help"
+          className="text-muted-foreground border-muted-foreground/30 bg-muted-foreground/10 cursor-help whitespace-nowrap"
         >
           <Activity className="w-3 h-3 mr-1" />
           No Data
@@ -791,13 +792,36 @@ export default function UsagePage() {
                           </div>
                         ))}
                       </div>
-                      <div className="flex justify-between text-sm pt-2 border-t border-border/50">
-                        <span className="text-muted-foreground">
-                          Free allowance
-                        </span>
-                        <span className="font-medium text-violet-500">
-                          $5/month
-                        </span>
+                      <div className="space-y-2 pt-2 border-t border-border/50">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            Current Cost
+                          </span>
+                          <span
+                            className={`font-medium ${
+                              (data.flyio?.estimatedMonthlyCost || 0) > 5
+                                ? "text-yellow-500"
+                                : "text-emerald-500"
+                            }`}
+                          >
+                            ~$
+                            {data.flyio?.estimatedMonthlyCost?.toFixed(2) ||
+                              "0.00"}
+                            /mo
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            Free allowance
+                          </span>
+                          <span className="font-medium text-violet-500">
+                            $5/month
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground/80 pt-1">
+                          💡 You won&apos;t be charged as long as your bill
+                          stays under $5. Stopped machines are free!
+                        </p>
                       </div>
                     </>
                   ) : (
@@ -810,10 +834,14 @@ export default function UsagePage() {
                         <span className="text-muted-foreground">
                           Free allowance
                         </span>
-                        <span className="font-medium text-violet-500">
+                        <span className="font-medium text-emerald-500">
                           $5/month
                         </span>
                       </div>
+                      <p className="text-xs text-muted-foreground/80">
+                        💡 You won&apos;t be charged as long as your bill stays
+                        under $5
+                      </p>
                     </div>
                   )}
                   {data.flyio?.error && (
