@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -56,6 +56,18 @@ export function TesterHeader({ user }: TesterHeaderProps) {
   };
 
   const fullName = user ? `${user.first_name} ${user.last_name}` : "";
+
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (drawerOpen) {
+      document.body.setAttribute("data-scroll-locked", "");
+    } else {
+      document.body.removeAttribute("data-scroll-locked");
+    }
+    return () => {
+      document.body.removeAttribute("data-scroll-locked");
+    };
+  }, [drawerOpen]);
 
   return (
     <>

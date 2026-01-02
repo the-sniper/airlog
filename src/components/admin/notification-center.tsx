@@ -100,12 +100,12 @@ export function NotificationCenter() {
   // Lock body scroll when mobile sheet is open
   useEffect(() => {
     if (isMobile && isOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.setAttribute("data-scroll-locked", "");
     } else {
-      document.body.style.overflow = "";
+      document.body.removeAttribute("data-scroll-locked");
     }
     return () => {
-      document.body.style.overflow = "";
+      document.body.removeAttribute("data-scroll-locked");
     };
   }, [isMobile, isOpen]);
 

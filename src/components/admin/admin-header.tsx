@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,6 +47,18 @@ export function AdminHeader({ admin }: AdminHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (drawerOpen) {
+      document.body.setAttribute("data-scroll-locked", "");
+    } else {
+      document.body.removeAttribute("data-scroll-locked");
+    }
+    return () => {
+      document.body.removeAttribute("data-scroll-locked");
+    };
+  }, [drawerOpen]);
 
   const cycleTheme = () => {
     if (theme === "auto") setTheme("light");

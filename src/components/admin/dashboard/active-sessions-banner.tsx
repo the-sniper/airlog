@@ -67,7 +67,7 @@ export function ActiveSessionsBanner({ sessions }: ActiveSessionsBannerProps) {
                   </h3>
                   {session.build_version && (
                     <p className="text-[10px] text-muted-foreground font-mono bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded inline-block">
-                      v{session.build_version}
+                      {session.build_version}
                     </p>
                   )}
                 </div>

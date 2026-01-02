@@ -150,6 +150,11 @@ html {
 /* Prevent layout shift when Radix UI locked-scroll is active */
 body[data-scroll-locked] {
   padding-right: 0px !important;
+  overflow: hidden !important;
+}
+
+html:has(body[data-scroll-locked]) {
+  overflow: hidden;
 }
 
 /* Gradient mesh - Light mode */
