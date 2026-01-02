@@ -73,9 +73,9 @@ export default async function Home() {
     <div className="min-h-screen bg-slate-50 dark:bg-[#0f1419] text-slate-900 dark:text-white overflow-x-hidden transition-colors duration-300">
       {/* Plus/Cross pattern for entire landing page */}
       <div
-        className="fixed inset-0 -z-30 opacity-[0.05] dark:opacity-[0.04]"
+        className="fixed inset-0 -z-30 opacity-[0.03] dark:opacity-[0.02]"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2364748b' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2364748b' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }}
       />
 
@@ -188,10 +188,10 @@ export default async function Home() {
       <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
         {/* Dense dotted pattern - Hero only */}
         <div
-          className="absolute inset-0 z-[1] opacity-[0.12] dark:opacity-[0.08] pointer-events-none"
+          className="absolute inset-0 z-[1] opacity-[0.06] dark:opacity-[0.06] pointer-events-none"
           style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1.5px, transparent 0)`,
-            backgroundSize: "16px 16px",
+            backgroundSize: "24px 24px",
           }}
         />
 

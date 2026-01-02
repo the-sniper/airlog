@@ -12,35 +12,49 @@ import {
   Zap,
 } from "lucide-react";
 
-// Sample feedback items that cycle through
+// Sample feedback items that cycle through - mix of VR and Web
 const feedbackExamples = [
   {
-    text: "The login button is really hard to find on mobile...",
+    text: "VR controller tracking gets jittery near the boundaries...",
+    category: "Bug",
+    categoryColor: "rgb(239, 68, 68)", // red-500
+    bgColor: "rgba(239, 68, 68, 0.15)",
+    confidence: 96,
+  },
+  {
+    text: "The checkout button on web is too small on mobile",
     category: "UX Issue",
     categoryColor: "rgb(20, 184, 166)", // teal-500
     bgColor: "rgba(20, 184, 166, 0.15)",
     confidence: 94,
   },
   {
-    text: "App crashes when I try to upload a large file",
-    category: "Bug",
-    categoryColor: "rgb(239, 68, 68)", // red-500
-    bgColor: "rgba(239, 68, 68, 0.15)",
-    confidence: 98,
-  },
-  {
-    text: "Would be great to have dark mode support here",
+    text: "Would love hand tracking support for the menu navigation",
     category: "Feature",
     categoryColor: "rgb(139, 92, 246)", // violet-500
     bgColor: "rgba(139, 92, 246, 0.15)",
     confidence: 91,
   },
   {
-    text: "The page takes forever to load on slow connections",
+    text: "Web dashboard takes too long to load on slow connections",
     category: "Performance",
     categoryColor: "rgb(234, 179, 8)", // yellow-500
     bgColor: "rgba(234, 179, 8, 0.15)",
-    confidence: 96,
+    confidence: 97,
+  },
+  {
+    text: "VR locomotion causes motion sickness at high speed...",
+    category: "UX Issue",
+    categoryColor: "rgb(20, 184, 166)", // teal-500
+    bgColor: "rgba(20, 184, 166, 0.15)",
+    confidence: 89,
+  },
+  {
+    text: "Need dark mode support on the web admin panel",
+    category: "Feature",
+    categoryColor: "rgb(139, 92, 246)", // violet-500
+    bgColor: "rgba(139, 92, 246, 0.15)",
+    confidence: 93,
   },
 ];
 
@@ -141,6 +155,10 @@ export function HeroDemo() {
       setPhase("complete");
 
       setCollectedItems((items) => {
+        // Prevent duplicates by checking if item already exists
+        if (items.some((item) => item.text === example.text)) {
+          return items;
+        }
         const newItems = [example, ...items].slice(0, 4);
         return newItems;
       });
