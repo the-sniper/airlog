@@ -86,6 +86,21 @@ A modern, full-stack Next.js web application for capturing and organizing tester
 - **Post-Session Reveal** – All feedback visible only after session ends
 - **Admin-Only Insights** – Full visibility restricted to administrators
 
+### Admin Notification System
+
+- **Real-Time Alerts** – Monitor critical system events and issues
+- **Email Notifications** – Automatic email alerts for critical and warning events
+- **Notification Center** – Slide-out panel with categorized alerts
+- **Smart Monitoring** – Automated checks for:
+  - Service health (OpenAI, Whisper, SMTP, Fly.io)
+  - Resource usage (database storage, API quotas)
+  - Session activity (long-running sessions, high activity)
+  - User management (pending invites, inactive teams)
+  - Data quality (failed transcriptions, deletion rates)
+  - Performance metrics (error rates, slow responses)
+- **Severity Levels** – Critical (🔴), Warning (🟡), and Info (🔵) classifications
+- **Configurable Preferences** – Control which notifications trigger emails
+
 ---
 
 ## Project Structure
@@ -328,18 +343,21 @@ npm run dev
 
 The application uses 23 database migrations located in `supabase/migrations/`. Key tables include:
 
-| Table                   | Purpose                                                |
-| ----------------------- | ------------------------------------------------------ |
-| `sessions`              | Session metadata, status, timestamps, join codes       |
-| `scenes`                | Tasks/scenes within sessions with descriptions         |
-| `testers`               | Tester info with invite tokens and session association |
-| `notes`                 | Transcribed feedback with categories and AI summaries  |
-| `teams`                 | Team definitions for grouping testers                  |
-| `team_members`          | Team membership with user associations                 |
-| `users`                 | User accounts with authentication data                 |
-| `pending_invites`       | Session invitations awaiting acceptance                |
-| `password_reset_tokens` | Password reset request tracking                        |
-| `poll_questions`        | Polling questions for sessions                         |
+| Table                            | Purpose                                                |
+| -------------------------------- | ------------------------------------------------------ |
+| `sessions`                       | Session metadata, status, timestamps, join codes       |
+| `scenes`                         | Tasks/scenes within sessions with descriptions         |
+| `testers`                        | Tester info with invite tokens and session association |
+| `notes`                          | Transcribed feedback with categories and AI summaries  |
+| `teams`                          | Team definitions for grouping testers                  |
+| `team_members`                   | Team membership with user associations                 |
+| `users`                          | User accounts with authentication data                 |
+| `pending_invites`                | Session invitations awaiting acceptance                |
+| `password_reset_tokens`          | Password reset request tracking                        |
+| `poll_questions`                 | Polling questions for sessions                         |
+| `notifications`                  | Admin notifications with severity and email tracking   |
+| `admin_notification_preferences` | Email notification preferences for admins              |
+| `service_usage`                  | API usage tracking for monitoring and billing          |
 
 ---
 

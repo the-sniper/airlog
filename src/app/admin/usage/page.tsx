@@ -532,18 +532,24 @@ export default function UsagePage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Service Usage</h1>
-          <p className="text-muted-foreground">
-            Monitor API usage and costs • Last 30 days
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <Activity className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Service Usage</h1>
+            <p className="text-muted-foreground">
+              Monitor API usage and costs • Last 30 days
+            </p>
+          </div>
         </div>
         <Button
           variant="outline"
           size="sm"
           onClick={() => fetchData(true)}
           disabled={refreshing}
+          className="w-full sm:w-auto"
         >
           <RefreshCw
             className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}

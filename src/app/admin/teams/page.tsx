@@ -388,15 +388,35 @@ export default function TeamsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Teams</h1>
-          <p className="text-muted-foreground">
-            Manage team templates for testing sessions
-          </p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <Users className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Teams</h1>
+            <p className="text-muted-foreground">
+              Manage team templates for testing sessions
+            </p>
+          </div>
         </div>
-        <Button onClick={() => setCreateTeamDialog(true)}>
-          <Plus className="w-4 h-4" />
+        {/* Mobile Button (Outline, Green) */}
+        <Button
+          onClick={() => setCreateTeamDialog(true)}
+          className="sm:hidden w-full text-primary border-primary hover:bg-primary/10 hover:text-primary"
+          variant="outline"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          New Team
+        </Button>
+        {/* Desktop Button (Filled, Default) */}
+        <Button
+          onClick={() => setCreateTeamDialog(true)}
+          className="hidden sm:flex"
+          variant="default"
+        >
+          <Plus className="w-4 h-4 mr-2" />
           New Team
         </Button>
       </div>

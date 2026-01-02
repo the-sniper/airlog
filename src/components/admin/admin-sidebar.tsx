@@ -19,10 +19,12 @@ import {
   Moon,
   Clock,
   Gauge,
+  Plus,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useTheme } from "@/components/common/theme-provider";
 import { Button } from "@/components/ui/button";
+import { NotificationCenter } from "@/components/admin/notification-center";
 import {
   Dialog,
   DialogContent,
@@ -124,9 +126,12 @@ export function AdminSidebar() {
           </Link>
         </nav>
         <div className="p-4 border-t border-border/50 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground">Admin Dashboard</p>
-            <ThemeToggle />
+            <div className="flex items-center gap-1">
+              <NotificationCenter />
+              <ThemeToggle />
+            </div>
           </div>
           <Button
             variant="ghost"
@@ -239,13 +244,7 @@ export function AdminMobileHeader({
             </Link>
             <div className="flex items-center gap-1">
               {/* Notifications */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Bell className="w-5 h-5" strokeWidth={1.75} />
-              </Button>
+              <NotificationCenter />
 
               {/* Hamburger Menu */}
               <Button
@@ -490,10 +489,10 @@ export function AdminMobileHeader({
           {/* Background with notch cutout effect */}
           <div className="absolute inset-0 bg-card/95 backdrop-blur-xl border-t border-border/50" />
 
-          <div className="relative flex items-center justify-around h-full px-6">
+          <div className="relative grid grid-cols-5 items-end h-full w-full">
             <Link
               href="/admin"
-              className={`flex flex-col items-center gap-1 py-2 transition-all ${
+              className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
                 isActive("/admin")
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -505,7 +504,7 @@ export function AdminMobileHeader({
 
             <Link
               href="/admin/sessions"
-              className={`flex flex-col items-center gap-1 py-2 transition-all ${
+              className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
                 isActive("/admin/sessions")
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -515,9 +514,26 @@ export function AdminMobileHeader({
               <span className="text-[10px] font-medium">Sessions</span>
             </Link>
 
+            {/* Prominent Create Action */}
+            <div className="relative flex flex-col items-center justify-center gap-1 pb-2 h-full w-full">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                <Link
+                  href="/admin/sessions/new"
+                  className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:scale-105 hover:shadow-xl hover:shadow-primary/30 transition-all border-4 border-background"
+                >
+                  <Plus className="w-7 h-7" strokeWidth={2} />
+                </Link>
+              </div>
+              {/* Spacer matching standard icon size (w-6 h-6) to ensure text alignment */}
+              <div className="w-6 h-6" aria-hidden="true" />
+              <span className="text-[10px] font-medium text-primary">
+                Create
+              </span>
+            </div>
+
             <Link
               href="/admin/teams"
-              className={`flex flex-col items-center gap-1 py-2 transition-all ${
+              className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
                 isActive("/admin/teams")
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -529,7 +545,7 @@ export function AdminMobileHeader({
 
             <Link
               href="/admin/usage"
-              className={`flex flex-col items-center gap-1 py-2 transition-all ${
+              className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
                 isActive("/admin/usage")
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"

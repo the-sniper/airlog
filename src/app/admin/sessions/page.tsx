@@ -118,9 +118,18 @@ export default function SessionsPage() {
             </p>
           </div>
         </div>
-        <Link href="/admin/sessions/new">
-          <Button>
-            <Plus className="w-4 h-4" strokeWidth={2} />
+        <Link href="/admin/sessions/new" className="w-full sm:w-auto">
+          {/* Mobile Button (Outline, Green) */}
+          <Button
+            className="sm:hidden w-full text-primary border-primary hover:bg-primary/10 hover:text-primary"
+            variant="outline"
+          >
+            <Plus className="w-4 h-4 mr-2" strokeWidth={2} />
+            New Session
+          </Button>
+          {/* Desktop Button (Filled, Default) */}
+          <Button className="hidden sm:flex" variant="default">
+            <Plus className="w-4 h-4 mr-2" strokeWidth={2} />
             New Session
           </Button>
         </Link>
@@ -199,7 +208,20 @@ export default function SessionsPage() {
                 </div>
                 <div className="flex items-center gap-2 pt-2">
                   <Link href={`/admin/sessions/${s.id}`} className="flex-1">
-                    <Button variant="secondary" className="w-full" size="sm">
+                    {/* Mobile: Gray Filled */}
+                    <Button
+                      variant="secondary"
+                      className="w-full sm:hidden"
+                      size="sm"
+                    >
+                      Manage
+                    </Button>
+                    {/* Desktop: Green Outline */}
+                    <Button
+                      variant="outline"
+                      className="w-full hidden sm:inline-flex text-primary border-primary hover:bg-primary/10 hover:text-primary bg-background"
+                      size="sm"
+                    >
                       Manage
                     </Button>
                   </Link>

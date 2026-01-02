@@ -11,6 +11,8 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground",
         destructive:
           "border-transparent bg-white text-[rgb(200,103,119)] dark:bg-[#fb7088]/15 dark:text-[#fb7088]",
+        warning:
+          "border-transparent bg-yellow-100 text-yellow-700 dark:bg-yellow-400/15 dark:text-yellow-400",
         outline: "border-border text-muted-foreground",
         // Category badges - Light/Dark optimized
         bug: "border-[#fb7088]/30 bg-[#fb7088]/10 text-[#fb7088] dark:border-[#fb7088]/30 dark:bg-[#fb7088]/15 dark:text-[#fb7088]",
@@ -31,12 +33,11 @@ const badgeVariants = cva(
       },
     },
     defaultVariants: { variant: "default" },
-  },
+  }
 );
 
 export interface BadgeProps
-  extends
-    React.HTMLAttributes<HTMLDivElement>,
+  extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 function Badge({ className, variant, ...props }: BadgeProps) {
   return (
