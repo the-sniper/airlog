@@ -37,7 +37,9 @@ export async function POST(request: NextRequest) {
       firstName,
       lastName,
       email,
-      password
+      password,
+      body.description,
+      body.contactEmail
     );
 
     if (!result.success) {

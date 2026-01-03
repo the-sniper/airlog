@@ -34,19 +34,33 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+interface CompanyAuthData {
+  admin: {
+    role: string;
+  };
+  company: {
+    name: string;
+    logo_url: string | null;
+  };
+}
+
 export function CompanySidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [company, setCompany] = useState<CompanyAuthData["company"] | null>(
+    null
+  );
 
   useEffect(() => {
     async function checkRole() {
       try {
         const res = await fetch("/api/company/auth/me");
         if (res.ok) {
-          const data = await res.json();
-          setIsOwner(data.role === "owner");
+          const data: CompanyAuthData = await res.json();
+          setIsOwner(data.admin.role === "owner");
+          setCompany(data.company);
         }
       } catch {}
     }
@@ -89,6 +103,18 @@ export function CompanySidebar() {
               className="hidden dark:block"
             />
           </Link>
+          {company?.logo_url && (
+            <>
+              <div className="h-6 w-px bg-border/50 mx-1" />
+              <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-border/50 bg-muted/20">
+                <img
+                  src={company.logo_url}
+                  alt={company.name}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </>
+          )}
         </div>
         <nav className="flex-1 p-4 space-y-1">
           <Link
@@ -125,15 +151,15 @@ export function CompanySidebar() {
             Teams
           </Link>
           <Link
-            href="/company/members"
+            href="/company/users"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/company/members")
+              isActive("/company/users")
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
           >
             <UserPlus className="w-4 h-4" strokeWidth={1.75} />
-            Members
+            Users
           </Link>
           <Link
             href="/company/join-requests"
@@ -220,14 +246,18 @@ export function CompanyMobileHeader() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const [isOwner, setIsOwner] = useState(false);
+  const [company, setCompany] = useState<CompanyAuthData["company"] | null>(
+    null
+  );
 
   useEffect(() => {
     async function checkRole() {
       try {
         const res = await fetch("/api/company/auth/me");
         if (res.ok) {
-          const data = await res.json();
-          setIsOwner(data.role === "owner");
+          const data: CompanyAuthData = await res.json();
+          setIsOwner(data.admin.role === "owner");
+          setCompany(data.company);
         }
       } catch {}
     }
@@ -291,6 +321,18 @@ export function CompanyMobileHeader() {
               height={24}
               className="hidden dark:block"
             />
+            {company?.logo_url && (
+              <>
+                <div className="h-5 w-px bg-border/50 mx-1" />
+                <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border/50 bg-muted/20">
+                  <img
+                    src={company.logo_url}
+                    alt={company.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </>
+            )}
           </Link>
           <Button
             variant="ghost"
@@ -340,6 +382,18 @@ export function CompanyMobileHeader() {
                 height={24}
                 className="hidden dark:block"
               />
+              {company?.logo_url && (
+                <>
+                  <div className="h-5 w-px bg-border/50 mx-1" />
+                  <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border/50 bg-muted/20">
+                    <img
+                      src={company.logo_url}
+                      alt={company.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <Button
               variant="ghost"
@@ -442,10 +496,10 @@ export function CompanyMobileHeader() {
               </Link>
 
               <Link
-                href="/company/members"
+                href="/company/users"
                 onClick={() => setDrawerOpen(false)}
                 className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/company/members")
+                  isActive("/company/users")
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-transparent bg-muted/30 text-foreground hover:border-border"
                 }`}
@@ -453,7 +507,7 @@ export function CompanyMobileHeader() {
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isActive("/company/members")
+                      isActive("/company/users")
                         ? "bg-primary text-primary-foreground"
                         : "bg-background border border-border/60 text-muted-foreground"
                     }`}
@@ -461,7 +515,7 @@ export function CompanyMobileHeader() {
                     <UserPlus className="w-5 h-5" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-medium">Members</p>
+                    <p className="font-medium">Users</p>
                     <p className="text-xs text-muted-foreground">
                       Invite and manage users
                     </p>

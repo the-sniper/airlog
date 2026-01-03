@@ -13,6 +13,11 @@ export default function TesterLayout({
     first_name: string;
     last_name: string;
     email: string;
+    company?: {
+      id: string;
+      name: string;
+      logo_url: string | null;
+    } | null;
   } | null>(null);
 
   useEffect(() => {

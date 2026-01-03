@@ -21,6 +21,8 @@ export default function CompanyRegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [companyName, setCompanyName] = useState("");
+  const [description, setDescription] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -62,6 +64,8 @@ export default function CompanyRegisterPage() {
           lastName,
           email,
           password,
+          description,
+          contactEmail,
         }),
       });
 
@@ -143,6 +147,38 @@ export default function CompanyRegisterPage() {
                     placeholder="Acme Studios"
                     className="pl-9 h-11"
                     required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="company_description">
+                  Company Description (Optional)
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="company_description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Briefly describe what your company does..."
+                    className="h-11"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contact_email">
+                  Public Contact Email (Optional)
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="contact_email"
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder="contact@company.com"
+                    className="pl-9 h-11"
                   />
                 </div>
               </div>

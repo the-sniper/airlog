@@ -16,6 +16,8 @@ export interface Company {
   name: string;
   slug: string;
   logo_url: string | null;
+  description: string | null;
+  contact_email: string | null;
   subscription_tier: string;
   max_teams: number;
   max_sessions_per_month: number;
@@ -114,7 +116,7 @@ export async function getCurrentCompanyAdmin(): Promise<CompanyAdmin | null> {
       `
       id, company_id, user_id, role, created_at,
       user:users(id, first_name, last_name, email),
-      company:companies(id, name, slug, logo_url, subscription_tier, max_teams, max_sessions_per_month, is_active, created_at, updated_at)
+      company:companies(id, name, slug, logo_url, description, contact_email, subscription_tier, max_teams, max_sessions_per_month, is_active, created_at, updated_at)
     `,
     )
     .eq("id", payload.companyAdminId)
@@ -146,6 +148,9 @@ export async function registerCompany(
   lastName: string,
   email: string,
   password: string,
+  description?: string,
+  contact_email?: string,
+  logo_url?: string
 ): Promise<{ success: boolean; error?: string; companyId?: string }> {
   const supabase = createAdminClient();
 
@@ -205,6 +210,9 @@ export async function registerCompany(
     .insert({
       name: companyName,
       slug,
+      description,
+      contact_email,
+      logo_url: logo_url || null,
     })
     .select("id")
     .single();
@@ -405,7 +413,7 @@ export async function getCompany(companyId: string): Promise<Company | null> {
 // Update company details
 export async function updateCompany(
   companyId: string,
-  updates: Partial<Pick<Company, "name" | "logo_url">>,
+  updates: Partial<Pick<Company, "name" | "logo_url" | "description" | "contact_email">>,
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = createAdminClient();
   const { error } = await supabase

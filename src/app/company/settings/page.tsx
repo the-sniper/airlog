@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Save, Loader2, Users } from "lucide-react";
+import { Building2, Save, Loader2, Users, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface CompanyAdmin {
   id: string;
@@ -32,6 +34,8 @@ interface Company {
   name: string;
   slug: string;
   logo_url: string | null;
+  description: string | null;
+  contact_email: string | null;
   subscription_tier: string;
   max_teams: number;
   max_sessions_per_month: number;
@@ -50,6 +54,9 @@ export default function CompanySettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [companyName, setCompanyName] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [description, setDescription] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
 
   useEffect(() => {
     async function fetchCompanyData() {
@@ -58,7 +65,10 @@ export default function CompanySettingsPage() {
         if (res.ok) {
           const companyData = await res.json();
           setData(companyData);
-          setCompanyName(companyData.company.name);
+          setCompanyName(companyData.company.name || "");
+          setLogoUrl(companyData.company.logo_url || "");
+          setDescription(companyData.company.description || "");
+          setContactEmail(companyData.company.contact_email || "");
         } else {
           router.push("/company/login");
         }
@@ -70,15 +80,72 @@ export default function CompanySettingsPage() {
     fetchCompanyData();
   }, [router]);
 
+  async function onUpload(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/company/upload-logo", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Upload failed");
+    }
+
+    const data = await res.json();
+    toast({
+      title: "Logo uploaded",
+      description: "Remember to save your changes.",
+    });
+    return data.url;
+  }
+
   async function handleSave() {
     if (!companyName.trim()) return;
     setSaving(true);
     try {
-      // For now, just show a toast - update endpoint would be needed
+      const res = await fetch("/api/company/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: companyName,
+          logo_url: logoUrl || null,
+          description: description || null,
+          contact_email: contactEmail || null,
+        }),
+      });
+
+      if (!res.ok) {
+        toast({
+          title: "Update failed",
+          description: "Could not save settings. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Settings saved",
         description: "Company settings have been updated.",
-        variant: "success",
+        variant: "default",
+        className: "bg-green-500 text-white border-none",
+      });
+
+      // Refresh local data to match
+      const newData = { ...data! };
+      newData.company.name = companyName;
+      newData.company.logo_url = logoUrl || null;
+      // Note: description/contact_email might not be in the initial 'Company' interface if I don't update it in this file,
+      // but they are just for display in inputs here.
+      // However, to be type safe I should update the interface too.
+      setData(newData);
+    } catch {
+      toast({
+        title: "Update failed",
+        description: "Something went wrong.",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -130,27 +197,60 @@ export default function CompanySettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="company-name">Company Name</Label>
-            <Input
-              id="company-name"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              disabled={!isOwner}
-              placeholder="Your company name"
-            />
-            {!isOwner && (
-              <p className="text-xs text-muted-foreground">
-                Only the company owner can update the name
-              </p>
-            )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="company-name">Company Name</Label>
+              <Input
+                id="company-name"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                disabled={!isOwner}
+                placeholder="Your company name"
+              />
+              {!isOwner && (
+                <p className="text-xs text-muted-foreground">
+                  Only the company owner can update the name
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Company Logo</Label>
+              <ImageUpload
+                value={logoUrl}
+                onChange={setLogoUrl}
+                onUpload={onUpload}
+                disabled={!isOwner}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={!isOwner}
+                placeholder="Briefly describe your company..."
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contact-email">Contact Email</Label>
+              <Input
+                id="contact-email"
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                disabled={!isOwner}
+                placeholder="contact@company.com"
+              />
+            </div>
           </div>
 
           {isOwner && (
-            <Button
-              onClick={handleSave}
-              disabled={saving || companyName === company.name}
-            >
+            <Button onClick={handleSave} disabled={saving} className="mt-4">
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : (

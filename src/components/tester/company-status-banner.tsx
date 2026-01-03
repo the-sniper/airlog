@@ -77,9 +77,38 @@ export function CompanyStatusBanner() {
     return null;
   }
 
-  // User has a company - no need to show anything
-  if (status.hasCompany) {
-    return null;
+  // User has a company - show their affiliation
+  if (status.hasCompany && status.company) {
+    return (
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="flex items-center gap-4 py-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 overflow-hidden flex-shrink-0">
+            {status.company.logo_url ? (
+              <img
+                src={status.company.logo_url}
+                alt={status.company.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Building2 className="h-5 w-5 text-primary" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium truncate">{status.company.name}</p>
+            <p className="text-sm text-muted-foreground">
+              You are a member of this company
+            </p>
+          </div>
+          <Badge
+            variant="outline"
+            className="border-primary/50 text-primary flex-shrink-0"
+          >
+            <Check className="h-3 w-3 mr-1" />
+            Member
+          </Badge>
+        </CardContent>
+      </Card>
+    );
   }
 
   // User has a pending request

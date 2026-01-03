@@ -150,7 +150,7 @@ export default function CompanyMembersPage() {
         });
       } else if (result.already_registered) {
         toast({
-          title: "Member added!",
+          title: "User added!",
           description: `${result.user.first_name} ${result.user.last_name} has been added to your company.`,
           variant: "success",
         });
@@ -200,7 +200,7 @@ export default function CompanyMembersPage() {
 
       if (res.ok) {
         toast({
-          title: "Member removed",
+          title: "User removed",
           description: `${removeDialog.user.first_name} ${removeDialog.user.last_name} has been removed from your company.`,
           variant: "success",
         });
@@ -301,7 +301,7 @@ export default function CompanyMembersPage() {
             <Users className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Company Members</h1>
+            <h1 className="text-2xl font-bold">Company Users</h1>
             <p className="text-muted-foreground">
               Manage users in your company
             </p>
@@ -309,7 +309,7 @@ export default function CompanyMembersPage() {
         </div>
         <Button onClick={() => setInviteDialog(true)}>
           <UserPlus className="w-4 h-4 mr-2" />
-          Invite Member
+          Invite User
         </Button>
       </div>
 
@@ -318,7 +318,7 @@ export default function CompanyMembersPage() {
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="members" className="gap-2">
             <Users className="w-4 h-4" />
-            Members ({members.length})
+            Users ({members.length})
           </TabsTrigger>
           <TabsTrigger value="pending" className="gap-2">
             <Clock className="w-4 h-4" />
@@ -332,7 +332,7 @@ export default function CompanyMembersPage() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <CardTitle className="text-lg">Active Members</CardTitle>
+                  <CardTitle className="text-lg">Active Users</CardTitle>
                   <CardDescription>
                     Users who are part of your company
                   </CardDescription>
@@ -340,7 +340,7 @@ export default function CompanyMembersPage() {
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search members..."
+                    placeholder="Search users..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -353,17 +353,17 @@ export default function CompanyMembersPage() {
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Users className="w-12 h-12 mb-4 text-muted-foreground opacity-50" />
                   <h3 className="font-semibold mb-2">
-                    {searchQuery ? "No members found" : "No members yet"}
+                    {searchQuery ? "No users found" : "No users yet"}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {searchQuery
                       ? "Try a different search term"
-                      : "Invite members to join your company"}
+                      : "Invite users to join your company"}
                   </p>
                   {!searchQuery && (
                     <Button onClick={() => setInviteDialog(true)} size="sm">
                       <UserPlus className="w-4 h-4 mr-2" />
-                      Invite Member
+                      Invite User
                     </Button>
                   )}
                 </div>
@@ -502,7 +502,7 @@ export default function CompanyMembersPage() {
       <Dialog open={inviteDialog} onOpenChange={setInviteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Invite Member</DialogTitle>
+            <DialogTitle>Invite User</DialogTitle>
             <DialogDescription>
               Invite a user to join your company. They&apos;ll receive a link to
               register.
@@ -558,7 +558,7 @@ export default function CompanyMembersPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove Member</DialogTitle>
+            <DialogTitle>Remove User</DialogTitle>
             <DialogDescription>
               Are you sure you want to remove{" "}
               <strong>
@@ -581,7 +581,7 @@ export default function CompanyMembersPage() {
               disabled={submitting}
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              Remove Member
+              Remove User
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -94,9 +94,16 @@ export default function CompanyAdminsPage() {
       const res = await fetch("/api/company/auth/me");
       if (res.ok) {
         const data = await res.json();
-        setCurrentAdmin(data);
+        // Transform API response to CurrentAdmin shape
+        const adminData = {
+          id: data.admin.id,
+          role: data.admin.role,
+          company: data.company,
+        };
+        setCurrentAdmin(adminData);
+
         // If not owner, redirect to dashboard
-        if (data.role !== "owner") {
+        if (data.admin.role !== "owner") {
           router.push("/company");
         }
       } else {
@@ -327,14 +334,18 @@ export default function CompanyAdminsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Badge
-                  variant={admin.role === "owner" ? "default" : "secondary"}
+                  variant="secondary"
                   className={
                     admin.role === "owner"
-                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30"
-                      : ""
+                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/25"
+                      : "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/25"
                   }
                 >
-                  {admin.role === "owner" && <Crown className="w-3 h-3 mr-1" />}
+                  {admin.role === "owner" ? (
+                    <Crown className="w-3 h-3 mr-1" />
+                  ) : (
+                    <Shield className="w-3 h-3 mr-1" />
+                  )}
                   {admin.role}
                 </Badge>
                 {admin.id !== currentAdmin.id && (
