@@ -160,7 +160,7 @@ export async function PATCH(
     }
 
     // Delete questions that are no longer present
-    const idsToDelete = [...existingIds].filter((id) => !inputIds.has(id as string));
+    const idsToDelete = Array.from(existingIds).filter((id) => !inputIds.has(id as string));
 
     if (idsToDelete.length > 0) {
       await supabase

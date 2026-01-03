@@ -10,7 +10,9 @@ export type NotificationKind =
   | "session_started"
   | "report_sent"
   | "session_completed"
-  | "session_restarted";
+  | "session_restarted"
+  | "join_request_approved"
+  | "join_request_rejected";
 
 const toastVariantMap: Record<
   NotificationKind,
@@ -21,6 +23,8 @@ const toastVariantMap: Record<
   report_sent: "default",
   session_completed: "warning",
   session_restarted: "default",
+  join_request_approved: "success",
+  join_request_rejected: "destructive",
 };
 
 export type Notification = {
@@ -730,6 +734,91 @@ export function useTesterNotifications({
       supabase.removeChannel(emailChannel);
     };
   }, [userEmail, addNotification, onRealtimeUpdate]);
+
+  // 1.6. User Notifications from Database + Real-time
+  // Fetches unread notifications on load, and listens for new ones
+  useEffect(() => {
+    if (!userId) return;
+    if (!supabaseRef.current) supabaseRef.current = createClient();
+    const supabase = supabaseRef.current;
+
+    // Fetch unread notifications from database on mount
+    const loadNotifications = async () => {
+      try {
+        const res = await fetch("/api/users/notifications?unread=true", {
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const dbNotifications = await res.json();
+          
+          dbNotifications.forEach((dbNotif: any) => {
+            const dedupeKey = `db-${dbNotif.id}`;
+            if (recentIdsRef.current.has(dedupeKey)) return;
+            recentIdsRef.current.add(dedupeKey);
+            
+            addNotification({
+              title: dbNotif.title,
+              description: dbNotif.message,
+              createdAt: dbNotif.created_at,
+              kind: dbNotif.type as NotificationKind,
+              actionUrl: dbNotif.link || undefined,
+            });
+
+            // Mark as read in database after showing
+            fetch("/api/users/notifications", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ notificationIds: [dbNotif.id] }),
+            }).catch(() => {});
+          });
+        }
+      } catch (e) {
+        console.error("[TesterNotifications] Error loading notifications:", e);
+      }
+    };
+
+    loadNotifications();
+
+    // Listen for real-time inserts to user_notifications table
+    const notificationChannel = supabase.channel(`user-notifications-${userId}`);
+
+    notificationChannel
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "user_notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const newNotif = payload.new as any;
+          const dedupeKey = `db-${newNotif.id}`;
+          if (recentIdsRef.current.has(dedupeKey)) return;
+          recentIdsRef.current.add(dedupeKey);
+
+          addNotification({
+            title: newNotif.title,
+            description: newNotif.message,
+            createdAt: newNotif.created_at,
+            kind: newNotif.type as NotificationKind,
+            actionUrl: newNotif.link || undefined,
+          });
+
+          // Mark as read
+          fetch("/api/users/notifications", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ notificationIds: [newNotif.id] }),
+          }).catch(() => {});
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notificationChannel);
+    };
+  }, [userId, addNotification]);
 
   // 2. Optimized Session Subscriptions
   useEffect(() => {

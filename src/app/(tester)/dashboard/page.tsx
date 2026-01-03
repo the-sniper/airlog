@@ -8,6 +8,7 @@ import {
   ActivityChart,
   SessionCards,
 } from "@/components/tester/dashboard";
+import { CompanyStatusBanner } from "@/components/tester/company-status-banner";
 import { Loader2 } from "lucide-react";
 
 interface DashboardData {
@@ -174,6 +175,9 @@ export default function DashboardPage() {
             lastName={dashboardData.user.lastName}
           />
         )}
+
+        {/* Company Status Banner */}
+        <CompanyStatusBanner />
 
         {/* Stats Cards */}
         {dashboardData && (

@@ -10,7 +10,7 @@ import { generateInviteToken } from "@/lib/utils";
 export async function POST(req: Request) {
   try {
     const supabase = createAdminClient();
-    const { first_name, last_name, email, password } = await req.json();
+    const { first_name, last_name, email, password, company_id } = await req.json();
 
     if (
       !first_name ||
@@ -66,6 +66,34 @@ export async function POST(req: Request) {
         { error: insertError?.message || "Failed to create user" },
         { status: 500 },
       );
+    }
+
+    // If company_id is provided, create a join request
+    let joinRequestCreated = false;
+    if (company_id) {
+      // Verify company exists and allows join requests
+      const { data: company } = await supabase
+        .from("companies")
+        .select("id, name, allow_join_requests")
+        .eq("id", company_id)
+        .eq("is_active", true)
+        .single();
+
+      if (company && company.allow_join_requests) {
+        const { error: joinError } = await supabase
+          .from("company_join_requests")
+          .insert({
+            company_id: company_id,
+            user_id: created.id,
+            status: "pending",
+          });
+
+        if (!joinError) {
+          joinRequestCreated = true;
+        } else {
+          console.error("[Signup] Error creating join request:", joinError);
+        }
+      }
     }
 
     // Link existing testers with same email to this user
@@ -130,7 +158,10 @@ export async function POST(req: Request) {
     const token = await createUserToken(created.id);
     await setUserAuthCookie(token);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      joinRequestCreated,
+    });
   } catch (error) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

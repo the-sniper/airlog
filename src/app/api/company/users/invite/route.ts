@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentCompanyAdmin } from "@/lib/company-auth";
+import { trackSMTPUsage } from "@/lib/track-usage";
+
+// Create reusable transporter
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: process.env.SMTP_SECURE === "true",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 // Helper to generate invite token
 function generateInviteToken(): string {
@@ -140,15 +153,215 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
+    // Fetch company name for the email
+    const { data: company } = await supabase
+      .from("companies")
+      .select("name, logo_url")
+      .eq("id", admin.company_id)
+      .single();
+
+    const companyName = company?.name || "your company";
+
+    // Build invite URL
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      request.headers.get("origin") ||
+      "http://localhost:3000";
+    const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER;
+    const inviteUrl = `${baseUrl}/invite/${token}`;
+
+    // Send email
+    const startTime = Date.now();
+    let emailSent = false;
+
+    try {
+      await transporter.sendMail({
+        from: fromEmail,
+        to: normalizedEmail,
+        subject: `You're invited to join ${companyName} on AirLog`,
+        html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #14b8a6; font-size: 24px; margin-bottom: 24px;">Join ${companyName} on AirLog</h1>
+          
+          <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+            You've been invited to join <strong>${companyName}</strong> on AirLog, a platform for
+            collecting and managing product feedback.
+          </p>
+          
+          <div style="margin: 32px 0; text-align: center;">
+            <a href="${inviteUrl}" 
+               style="display: inline-block; background-color: #14b8a6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+              Accept Invitation
+            </a>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+            Or copy and paste this link into your browser:
+          </p>
+          <p style="background-color: #f3f4f6; padding: 12px; border-radius: 6px; word-break: break-all; font-size: 14px; color: #374151;">
+            ${inviteUrl}
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
+          
+          <p style="color: #9ca3af; font-size: 12px;">
+            This invitation will expire in 7 days. If you didn't expect this invitation, you can ignore this email.
+          </p>
+        </div>
+        `,
+      });
+
+      const durationMs = Date.now() - startTime;
+      trackSMTPUsage("company_invite", durationMs, true);
+      emailSent = true;
+    } catch (emailError) {
+      const durationMs = Date.now() - startTime;
+      trackSMTPUsage("company_invite", durationMs, false, String(emailError));
+      console.error("Error sending invite email:", emailError);
+      // Don't fail the whole request if email fails - invite is still created
+    }
+
     return NextResponse.json({
       success: true,
       invite,
-      message: "Invite created. User will be added when they register.",
+      emailSent,
+      message: emailSent
+        ? `Invite sent to ${normalizedEmail}`
+        : "Invite created but email failed to send. Share the link manually.",
     });
   } catch (error) {
     console.error("Error creating invite:", error);
     return NextResponse.json(
       { error: "Failed to create invite" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH - Resend/refresh a pending invite
+export async function PATCH(request: NextRequest) {
+  const admin = await getCurrentCompanyAdmin();
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { id } = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Invite ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const supabase = createAdminClient();
+
+    // Verify invite belongs to company
+    const { data: invite } = await supabase
+      .from("company_user_invites")
+      .select("*")
+      .eq("id", id)
+      .eq("company_id", admin.company_id)
+      .eq("status", "pending")
+      .single();
+
+    if (!invite) {
+      return NextResponse.json({ error: "Invite not found" }, { status: 404 });
+    }
+
+    // Generate new token and extend expiry
+    const newToken = generateInviteToken();
+    const { data: updatedInvite, error } = await supabase
+      .from("company_user_invites")
+      .update({
+        token: newToken,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Fetch company name for the email
+    const { data: company } = await supabase
+      .from("companies")
+      .select("name")
+      .eq("id", admin.company_id)
+      .single();
+
+    const companyName = company?.name || "your company";
+
+    // Build invite URL
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      request.headers.get("origin") ||
+      "http://localhost:3000";
+    const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER;
+    const inviteUrl = `${baseUrl}/invite/${newToken}`;
+
+    // Send email
+    const startTime = Date.now();
+    let emailSent = false;
+
+    try {
+      await transporter.sendMail({
+        from: fromEmail,
+        to: invite.email,
+        subject: `Reminder: You're invited to join ${companyName} on AirLog`,
+        html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #14b8a6; font-size: 24px; margin-bottom: 24px;">Reminder: Join ${companyName} on AirLog</h1>
+          
+          <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+            This is a reminder that you've been invited to join <strong>${companyName}</strong> on AirLog.
+          </p>
+          
+          <div style="margin: 32px 0; text-align: center;">
+            <a href="${inviteUrl}" 
+               style="display: inline-block; background-color: #14b8a6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+              Accept Invitation
+            </a>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+            Or copy and paste this link into your browser:
+          </p>
+          <p style="background-color: #f3f4f6; padding: 12px; border-radius: 6px; word-break: break-all; font-size: 14px; color: #374151;">
+            ${inviteUrl}
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
+          
+          <p style="color: #9ca3af; font-size: 12px;">
+            This invitation will expire in 7 days. If you didn't expect this invitation, you can ignore this email.
+          </p>
+        </div>
+        `,
+      });
+
+      const durationMs = Date.now() - startTime;
+      trackSMTPUsage("company_invite_resend", durationMs, true);
+      emailSent = true;
+    } catch (emailError) {
+      const durationMs = Date.now() - startTime;
+      trackSMTPUsage("company_invite_resend", durationMs, false, String(emailError));
+      console.error("Error resending invite email:", emailError);
+    }
+
+    return NextResponse.json({
+      success: true,
+      invite: updatedInvite,
+      emailSent,
+      message: emailSent
+        ? `Invite resent to ${invite.email}`
+        : "Invite refreshed but email failed to send.",
+    });
+  } catch (error) {
+    console.error("Error resending invite:", error);
+    return NextResponse.json(
+      { error: "Failed to resend invite" },
       { status: 500 }
     );
   }

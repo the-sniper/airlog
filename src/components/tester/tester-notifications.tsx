@@ -79,6 +79,18 @@ const kindMeta: Record<
     icon: <Activity className="w-4 h-4 text-sky-500" strokeWidth={1.75} />,
     badgeVariant: "default",
   },
+  join_request_approved: {
+    label: "Approved",
+    icon: (
+      <CheckCircle2 className="w-4 h-4 text-emerald-500" strokeWidth={1.75} />
+    ),
+    badgeVariant: "active",
+  },
+  join_request_rejected: {
+    label: "Declined",
+    icon: <X className="w-4 h-4 text-red-500" strokeWidth={1.75} />,
+    badgeVariant: "destructive",
+  },
 };
 
 export function TesterNotifications({

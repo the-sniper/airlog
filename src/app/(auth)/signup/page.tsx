@@ -12,6 +12,10 @@ import {
   EyeOff,
   ShieldCheck,
   UserX,
+  Building2,
+  ChevronDown,
+  Check,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +28,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+
+interface Company {
+  id: string;
+  name: string;
+  logo_url: string | null;
+}
 
 function SignupForm() {
   const router = useRouter();
@@ -40,8 +50,33 @@ function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Company selection
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
+    null
+  );
+  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+
   // Check if this is an invite flow
   const isInviteFlow = inviteEmail && callbackUrl.includes("/join/");
+
+  // Fetch available companies
+  useEffect(() => {
+    async function fetchCompanies() {
+      try {
+        const res = await fetch("/api/public/companies");
+        if (res.ok) {
+          setCompanies(await res.json());
+        }
+      } catch (err) {
+        console.error("Error fetching companies:", err);
+      } finally {
+        setLoadingCompanies(false);
+      }
+    }
+    fetchCompanies();
+  }, []);
 
   // Sync email state with inviteEmail param (for client-side navigation)
   useEffect(() => {
@@ -61,6 +96,8 @@ function SignupForm() {
     }
     checkSession();
   }, [router, callbackUrl]);
+
+  const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +126,7 @@ function SignupForm() {
           last_name: lastName,
           email,
           password,
+          company_id: selectedCompanyId,
         }),
       });
 
@@ -101,7 +139,17 @@ function SignupForm() {
         return;
       }
 
-      toast({ title: "Account created", description: "Welcome to AirLog!" });
+      const result = await res.json();
+
+      if (result.joinRequestCreated) {
+        toast({
+          title: "Account created!",
+          description: `Your request to join ${selectedCompany?.name} has been submitted. You'll be notified when approved.`,
+        });
+      } else {
+        toast({ title: "Account created", description: "Welcome to AirLog!" });
+      }
+
       // Auto-login is handled by the API - redirect to callback URL
       window.location.href = callbackUrl;
     } catch {
@@ -184,6 +232,88 @@ function SignupForm() {
               </p>
             )}
           </div>
+
+          {/* Company Selection */}
+          {!isInviteFlow && (
+            <div className="space-y-2">
+              <Label>Company (Optional)</Label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowCompanyDropdown(!showCompanyDropdown)}
+                  className="w-full flex items-center justify-between gap-2 px-3 h-11 rounded-lg border border-border bg-background text-left hover:bg-secondary/50 transition-colors"
+                  disabled={loadingCompanies}
+                >
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-muted-foreground" />
+                    {loadingCompanies ? (
+                      <span className="text-muted-foreground">Loading...</span>
+                    ) : selectedCompany ? (
+                      <span>{selectedCompany.name}</span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Select a company to join...
+                      </span>
+                    )}
+                  </div>
+                  {loadingCompanies ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </button>
+
+                {showCompanyDropdown && companies.length > 0 && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 py-1 rounded-lg border border-border bg-card shadow-lg max-h-60 overflow-y-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCompanyId(null);
+                        setShowCompanyDropdown(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-secondary/50 ${
+                        !selectedCompanyId ? "bg-primary/10 text-primary" : ""
+                      }`}
+                    >
+                      <div className="w-5 h-5 flex items-center justify-center">
+                        {!selectedCompanyId && <Check className="w-4 h-4" />}
+                      </div>
+                      <span className="text-muted-foreground">
+                        None (Individual tester)
+                      </span>
+                    </button>
+                    {companies.map((company) => (
+                      <button
+                        key={company.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCompanyId(company.id);
+                          setShowCompanyDropdown(false);
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-secondary/50 ${
+                          selectedCompanyId === company.id
+                            ? "bg-primary/10 text-primary"
+                            : ""
+                        }`}
+                      >
+                        <div className="w-5 h-5 flex items-center justify-center">
+                          {selectedCompanyId === company.id && (
+                            <Check className="w-4 h-4" />
+                          )}
+                        </div>
+                        <span>{company.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {selectedCompany
+                  ? "Your request will be sent to the company admin for approval"
+                  : "You can test sessions when invited by a company"}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
