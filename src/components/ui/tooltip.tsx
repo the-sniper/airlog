@@ -50,15 +50,12 @@ export function Tooltip({
       {isVisible && (
         <div
           className={cn(
-            "absolute z-50 px-3 py-1.5 text-xs font-medium text-popover-foreground bg-popover border border-border rounded-md shadow-md whitespace-nowrap pointer-events-none transition-opacity duration-100 ease-out max-w-xs overflow-hidden",
-            positionClasses[side],
+            "absolute z-50 px-4 py-2.5 text-sm leading-relaxed font-medium text-popover-foreground bg-popover/90 backdrop-blur-md border border-border/50 rounded-2xl shadow-2xl pointer-events-none transition-all duration-300 ease-out max-w-[280px] animate-in fade-in zoom-in-95",
+            positionClasses[side]
           )}
           role="tooltip"
         >
           {content}
-          <span
-            className={cn("absolute w-0 h-0 border-4", arrowClasses[side])}
-          />
         </div>
       )}
     </div>

@@ -193,13 +193,15 @@ export function CompanySidebar() {
               }`}
             >
               <Shield className="w-4 h-4" strokeWidth={1.75} />
-              Manage Admins
+              Manage Managers
             </Link>
           )}
         </nav>
         <div className="p-4 border-t border-border/50 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">Company Admin</p>
+            <p className="text-xs text-muted-foreground">
+              {isOwner ? "Company Owner" : "Company Manager"}
+            </p>
             <ThemeToggle />
           </div>
           <Button
@@ -603,9 +605,9 @@ export function CompanyMobileHeader() {
                       <Shield className="w-5 h-5" strokeWidth={1.75} />
                     </div>
                     <div>
-                      <p className="font-medium">Manage Admins</p>
+                      <p className="font-medium">Manage Managers</p>
                       <p className="text-xs text-muted-foreground">
-                        Add or remove team admins
+                        Add or remove team managers
                       </p>
                     </div>
                   </div>

@@ -159,7 +159,7 @@ export default function CompanyAdminsPage() {
         body: JSON.stringify(adminForm),
       });
       if (res.ok) {
-        toast({ title: "Admin added!", variant: "success" });
+        toast({ title: "Manager added!", variant: "success" });
         setAddDialog(false);
         setAdminForm({
           email: "",
@@ -172,7 +172,7 @@ export default function CompanyAdminsPage() {
         fetchAdmins();
       } else {
         const data = await res.json();
-        setFormError(data.error || "Failed to add admin");
+        setFormError(data.error || "Failed to add manager");
       }
     } finally {
       setAdding(false);
@@ -190,13 +190,13 @@ export default function CompanyAdminsPage() {
         }
       );
       if (res.ok) {
-        toast({ title: "Admin removed", variant: "success" });
+        toast({ title: "Manager removed", variant: "success" });
         setDeleteDialog({ open: false, admin: null });
         fetchAdmins();
       } else {
         const data = await res.json();
         toast({
-          title: data.error || "Failed to remove admin",
+          title: data.error || "Failed to remove manager",
           variant: "destructive",
         });
       }
@@ -221,7 +221,7 @@ export default function CompanyAdminsPage() {
         <Lock className="w-12 h-12 text-muted-foreground/30 mb-4" />
         <h2 className="text-xl font-semibold mb-2">Access Restricted</h2>
         <p className="text-muted-foreground mb-4">
-          Only company owners can manage admins.
+          Only company owners can manage managers.
         </p>
         <Button onClick={() => router.push("/company")}>
           Back to Dashboard
@@ -241,7 +241,7 @@ export default function CompanyAdminsPage() {
             <Shield className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Admin Management</h1>
+            <h1 className="text-2xl font-bold">Manager Management</h1>
             <p className="text-muted-foreground">
               Manage who can access {currentAdmin.company.name}
             </p>
@@ -260,7 +260,7 @@ export default function CompanyAdminsPage() {
           </Button>
           <Button onClick={() => setAddDialog(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Admin
+            Add Manager
           </Button>
         </div>
       </div>
@@ -278,7 +278,7 @@ export default function CompanyAdminsPage() {
                 Owner
               </p>
               <p className="text-xs text-muted-foreground">
-                Full access + manage admins, company settings
+                Full access + manage managers, company settings
               </p>
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function CompanyAdminsPage() {
             <Shield className="w-5 h-5 text-blue-500" />
             <div>
               <p className="font-medium text-blue-600 dark:text-blue-400">
-                Admin
+                Manager
               </p>
               <p className="text-xs text-muted-foreground">
                 Manage sessions, teams, and testers
@@ -299,9 +299,9 @@ export default function CompanyAdminsPage() {
       {/* Admins List */}
       <Card>
         <CardHeader>
-          <CardTitle>Company Admins</CardTitle>
+          <CardTitle>Company Managers</CardTitle>
           <CardDescription>
-            {admins.length} admin{admins.length !== 1 ? "s" : ""} in your
+            {admins.length} manager{admins.length !== 1 ? "s" : ""} in your
             company
           </CardDescription>
         </CardHeader>
@@ -346,7 +346,7 @@ export default function CompanyAdminsPage() {
                   ) : (
                     <Shield className="w-3 h-3 mr-1" />
                   )}
-                  {admin.role}
+                  {admin.role === "owner" ? "Owner" : "Manager"}
                 </Badge>
                 {admin.id !== currentAdmin.id && (
                   <Button
@@ -383,9 +383,9 @@ export default function CompanyAdminsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Admin</DialogTitle>
+            <DialogTitle>Add Manager</DialogTitle>
             <DialogDescription>
-              Create a new admin account for {currentAdmin.company.name}.
+              Create a new manager account for {currentAdmin.company.name}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -467,10 +467,10 @@ export default function CompanyAdminsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">
-                    Admin (Manage sessions & teams)
+                    Manager (Manage sessions & teams)
                   </SelectItem>
                   <SelectItem value="owner">
-                    Owner (Full access + manage admins)
+                    Owner (Full access + manage managers)
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -485,7 +485,7 @@ export default function CompanyAdminsPage() {
             </Button>
             <Button onClick={handleAddAdmin} disabled={adding}>
               {adding && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              Add Admin
+              Add Manager
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -500,11 +500,11 @@ export default function CompanyAdminsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove Admin</DialogTitle>
+            <DialogTitle>Remove Manager</DialogTitle>
             <DialogDescription>
               Are you sure you want to remove{" "}
               {deleteDialog.admin?.user.first_name}{" "}
-              {deleteDialog.admin?.user.last_name} from the admin team?
+              {deleteDialog.admin?.user.last_name} from the management team?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -520,7 +520,7 @@ export default function CompanyAdminsPage() {
               disabled={deleting}
             >
               {deleting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              Remove Admin
+              Remove Manager
             </Button>
           </DialogFooter>
         </DialogContent>

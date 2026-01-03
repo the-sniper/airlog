@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Save, Loader2, Users, Upload } from "lucide-react";
+import { Building2, Save, Loader2, Users, Upload, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -169,146 +170,248 @@ export default function CompanySettingsPage() {
   const isOwner = admin.role === "owner";
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Company Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your company profile and settings
-        </p>
-      </div>
-
-      {/* Company Info Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Building2 className="w-7 h-7 text-primary" />
-              </div>
-              <div>
-                <CardTitle>{company.name}</CardTitle>
-                <CardDescription>/{company.slug}</CardDescription>
-              </div>
-            </div>
-            <Badge variant="outline" className="capitalize">
-              {company.subscription_tier}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="company-name">Company Name</Label>
-              <Input
-                id="company-name"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                disabled={!isOwner}
-                placeholder="Your company name"
-              />
-              {!isOwner && (
-                <p className="text-xs text-muted-foreground">
-                  Only the company owner can update the name
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Company Logo</Label>
-              <ImageUpload
-                value={logoUrl}
-                onChange={setLogoUrl}
-                onUpload={onUpload}
-                disabled={!isOwner}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={!isOwner}
-                placeholder="Briefly describe your company..."
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="contact-email">Contact Email</Label>
-              <Input
-                id="contact-email"
-                type="email"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                disabled={!isOwner}
-                placeholder="contact@company.com"
-              />
-            </div>
-          </div>
-
-          {isOwner && (
-            <Button onClick={handleSave} disabled={saving} className="mt-4">
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+    <div className="max-w-4xl mx-auto space-y-8 pb-12">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-3xl bg-neutral-900 border border-white/5 p-8 shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-50" />
+        <div className="relative flex flex-col md:flex-row md:items-center gap-8">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-3xl bg-neutral-800 border-2 border-white/10 flex items-center justify-center overflow-hidden shadow-inner group">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={companyName}
+                  className="w-full h-full object-contain"
+                />
               ) : (
-                <Save className="w-4 h-4 mr-2" />
+                <Building2 className="w-10 h-10 text-primary/40 group-hover:text-primary/60 transition-colors" />
               )}
-              Save Changes
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Subscription Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Subscription</CardTitle>
-          <CardDescription>Your current plan limits</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-secondary/30">
-              <p className="text-2xl font-bold">{company.max_teams}</p>
-              <p className="text-sm text-muted-foreground">Teams allowed</p>
             </div>
-            <div className="p-4 rounded-xl bg-secondary/30">
-              <p className="text-2xl font-bold">
-                {company.max_sessions_per_month}
-              </p>
-              <p className="text-sm text-muted-foreground">Sessions/month</p>
-            </div>
+            {isOwner && (
+              <Button
+                size="icon"
+                variant="secondary"
+                className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full shadow-lg border border-black/10"
+                onClick={() => document.getElementById("logo-upload")?.click()}
+              >
+                <Upload className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Your Account */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Your Account</CardTitle>
-          <CardDescription>Your admin role in this company</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Users className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <p className="font-medium">
-                {admin.user.first_name} {admin.user.last_name}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {admin.user.email}
-              </p>
-              <Badge variant="outline" className="mt-1 capitalize">
-                {admin.role}
+          <div className="flex-1 space-y-2">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-4xl font-extrabold tracking-tight text-white">
+                {company.name}
+              </h1>
+              <Badge
+                variant="secondary"
+                className="bg-primary/10 text-primary border-primary/20 capitalize font-semibold tracking-wide"
+              >
+                {company.subscription_tier} Plan
               </Badge>
             </div>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-400">
+              <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                <span className="text-neutral-500 font-medium">
+                  Internal ID:
+                </span>
+                <span className="font-mono text-xs text-neutral-300 tracking-wider uppercase">
+                  {company.slug}
+                </span>
+              </div>
+              <p className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span>
+                  {admin.role === "owner" ? "Company Owner" : "Company Manager"}
+                </span>
+              </p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="flex flex-col gap-3">
+            {isOwner && (
+              <Button
+                onClick={handleSave}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all active:scale-95"
+                disabled={saving}
+              >
+                {saving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
+                Save Profile
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          {/* Profile Details */}
+          <Card className="border-white/5 bg-neutral-900/40 backdrop-blur-xl shadow-xl overflow-hidden">
+            <CardHeader className="border-b border-white/5 bg-white/[0.02]">
+              <CardTitle className="text-xl font-bold">
+                General Information
+              </CardTitle>
+              <CardDescription>
+                Core details about your company&apos;s digital identity.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 space-y-8">
+              <div className="grid gap-8">
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="company-name"
+                    className="text-neutral-400 font-semibold uppercase text-[10px] tracking-widest ml-1"
+                  >
+                    Company Display Name
+                  </Label>
+                  <Input
+                    id="company-name"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    disabled={!isOwner}
+                    className="h-12 bg-black/20 border-white/10 focus:border-primary/50 transition-all rounded-xl"
+                    placeholder="Enter full company name"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label
+                      htmlFor="description"
+                      className="text-neutral-400 font-semibold uppercase text-[10px] tracking-widest ml-1"
+                    >
+                      About the Company
+                    </Label>
+                    <span className="text-[10px] text-neutral-500 font-medium">
+                      Visible on your public profile
+                    </span>
+                  </div>
+                  <textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    disabled={!isOwner}
+                    placeholder="Tell users what your company does..."
+                    className="flex min-h-[140px] w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm focus:border-primary/50 transition-all focus-visible:outline-none disabled:opacity-50 resize-none leading-relaxed"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="contact-email"
+                    className="text-neutral-400 font-semibold uppercase text-[10px] tracking-widest ml-1"
+                  >
+                    Primary Contact Email
+                  </Label>
+                  <Input
+                    id="contact-email"
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    disabled={!isOwner}
+                    className="h-12 bg-black/20 border-white/10 focus:border-primary/50 transition-all rounded-xl"
+                    placeholder="hello@world.com"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Hidden UI for Image Upload Logic (controlled by button in header) */}
+          <div className="hidden">
+            <ImageUpload
+              value={logoUrl}
+              onChange={setLogoUrl}
+              onUpload={onUpload}
+              disabled={!isOwner}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          {/* Usage & Limits */}
+          <Card className="border-white/5 bg-neutral-900/40 backdrop-blur-xl shadow-xl overflow-hidden h-fit">
+            <CardHeader className="border-b border-white/5 bg-white/[0.02]">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-lg font-bold">
+                  Usage Limits
+                </CardTitle>
+                <Tooltip content="Limits are based on your current subscription tier.">
+                  <Info className="w-3.5 h-3.5 text-neutral-500 hover:text-neutral-300 transition-colors cursor-help" />
+                </Tooltip>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="space-y-4">
+                <div className="p-5 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group hover:bg-white/[0.07] transition-all">
+                  <div>
+                    <p className="text-neutral-400 text-xs font-medium mb-1">
+                      Max Teams
+                    </p>
+                    <p className="text-3xl font-black text-white">
+                      {company.max_teams}
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <Users className="w-6 h-6" />
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group hover:bg-white/[0.07] transition-all">
+                  <div>
+                    <p className="text-neutral-400 text-xs font-medium mb-1">
+                      Monthly Sessions
+                    </p>
+                    <p className="text-3xl font-black text-white">
+                      {company.max_sessions_per_month}
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Account Snapshot */}
+          <Card className="border-white/5 bg-neutral-900 shadow-xl overflow-hidden border-2 border-primary/20">
+            <div className="p-6 flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center text-xl font-black text-primary">
+                {admin.user.first_name?.[0]}
+                {admin.user.last_name?.[0]}
+              </div>
+              <div className="space-y-0.5">
+                <p className="font-bold text-white text-lg leading-tight">
+                  {admin.user.first_name} {admin.user.last_name}
+                </p>
+                <p className="text-sm text-neutral-400">{admin.user.email}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge
+                    variant="secondary"
+                    className="bg-primary/10 text-primary border-primary/20 text-[10px] h-5 px-1.5 uppercase font-bold tracking-tight"
+                  >
+                    {admin.role === "owner"
+                      ? "Company Owner"
+                      : "Company Manager"}
+                  </Badge>
+                  <div className="flex items-center gap-1.5 ml-1">
+                    <div className="h-1 w-1 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] uppercase font-black tracking-tighter text-neutral-500">
+                      Active
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
