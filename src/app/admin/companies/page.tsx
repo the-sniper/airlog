@@ -202,7 +202,7 @@ export default function AdminCompaniesPage() {
                     0
                   )}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Admins</p>
+                <p className="text-sm text-muted-foreground">Total Managers</p>
               </div>
             </div>
           </CardContent>
@@ -275,7 +275,7 @@ export default function AdminCompaniesPage() {
                       <p className="text-lg font-bold">
                         {company.admins?.[0]?.count || 0}
                       </p>
-                      <p className="text-xs text-muted-foreground">Admins</p>
+                      <p className="text-xs text-muted-foreground">Managers</p>
                     </div>
                     <div className="p-2 rounded-lg bg-secondary/30">
                       <p className="text-lg font-bold">

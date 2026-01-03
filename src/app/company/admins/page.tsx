@@ -299,9 +299,9 @@ export default function CompanyAdminsPage() {
       {/* Admins List */}
       <Card>
         <CardHeader>
-          <CardTitle>Company Managers</CardTitle>
+          <CardTitle>Company Admins</CardTitle>
           <CardDescription>
-            {admins.length} manager{admins.length !== 1 ? "s" : ""} in your
+            {admins.length} admin{admins.length !== 1 ? "s" : ""} in your
             company
           </CardDescription>
         </CardHeader>
@@ -332,7 +332,7 @@ export default function CompanyAdminsPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4 ml-auto">
                 <Badge
                   variant="secondary"
                   className={
@@ -358,7 +358,7 @@ export default function CompanyAdminsPage() {
                     title={
                       admin.role === "owner" && ownerCount <= 1
                         ? "Cannot remove the only owner"
-                        : "Remove admin"
+                        : "Remove manager"
                     }
                   >
                     <Trash2 className="w-4 h-4" />

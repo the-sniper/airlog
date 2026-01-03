@@ -2,7 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Save, Loader2, Users, Upload, Info } from "lucide-react";
+import {
+  Building2,
+  Save,
+  Loader2,
+  Users,
+  Upload,
+  Info,
+  Crown,
+  Shield,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -222,9 +231,7 @@ export default function CompanySettingsPage() {
               </div>
               <p className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                <span>
-                  {admin.role === "owner" ? "Company Owner" : "Company Manager"}
-                </span>
+                <span>{admin.role === "owner" ? "Owner" : "Manager"}</span>
               </p>
             </div>
           </div>
@@ -394,11 +401,18 @@ export default function CompanySettingsPage() {
                 <div className="flex items-center gap-2 mt-2">
                   <Badge
                     variant="secondary"
-                    className="bg-primary/10 text-primary border-primary/20 text-[10px] h-5 px-1.5 uppercase font-bold tracking-tight"
+                    className={
+                      admin.role === "owner"
+                        ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold tracking-tight px-2 py-0.5"
+                        : "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 font-bold tracking-tight px-2 py-0.5"
+                    }
                   >
-                    {admin.role === "owner"
-                      ? "Company Owner"
-                      : "Company Manager"}
+                    {admin.role === "owner" ? (
+                      <Crown className="w-3 h-3 mr-1.5" />
+                    ) : (
+                      <Shield className="w-3 h-3 mr-1.5" />
+                    )}
+                    {admin.role === "owner" ? "Owner" : "Manager"}
                   </Badge>
                   <div className="flex items-center gap-1.5 ml-1">
                     <div className="h-1 w-1 rounded-full bg-green-500 animate-pulse" />

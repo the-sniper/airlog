@@ -9,6 +9,7 @@ import {
   Users2,
   FolderKanban,
   Shield,
+  Crown,
   UserPlus,
   Trash2,
   RefreshCw,
@@ -648,19 +649,33 @@ export default function CompanyDetailPage({
                           </p>
                         </div>
                       </div>
-                      <Badge variant="outline" className="capitalize">
-                        {admin.role}
-                      </Badge>
-                      {admin.role !== "owner" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => handleRemoveAdmin(admin.id)}
+                      <div className="flex items-center gap-4 ml-auto">
+                        <Badge
+                          variant="secondary"
+                          className={
+                            admin.role === "owner"
+                              ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/25"
+                              : "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/25"
+                          }
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
+                          {admin.role === "owner" ? (
+                            <Crown className="w-3 h-3 mr-1" />
+                          ) : (
+                            <Shield className="w-3 h-3 mr-1" />
+                          )}
+                          {admin.role === "owner" ? "Owner" : "Manager"}
+                        </Badge>
+                        {admin.role !== "owner" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => handleRemoveAdmin(admin.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -967,10 +982,10 @@ export default function CompanyDetailPage({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="owner">
-                    Owner (Full access + manage admins)
+                    Owner (Full access + manage managers)
                   </SelectItem>
                   <SelectItem value="admin">
-                    Admin (Manage sessions & teams)
+                    Manager (Manage sessions & teams)
                   </SelectItem>
                 </SelectContent>
               </Select>

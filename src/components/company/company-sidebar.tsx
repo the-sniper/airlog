@@ -19,6 +19,7 @@ import {
   Building2,
   Plus,
   Shield,
+  Crown,
   UserPlus,
   UserCheck,
 } from "lucide-react";
@@ -86,34 +87,50 @@ export function CompanySidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 w-64 border-r border-border/50 bg-card/30 hidden md:block">
       <div className="flex flex-col h-full">
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-border/50">
-          <Link href="/" className="flex items-center gap-3">
+        <div className="py-7 flex flex-col gap-6 px-6 border-b border-border/50">
+          <Link href="/" className="flex items-center">
             <Image
               src="/logo.svg"
               alt="AirLog"
-              width={120}
-              height={32}
+              width={100}
+              height={28}
               className="dark:hidden"
             />
             <Image
               src="/logo-dark.svg"
               alt="AirLog"
-              width={120}
-              height={32}
+              width={100}
+              height={28}
               className="hidden dark:block"
             />
           </Link>
-          {company?.logo_url && (
-            <>
-              <div className="h-6 w-px bg-border/50 mx-1" />
-              <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-border/50 bg-muted/20">
-                <img
-                  src={company.logo_url}
-                  alt={company.name}
-                  className="w-full h-full object-contain"
-                />
+          {company && (
+            <div className="flex flex-col gap-3">
+              <div className="relative w-10 h-10 rounded-2xl overflow-hidden border border-border/50 bg-muted/10 shadow-sm">
+                {company.logo_url ? (
+                  <img
+                    src={company.logo_url}
+                    alt={company.name}
+                    className="w-full h-full object-contain p-1"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-primary/5">
+                    <Building2 className="w-6 h-6 text-primary/40" />
+                  </div>
+                )}
               </div>
-            </>
+              <div className="space-y-1">
+                <p className="text-sm font-extrabold text-foreground leading-none tracking-tight truncate">
+                  {company.name}
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1 h-1 rounded-full bg-primary/60" />
+                  <p className="text-[10px] uppercase tracking-widest font-black text-muted-foreground/60">
+                    Organization
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -140,17 +157,6 @@ export function CompanySidebar() {
             Sessions
           </Link>
           <Link
-            href="/company/teams"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/company/teams")
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <Users2 className="w-4 h-4" strokeWidth={1.75} />
-            Teams
-          </Link>
-          <Link
             href="/company/users"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isActive("/company/users")
@@ -161,6 +167,18 @@ export function CompanySidebar() {
             <UserPlus className="w-4 h-4" strokeWidth={1.75} />
             Users
           </Link>
+          <Link
+            href="/company/teams"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/company/teams")
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
+          >
+            <Users2 className="w-4 h-4" strokeWidth={1.75} />
+            Teams
+          </Link>
+
           <Link
             href="/company/join-requests"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -199,9 +217,16 @@ export function CompanySidebar() {
         </nav>
         <div className="p-4 border-t border-border/50 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">
-              {isOwner ? "Company Owner" : "Company Manager"}
-            </p>
+            <div className="flex items-center gap-1.5">
+              {isOwner ? (
+                <Crown className="w-3 h-3 text-amber-500" />
+              ) : (
+                <Shield className="w-3 h-3 text-blue-500" />
+              )}
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
+                {isOwner ? "Owner" : "Manager"}
+              </p>
+            </div>
             <ThemeToggle />
           </div>
           <Button
@@ -312,15 +337,15 @@ export function CompanyMobileHeader() {
             <Image
               src="/logo.svg"
               alt="AirLog"
-              width={90}
-              height={24}
+              width={80}
+              height={22}
               className="dark:hidden"
             />
             <Image
               src="/logo-dark.svg"
               alt="AirLog"
-              width={90}
-              height={24}
+              width={80}
+              height={22}
               className="hidden dark:block"
             />
             {company?.logo_url && (
@@ -368,44 +393,59 @@ export function CompanyMobileHeader() {
             drawerOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/logo.svg"
-                alt="AirLog"
-                width={96}
-                height={24}
-                className="dark:hidden"
-              />
-              <Image
-                src="/logo-dark.svg"
-                alt="AirLog"
-                width={96}
-                height={24}
-                className="hidden dark:block"
-              />
-              {company?.logo_url && (
-                <>
-                  <div className="h-5 w-px bg-border/50 mx-1" />
-                  <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border/50 bg-muted/20">
+          <div className="flex flex-col gap-6 px-5 py-6 border-b border-border/50">
+            <div className="flex items-center justify-between">
+              <Link href="/" className="flex items-center">
+                <Image
+                  src="/logo.svg"
+                  alt="AirLog"
+                  width={90}
+                  height={24}
+                  className="dark:hidden"
+                />
+                <Image
+                  src="/logo-dark.svg"
+                  alt="AirLog"
+                  width={90}
+                  height={24}
+                  className="hidden dark:block"
+                />
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => setDrawerOpen(false)}
+              >
+                <X className="w-5 h-5" strokeWidth={1.75} />
+                <span className="sr-only">Close menu</span>
+              </Button>
+            </div>
+            {company && (
+              <div className="flex flex-col gap-3">
+                <div className="relative w-9 h-9 rounded-xl overflow-hidden border border-border/50 bg-muted/10">
+                  {company.logo_url ? (
                     <img
                       src={company.logo_url}
                       alt={company.name}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-contain p-1"
                     />
-                  </div>
-                </>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => setDrawerOpen(false)}
-            >
-              <X className="w-5 h-5" strokeWidth={1.75} />
-              <span className="sr-only">Close menu</span>
-            </Button>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-primary/5">
+                      <Building2 className="w-5 h-5 text-primary/40" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-bold text-foreground leading-tight truncate">
+                    {company.name}
+                  </p>
+                  <p className="text-[10px] uppercase tracking-widest font-black text-muted-foreground/50">
+                    Organization
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6">
@@ -469,35 +509,6 @@ export function CompanyMobileHeader() {
               </Link>
 
               <Link
-                href="/company/teams"
-                onClick={() => setDrawerOpen(false)}
-                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/company/teams")
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isActive("/company/teams")
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background border border-border/60 text-muted-foreground"
-                    }`}
-                  >
-                    <Users2 className="w-5 h-5" strokeWidth={1.75} />
-                  </div>
-                  <div>
-                    <p className="font-medium">Teams</p>
-                    <p className="text-xs text-muted-foreground">
-                      Manage your testing teams
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </Link>
-
-              <Link
                 href="/company/users"
                 onClick={() => setDrawerOpen(false)}
                 className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
@@ -520,6 +531,35 @@ export function CompanyMobileHeader() {
                     <p className="font-medium">Users</p>
                     <p className="text-xs text-muted-foreground">
                       Invite and manage users
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </Link>
+
+              <Link
+                href="/company/teams"
+                onClick={() => setDrawerOpen(false)}
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/company/teams")
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isActive("/company/teams")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background border border-border/60 text-muted-foreground"
+                    }`}
+                  >
+                    <Users2 className="w-5 h-5" strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <p className="font-medium">Teams</p>
+                    <p className="text-xs text-muted-foreground">
+                      Manage your testing teams
                     </p>
                   </div>
                 </div>
