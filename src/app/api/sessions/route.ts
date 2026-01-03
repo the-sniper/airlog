@@ -15,7 +15,7 @@ export async function GET() {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("sessions")
-    .select("*, scenes (count), testers (count), notes (count)")
+    .select("*, scenes (count), testers (count), notes (count), companies(name)")
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: "Failed" }, { status: 500 });
   return NextResponse.json(data);

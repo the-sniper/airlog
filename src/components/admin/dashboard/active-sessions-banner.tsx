@@ -18,9 +18,13 @@ interface ActiveSession {
 
 interface ActiveSessionsBannerProps {
   sessions: ActiveSession[];
+  basePath?: string;
 }
 
-export function ActiveSessionsBanner({ sessions }: ActiveSessionsBannerProps) {
+export function ActiveSessionsBanner({
+  sessions,
+  basePath = "/admin",
+}: ActiveSessionsBannerProps) {
   if (!sessions || sessions.length === 0) {
     return null;
   }
@@ -40,7 +44,7 @@ export function ActiveSessionsBanner({ sessions }: ActiveSessionsBannerProps) {
             {sessions.length} Active Session{sessions.length > 1 ? "s" : ""}
           </span>
           <div className="flex-1" />
-          <Link href="/admin/sessions">
+          <Link href={`${basePath}/sessions`}>
             <Button
               variant="ghost"
               size="sm"
@@ -57,7 +61,7 @@ export function ActiveSessionsBanner({ sessions }: ActiveSessionsBannerProps) {
           {displaySessions.map((session) => (
             <Link
               key={session.id}
-              href={`/admin/sessions/${session.id}`}
+              href={`${basePath}/sessions/${session.id}`}
               className="group flex flex-col gap-3 rounded-xl border border-emerald-200/60 dark:border-emerald-800/40 bg-white/70 dark:bg-card/60 p-4 transition-all duration-200 hover:border-emerald-400/60 dark:hover:border-emerald-600/50 hover:bg-white dark:hover:bg-card/80 hover:shadow-md hover:shadow-emerald-500/10"
             >
               <div className="flex items-start justify-between">

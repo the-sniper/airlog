@@ -167,6 +167,11 @@ export default function SessionsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
+                    {s.companies?.name && (
+                      <p className="text-xs text-primary/80 font-medium tracking-wide uppercase">
+                        {s.companies.name}
+                      </p>
+                    )}
                     <CardTitle className="text-lg font-semibold">
                       {s.name}
                     </CardTitle>

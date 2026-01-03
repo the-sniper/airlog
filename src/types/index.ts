@@ -18,6 +18,7 @@ export interface Session {
   first_ended_at: string | null;
   last_restarted_at: string | null;
   restart_count: number;
+  companies?: { name: string } | null;
 }
 export interface Scene {
   id: string;

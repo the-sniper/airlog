@@ -2191,7 +2191,7 @@ export default function SessionDetailPage({
                   <span className="sm:hidden">Restart</span>
                 </Button>
                 <Link
-                  href={`/admin/sessions/${id}/report`}
+                  href={`/company/sessions/${id}/report`}
                   className="flex-1 sm:flex-none"
                 >
                   <Button className="w-full">View Report</Button>

@@ -2174,6 +2174,11 @@ export default function SessionDetailPage({
                   <Edit2 className="w-4 h-4" />
                 </Button>
               </div>
+              {session?.companies?.name && (
+                <p className="text-sm text-primary font-medium tracking-wide uppercase mb-1">
+                  {session.companies.name}
+                </p>
+              )}
               <h1 className="text-xl sm:text-2xl font-bold">{session.name}</h1>
               {session.build_version && (
                 <p className="text-sm text-muted-foreground font-mono">

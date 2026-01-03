@@ -18,7 +18,7 @@ export async function GET(
   const { data, error } = await supabase
     .from("sessions")
     .select(
-      "*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*))",
+      "*, scenes (*, poll_questions (*)), testers (*), notes (*, scene:scenes (*), tester:testers (*)), companies(name)",
     )
     .eq("id", id)
     .order("order_index", { referencedTable: "scenes", ascending: true })

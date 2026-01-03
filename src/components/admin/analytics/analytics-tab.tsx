@@ -17,6 +17,7 @@ interface AnalyticsTabProps {
   pollResponses: PollResponse[];
   sessionId?: string; // For fetching historical data (admin only)
   shareToken?: string; // For public report
+  apiEndpoint?: string; // Overrides default URL construction
 }
 
 export function AnalyticsTab({
@@ -24,6 +25,7 @@ export function AnalyticsTab({
   pollResponses,
   sessionId,
   shareToken,
+  apiEndpoint,
 }: AnalyticsTabProps) {
   const [historicalData, setHistoricalData] = useState<
     HistoricalSession[] | null
@@ -35,7 +37,9 @@ export function AnalyticsTab({
       setLoadingHistorical(true);
       try {
         let response;
-        if (sessionId) {
+        if (apiEndpoint) {
+          response = await fetch(apiEndpoint);
+        } else if (sessionId) {
           response = await fetch(`/api/sessions/${sessionId}/historical`);
         } else if (shareToken) {
           response = await fetch(`/api/public/report/${shareToken}/historical`);
