@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// GET all teams with members count
+// GET all teams with members count and company info
 export async function GET() {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("teams")
-      .select("*, members:team_members(count)")
+      .select("*, members:team_members(count), company:companies(id, name, slug)")
       .order("created_at", { ascending: false });
 
     if (error) throw error;

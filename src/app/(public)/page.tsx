@@ -263,6 +263,22 @@ export default async function Home() {
                   <span>Setup in 2 minutes</span>
                 </div>
               </div>
+
+              {/* For Companies link */}
+              <div className="pt-4">
+                <Link
+                  href="/company/register"
+                  className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-white/40 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                >
+                  <Users className="w-4 h-4" />
+                  <span>
+                    Managing a team?{" "}
+                    <span className="underline underline-offset-2">
+                      Register your company
+                    </span>
+                  </span>
+                </Link>
+              </div>
             </div>
 
             {/* Right side - Animated Demo */}

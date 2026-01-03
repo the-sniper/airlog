@@ -14,6 +14,7 @@ import {
   RefreshCw,
   MoreVertical,
   Mail,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,12 +34,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { UserSelect, type UserOption } from "@/components/ui/user-select";
 import type { Team, TeamMember, TeamWithMembers } from "@/types";
 
 interface TeamWithCount extends Team {
   members: { count: number }[];
+  company?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
 }
 
 export default function TeamsPage() {
@@ -89,8 +102,20 @@ export default function TeamsPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteError, setInviteError] = useState<string | null>(null);
 
+  // Assign to company state
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [assignCompanyDialog, setAssignCompanyDialog] = useState<{
+    open: boolean;
+    team: TeamWithCount | null;
+  }>({ open: false, team: null });
+  const [selectedCompany, setSelectedCompany] = useState<string>("");
+  const [assigningCompany, setAssigningCompany] = useState(false);
+
   useEffect(() => {
     fetchTeams();
+    fetchCompanies();
   }, []);
 
   async function fetchTeams() {
@@ -109,6 +134,45 @@ export default function TeamsPage() {
       if (res.ok) setSelectedTeam(await res.json());
     } finally {
       setLoadingTeam(false);
+    }
+  }
+
+  async function fetchCompanies() {
+    try {
+      const res = await fetch("/api/admin/companies");
+      if (res.ok) {
+        const data = await res.json();
+        setCompanies(
+          data.map((c: { id: string; name: string }) => ({
+            id: c.id,
+            name: c.name,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+    }
+  }
+
+  async function handleAssignToCompany() {
+    if (!assignCompanyDialog.team || !selectedCompany) return;
+    setAssigningCompany(true);
+    try {
+      const res = await fetch(`/api/admin/companies/${selectedCompany}/teams`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ team_id: assignCompanyDialog.team.id }),
+      });
+      if (res.ok) {
+        toast({ title: "Team assigned to company!", variant: "success" });
+        setAssignCompanyDialog({ open: false, team: null });
+        setSelectedCompany("");
+        fetchTeams();
+      } else {
+        toast({ title: "Failed to assign team", variant: "destructive" });
+      }
+    } finally {
+      setAssigningCompany(false);
     }
   }
 
@@ -457,10 +521,27 @@ export default function TeamsPage() {
                       <Users className="w-4 h-4 text-muted-foreground" />
                       <div>
                         <p className="font-medium">{team.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {team.members?.[0]?.count || 0} member
-                          {(team.members?.[0]?.count || 0) !== 1 ? "s" : ""}
-                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>
+                            {team.members?.[0]?.count || 0} member
+                            {(team.members?.[0]?.count || 0) !== 1 ? "s" : ""}
+                          </span>
+                          {team.company && (
+                            <>
+                              <span>•</span>
+                              <span className="flex items-center gap-1">
+                                <Building2 className="w-3 h-3" />
+                                {team.company.name}
+                              </span>
+                            </>
+                          )}
+                          {!team.company && (
+                            <>
+                              <span>•</span>
+                              <span className="text-amber-500">Legacy</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -487,6 +568,20 @@ export default function TeamsPage() {
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
+                      {!team.company && companies.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 opacity-0 group-hover:opacity-100 text-primary hidden sm:inline-flex"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAssignCompanyDialog({ open: true, team });
+                          }}
+                        >
+                          <Building2 className="w-4 h-4 mr-1" />
+                          Assign
+                        </Button>
+                      )}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -525,6 +620,17 @@ export default function TeamsPage() {
                             <Trash2 className="w-4 h-4 mr-2" />
                             Delete
                           </DropdownMenuItem>
+                          {!team.company && companies.length > 0 && (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAssignCompanyDialog({ open: true, team });
+                              }}
+                            >
+                              <Building2 className="w-4 h-4 mr-2" />
+                              Assign to Company
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                       <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -1108,6 +1214,65 @@ export default function TeamsPage() {
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Remove
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign to Company Dialog */}
+      <Dialog
+        open={assignCompanyDialog.open}
+        onOpenChange={(open) =>
+          setAssignCompanyDialog({
+            open,
+            team: open ? assignCompanyDialog.team : null,
+          })
+        }
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Team to Company</DialogTitle>
+            <DialogDescription>
+              Assign &quot;{assignCompanyDialog.team?.name}&quot; to a company.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Select Company</Label>
+              <Select
+                value={selectedCompany}
+                onValueChange={setSelectedCompany}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a company..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                setAssignCompanyDialog({ open: false, team: null })
+              }
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssignToCompany}
+              disabled={assigningCompany || !selectedCompany}
+            >
+              {assigningCompany && (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              )}
+              Assign to Company
             </Button>
           </DialogFooter>
         </DialogContent>

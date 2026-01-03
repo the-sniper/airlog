@@ -9,23 +9,20 @@ import {
   FolderKanban,
   Users2,
   LogOut,
-  UserPlus,
   Menu,
-  Bell,
-  Settings,
   X,
   ChevronRight,
   Sun,
   Moon,
   Clock,
-  Gauge,
-  Plus,
+  Settings,
   Building2,
+  Plus,
+  Shield,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useTheme } from "@/components/common/theme-provider";
 import { Button } from "@/components/ui/button";
-import { NotificationCenter } from "@/components/admin/notification-center";
 import {
   Dialog,
   DialogContent,
@@ -35,27 +32,38 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export function AdminSidebar() {
+export function CompanySidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
-  // Check if a nav item is active
-  const isActive = (href: string) => {
-    if (href === "/admin") {
-      // Dashboard is only active for exactly /admin
-      return pathname === "/admin";
+  useEffect(() => {
+    async function checkRole() {
+      try {
+        const res = await fetch("/api/company/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setIsOwner(data.role === "owner");
+        }
+      } catch {}
     }
-    if (href === "/admin/sessions") {
-      // Sessions is active for /admin/sessions/*
-      return pathname.startsWith("/admin/sessions");
+    checkRole();
+  }, []);
+
+  const isActive = (href: string) => {
+    if (href === "/company") {
+      return pathname === "/company";
+    }
+    if (href === "/company/sessions") {
+      return pathname.startsWith("/company/sessions");
     }
     return pathname.startsWith(href);
   };
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/admin/login");
+    await fetch("/api/company/auth/logout", { method: "POST" });
+    router.push("/company/login");
     router.refresh();
   };
 
@@ -82,9 +90,9 @@ export function AdminSidebar() {
         </div>
         <nav className="flex-1 p-4 space-y-1">
           <Link
-            href="/admin"
+            href="/company"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin")
+              isActive("/company")
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
@@ -93,20 +101,9 @@ export function AdminSidebar() {
             Dashboard
           </Link>
           <Link
-            href="/admin/companies"
+            href="/company/sessions"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/companies")
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <Building2 className="w-4 h-4" strokeWidth={1.75} />
-            Companies
-          </Link>
-          <Link
-            href="/admin/sessions"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/sessions")
+              isActive("/company/sessions")
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
@@ -115,9 +112,9 @@ export function AdminSidebar() {
             Sessions
           </Link>
           <Link
-            href="/admin/teams"
+            href="/company/teams"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/teams")
+              isActive("/company/teams")
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
@@ -126,24 +123,34 @@ export function AdminSidebar() {
             Teams
           </Link>
           <Link
-            href="/admin/usage"
+            href="/company/settings"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/usage")
+              isActive("/company/settings")
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
           >
-            <Gauge className="w-4 h-4" strokeWidth={1.75} />
-            Usage
+            <Building2 className="w-4 h-4" strokeWidth={1.75} />
+            Company Settings
           </Link>
+          {isOwner && (
+            <Link
+              href="/company/admins"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive("/company/admins")
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              <Shield className="w-4 h-4" strokeWidth={1.75} />
+              Manage Admins
+            </Link>
+          )}
         </nav>
         <div className="p-4 border-t border-border/50 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">Admin Dashboard</p>
-            <div className="flex items-center gap-1">
-              <NotificationCenter />
-              <ThemeToggle />
-            </div>
+            <p className="text-xs text-muted-foreground">Company Admin</p>
+            <ThemeToggle />
           </div>
           <Button
             variant="ghost"
@@ -182,31 +189,40 @@ export function AdminSidebar() {
   );
 }
 
-export function AdminMobileHeader({
-  hideBottomNav = false,
-  hideTopHeader = false,
-}: { hideBottomNav?: boolean; hideTopHeader?: boolean } = {}) {
+export function CompanyMobileHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    async function checkRole() {
+      try {
+        const res = await fetch("/api/company/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setIsOwner(data.role === "owner");
+        }
+      } catch {}
+    }
+    checkRole();
+  }, []);
 
   const isActive = (href: string) => {
-    if (href === "/admin") {
-      // Dashboard is only active for exactly /admin
-      return pathname === "/admin";
+    if (href === "/company") {
+      return pathname === "/company";
     }
-    if (href === "/admin/sessions") {
-      // Sessions is active for /admin/sessions/*
-      return pathname.startsWith("/admin/sessions");
+    if (href === "/company/sessions") {
+      return pathname.startsWith("/company/sessions");
     }
     return pathname.startsWith(href);
   };
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/admin/login");
+    await fetch("/api/company/auth/logout", { method: "POST" });
+    router.push("/company/login");
     router.refresh();
   };
 
@@ -226,7 +242,6 @@ export function AdminMobileHeader({
     } else {
       document.body.style.overflow = "";
     }
-
     return () => {
       document.body.style.overflow = "";
     };
@@ -234,44 +249,36 @@ export function AdminMobileHeader({
 
   return (
     <>
-      {/* Top Header - hidden when hideTopHeader is true (e.g., on tester pages where TesterHeader is shown) */}
-      {!hideTopHeader && (
-        <header className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50">
-          <div className="flex items-center justify-between h-full px-4">
-            <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="/logo.svg"
-                alt="AirLog"
-                width={90}
-                height={24}
-                className="dark:hidden"
-              />
-              <Image
-                src="/logo-dark.svg"
-                alt="AirLog"
-                width={90}
-                height={24}
-                className="hidden dark:block"
-              />
-            </Link>
-            <div className="flex items-center gap-1">
-              {/* Notifications */}
-              <NotificationCenter />
-
-              {/* Hamburger Menu */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => setDrawerOpen(true)}
-                aria-label="Open menu"
-              >
-                <Menu className="w-5 h-5" strokeWidth={1.75} />
-              </Button>
-            </div>
-          </div>
-        </header>
-      )}
+      {/* Top Header */}
+      <header className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50">
+        <div className="flex items-center justify-between h-full px-4">
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/logo.svg"
+              alt="AirLog"
+              width={90}
+              height={24}
+              className="dark:hidden"
+            />
+            <Image
+              src="/logo-dark.svg"
+              alt="AirLog"
+              width={90}
+              height={24}
+              className="hidden dark:block"
+            />
+          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5" strokeWidth={1.75} />
+          </Button>
+        </div>
+      </header>
 
       {/* Mobile Drawer */}
       <div
@@ -324,10 +331,10 @@ export function AdminMobileHeader({
           <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6">
             <div className="space-y-2">
               <Link
-                href="/admin"
+                href="/company"
                 onClick={() => setDrawerOpen(false)}
                 className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/admin")
+                  isActive("/company")
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-transparent bg-muted/30 text-foreground hover:border-border"
                 }`}
@@ -335,7 +342,7 @@ export function AdminMobileHeader({
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isActive("/admin")
+                      isActive("/company")
                         ? "bg-primary text-primary-foreground"
                         : "bg-background border border-border/60 text-muted-foreground"
                     }`}
@@ -353,10 +360,10 @@ export function AdminMobileHeader({
               </Link>
 
               <Link
-                href="/admin/sessions"
+                href="/company/sessions"
                 onClick={() => setDrawerOpen(false)}
                 className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/admin/sessions")
+                  isActive("/company/sessions")
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-transparent bg-muted/30 text-foreground hover:border-border"
                 }`}
@@ -364,7 +371,7 @@ export function AdminMobileHeader({
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isActive("/admin/sessions")
+                      isActive("/company/sessions")
                         ? "bg-primary text-primary-foreground"
                         : "bg-background border border-border/60 text-muted-foreground"
                     }`}
@@ -374,7 +381,7 @@ export function AdminMobileHeader({
                   <div>
                     <p className="font-medium">Sessions</p>
                     <p className="text-xs text-muted-foreground">
-                      Browse and manage sessions
+                      Manage test sessions
                     </p>
                   </div>
                 </div>
@@ -382,10 +389,10 @@ export function AdminMobileHeader({
               </Link>
 
               <Link
-                href="/admin/teams"
+                href="/company/teams"
                 onClick={() => setDrawerOpen(false)}
                 className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/admin/teams")
+                  isActive("/company/teams")
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-transparent bg-muted/30 text-foreground hover:border-border"
                 }`}
@@ -393,7 +400,7 @@ export function AdminMobileHeader({
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isActive("/admin/teams")
+                      isActive("/company/teams")
                         ? "bg-primary text-primary-foreground"
                         : "bg-background border border-border/60 text-muted-foreground"
                     }`}
@@ -403,7 +410,7 @@ export function AdminMobileHeader({
                   <div>
                     <p className="font-medium">Teams</p>
                     <p className="text-xs text-muted-foreground">
-                      Invite and collaborate
+                      Manage your testing teams
                     </p>
                   </div>
                 </div>
@@ -411,10 +418,10 @@ export function AdminMobileHeader({
               </Link>
 
               <Link
-                href="/admin/usage"
+                href="/company/settings"
                 onClick={() => setDrawerOpen(false)}
                 className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/admin/usage")
+                  isActive("/company/settings")
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-transparent bg-muted/30 text-foreground hover:border-border"
                 }`}
@@ -422,24 +429,54 @@ export function AdminMobileHeader({
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isActive("/admin/usage")
+                      isActive("/company/settings")
                         ? "bg-primary text-primary-foreground"
                         : "bg-background border border-border/60 text-muted-foreground"
                     }`}
                   >
-                    <Gauge className="w-5 h-5" strokeWidth={1.75} />
+                    <Building2 className="w-5 h-5" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-medium">Usage</p>
+                    <p className="font-medium">Company Settings</p>
                     <p className="text-xs text-muted-foreground">
-                      Monitor API costs
+                      Update company profile
                     </p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
               </Link>
+
+              {isOwner && (
+                <Link
+                  href="/company/admins"
+                  onClick={() => setDrawerOpen(false)}
+                  className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                    isActive("/company/admins")
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        isActive("/company/admins")
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-background border border-border/60 text-muted-foreground"
+                      }`}
+                    >
+                      <Shield className="w-5 h-5" strokeWidth={1.75} />
+                    </div>
+                    <div>
+                      <p className="font-medium">Manage Admins</p>
+                      <p className="text-xs text-muted-foreground">
+                        Add or remove team admins
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Link>
+              )}
             </div>
-            <div className="flex-1" />
           </div>
 
           <div className="px-5 pb-6 space-y-3">
@@ -496,79 +533,73 @@ export function AdminMobileHeader({
       </div>
 
       {/* Bottom Navigation Bar */}
-      {!hideBottomNav && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 z-40">
-          {/* Background with notch cutout effect */}
-          <div className="absolute inset-0 bg-card/95 backdrop-blur-xl border-t border-border/50" />
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 z-40">
+        <div className="absolute inset-0 bg-card/95 backdrop-blur-xl border-t border-border/50" />
 
-          <div className="relative grid grid-cols-5 items-end h-full w-full">
-            <Link
-              href="/admin"
-              className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
-                isActive("/admin")
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <LayoutDashboard className="w-6 h-6" strokeWidth={1.5} />
-              <span className="text-[10px] font-medium">Dashboard</span>
-            </Link>
+        <div className="relative grid grid-cols-5 items-end h-full w-full">
+          <Link
+            href="/company"
+            className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
+              isActive("/company")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutDashboard className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Dashboard</span>
+          </Link>
 
-            <Link
-              href="/admin/sessions"
-              className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
-                isActive("/admin/sessions")
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <FolderKanban className="w-6 h-6" strokeWidth={1.5} />
-              <span className="text-[10px] font-medium">Sessions</span>
-            </Link>
+          <Link
+            href="/company/sessions"
+            className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
+              isActive("/company/sessions")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <FolderKanban className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Sessions</span>
+          </Link>
 
-            {/* Prominent Create Action */}
-            <div className="relative flex flex-col items-center justify-center gap-1 pb-2 h-full w-full">
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2">
-                <Link
-                  href="/admin/sessions/new"
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:scale-105 hover:shadow-xl hover:shadow-primary/30 transition-all border-4 border-background"
-                >
-                  <Plus className="w-7 h-7" strokeWidth={2} />
-                </Link>
-              </div>
-              {/* Spacer matching standard icon size (w-6 h-6) to ensure text alignment */}
-              <div className="w-6 h-6" aria-hidden="true" />
-              <span className="text-[10px] font-medium text-primary">
-                Create
-              </span>
+          {/* Create Button */}
+          <div className="relative flex flex-col items-center justify-center gap-1 pb-2 h-full w-full">
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+              <Link
+                href="/company/sessions/new"
+                className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:scale-105 hover:shadow-xl hover:shadow-primary/30 transition-all border-4 border-background"
+              >
+                <Plus className="w-7 h-7" strokeWidth={2} />
+              </Link>
             </div>
-
-            <Link
-              href="/admin/teams"
-              className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
-                isActive("/admin/teams")
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Users2 className="w-6 h-6" strokeWidth={1.5} />
-              <span className="text-[10px] font-medium">Teams</span>
-            </Link>
-
-            <Link
-              href="/admin/usage"
-              className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
-                isActive("/admin/usage")
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Gauge className="w-6 h-6" strokeWidth={1.5} />
-              <span className="text-[10px] font-medium">Usage</span>
-            </Link>
+            <div className="w-6 h-6" aria-hidden="true" />
+            <span className="text-[10px] font-medium text-primary">Create</span>
           </div>
-        </nav>
-      )}
+
+          <Link
+            href="/company/teams"
+            className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
+              isActive("/company/teams")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Users2 className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Teams</span>
+          </Link>
+
+          <Link
+            href="/company/settings"
+            className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
+              isActive("/company/settings")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Building2 className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Settings</span>
+          </Link>
+        </div>
+      </nav>
 
       <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <DialogContent>

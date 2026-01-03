@@ -2,11 +2,17 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-// Admin authentication
+// Super Admin authentication (platform level)
 const ADMIN_JWT_SECRET = new TextEncoder().encode(
   process.env.ADMIN_JWT_SECRET || "your-secret-key-change-in-production",
 );
 const ADMIN_COOKIE_NAME = "admin_session";
+
+// Company Admin authentication
+const COMPANY_JWT_SECRET = new TextEncoder().encode(
+  process.env.COMPANY_JWT_SECRET || "company-admin-secret-change-in-production",
+);
+const COMPANY_COOKIE_NAME = "company_admin_session";
 
 // Tester authentication
 const USER_JWT_SECRET = new TextEncoder().encode(
@@ -14,9 +20,13 @@ const USER_JWT_SECRET = new TextEncoder().encode(
 );
 const USER_COOKIE_NAME = "user_session";
 
-// Admin routes
+// Super Admin routes (platform admin)
 const ADMIN_PROTECTED_ROUTES = ["/admin"];
 const ADMIN_AUTH_ROUTES = ["/admin/login"];
+
+// Company Admin routes
+const COMPANY_PROTECTED_ROUTES = ["/company"];
+const COMPANY_AUTH_ROUTES = ["/company/login", "/company/register"];
 
 // Tester routes that require authentication
 const TESTER_PROTECTED_ROUTES = [
@@ -34,7 +44,7 @@ const PUBLIC_ROUTES = ["/", "/join"];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // === ADMIN ROUTE HANDLING ===
+  // === SUPER ADMIN ROUTE HANDLING ===
   const isAdminProtectedRoute = ADMIN_PROTECTED_ROUTES.some(
     (route) =>
       pathname.startsWith(route) && !pathname.startsWith("/admin/login"),
@@ -66,6 +76,45 @@ export async function middleware(request: NextRequest) {
     // Authenticated access to admin auth route -> redirect to admin dashboard
     if (isAdminAuthRoute && isAdminAuthenticated) {
       return NextResponse.redirect(new URL("/admin", request.url));
+    }
+
+    return NextResponse.next();
+  }
+
+  // === COMPANY ADMIN ROUTE HANDLING ===
+  const isCompanyProtectedRoute = COMPANY_PROTECTED_ROUTES.some(
+    (route) =>
+      pathname.startsWith(route) &&
+      !pathname.startsWith("/company/login") &&
+      !pathname.startsWith("/company/register"),
+  );
+  const isCompanyAuthRoute = COMPANY_AUTH_ROUTES.some((route) =>
+    pathname.startsWith(route),
+  );
+
+  if (isCompanyProtectedRoute || isCompanyAuthRoute) {
+    const companyToken = request.cookies.get(COMPANY_COOKIE_NAME)?.value;
+    let isCompanyAuthenticated = false;
+
+    if (companyToken) {
+      try {
+        await jwtVerify(companyToken, COMPANY_JWT_SECRET);
+        isCompanyAuthenticated = true;
+      } catch {
+        isCompanyAuthenticated = false;
+      }
+    }
+
+    // Unauthenticated access to protected company route -> redirect to company login
+    if (isCompanyProtectedRoute && !isCompanyAuthenticated) {
+      const loginUrl = new URL("/company/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Authenticated access to company auth route -> redirect to company dashboard
+    if (isCompanyAuthRoute && isCompanyAuthenticated) {
+      return NextResponse.redirect(new URL("/company", request.url));
     }
 
     return NextResponse.next();
@@ -113,8 +162,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Admin routes
+    // Super Admin routes
     "/admin/:path*",
+    // Company Admin routes
+    "/company/:path*",
     // Tester protected routes - need both exact and subpath matches
     "/dashboard",
     "/dashboard/:path*",
