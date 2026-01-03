@@ -14,6 +14,7 @@ import {
   Check,
   RefreshCw,
   MoreVertical,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
+import { UserSelect, type UserOption } from "@/components/ui/user-select";
 import type { Team, TeamMember, TeamWithMembers } from "@/types";
 
 interface TeamWithCount extends Team {
@@ -69,6 +71,15 @@ export default function CompanyTeamsPage() {
   const [editTeamName, setEditTeamName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Add member dialog states
+  const [addMemberDialog, setAddMemberDialog] = useState(false);
+  const [memberTab, setMemberTab] = useState<"users" | "invite">("users");
+  const [selectedUsersForMember, setSelectedUsersForMember] = useState<
+    UserOption[]
+  >([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTeams();
@@ -176,6 +187,180 @@ export default function CompanyTeamsPage() {
         fetchTeamDetails(selectedTeam.id);
         fetchTeams();
       }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function resetMemberDialog() {
+    setAddMemberDialog(false);
+    setMemberTab("users");
+    setSelectedUsersForMember([]);
+    setInviteEmail("");
+    setInviteError(null);
+  }
+
+  async function handleAddUsersAsMember() {
+    if (!selectedTeam || selectedUsersForMember.length === 0) return;
+    setSubmitting(true);
+    try {
+      const membersToAdd = selectedUsersForMember.map((user) => ({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        user_id: user.id,
+      }));
+
+      const res = await fetch(`/api/company/teams/${selectedTeam.id}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ testers: membersToAdd }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        const addedCount = result.added || 0;
+
+        if (addedCount > 0) {
+          toast({
+            title: "Members added!",
+            description: `Successfully added ${addedCount} member${
+              addedCount > 1 ? "s" : ""
+            }.`,
+            variant: "success",
+          });
+        } else {
+          toast({
+            title: "No members added",
+            description:
+              result.message ||
+              "Selected users are already members of this team.",
+          });
+        }
+        resetMemberDialog();
+        fetchTeamDetails(selectedTeam.id);
+        fetchTeams();
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add members. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleMemberInviteByEmail() {
+    if (!selectedTeam || !inviteEmail.trim()) {
+      setInviteError("Email is required");
+      return;
+    }
+
+    const normalizedEmail = inviteEmail.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      setInviteError("Please enter a valid email address");
+      return;
+    }
+
+    setSubmitting(true);
+    setInviteError(null);
+
+    try {
+      // Use company invite endpoint
+      const res = await fetch("/api/company/users/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      const result = await res.json();
+
+      if (result.already_member) {
+        // User is already in company - add them to team directly
+        const addRes = await fetch(
+          `/api/company/teams/${selectedTeam.id}/members`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              testers: [
+                {
+                  first_name: result.user.first_name,
+                  last_name: result.user.last_name,
+                  email: result.user.email,
+                  user_id: result.user.id,
+                },
+              ],
+            }),
+          }
+        );
+
+        if (addRes.ok) {
+          toast({
+            title: "Member added!",
+            description: `${result.user.first_name} ${result.user.last_name} has been added to the team.`,
+            variant: "success",
+          });
+          resetMemberDialog();
+          fetchTeamDetails(selectedTeam.id);
+          fetchTeams();
+        } else {
+          setInviteError(
+            "Failed to add member. They may already be in this team."
+          );
+        }
+      } else if (result.already_registered) {
+        // User exists and was added to company - now add to team
+        const addRes = await fetch(
+          `/api/company/teams/${selectedTeam.id}/members`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              testers: [
+                {
+                  first_name: result.user.first_name,
+                  last_name: result.user.last_name,
+                  email: result.user.email,
+                  user_id: result.user.id,
+                },
+              ],
+            }),
+          }
+        );
+
+        if (addRes.ok) {
+          toast({
+            title: "Member added!",
+            description: `${result.user.first_name} ${result.user.last_name} has been added to your company and team.`,
+            variant: "success",
+          });
+          resetMemberDialog();
+          fetchTeamDetails(selectedTeam.id);
+          fetchTeams();
+        } else {
+          setInviteError("Failed to add member to team.");
+        }
+      } else if (res.status === 409) {
+        setInviteError(
+          result.error || "An invite is already pending for this email"
+        );
+      } else if (res.ok) {
+        toast({
+          title: "Invite sent!",
+          description: `Signup invitation sent to ${normalizedEmail}. They will be added when they register.`,
+          variant: "success",
+        });
+        resetMemberDialog();
+      } else {
+        setInviteError(result.error || "Failed to send invite");
+      }
+    } catch (error) {
+      console.error("Error inviting by email:", error);
+      setInviteError("An error occurred. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -356,6 +541,10 @@ export default function CompanyTeamsPage() {
                       className={`w-4 h-4 ${loadingTeam ? "animate-spin" : ""}`}
                     />
                   </Button>
+                  <Button size="sm" onClick={() => setAddMemberDialog(true)}>
+                    <UserPlus className="w-4 h-4" />
+                    Add Member
+                  </Button>
                 </div>
               )}
               <CardTitle className="text-lg sm:order-1">
@@ -433,8 +622,12 @@ export default function CompanyTeamsPage() {
                 <UserPlus className="w-12 h-12 mb-4 text-muted-foreground opacity-50" />
                 <h3 className="font-semibold mb-2">No members yet</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Share the invite link to add team members
+                  Add team members to this team
                 </p>
+                <Button onClick={() => setAddMemberDialog(true)} size="sm">
+                  <UserPlus className="w-4 h-4" />
+                  Add Member
+                </Button>
               </div>
             ) : (
               <div className="space-y-2">
@@ -611,6 +804,135 @@ export default function CompanyTeamsPage() {
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Remove
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Member Dialog */}
+      <Dialog
+        open={addMemberDialog}
+        onOpenChange={(open) => {
+          if (!open) resetMemberDialog();
+          else setAddMemberDialog(true);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Team Member</DialogTitle>
+            <DialogDescription>
+              Add a registered user or invite someone by email to{" "}
+              {selectedTeam?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Tab Buttons */}
+          <div className="flex gap-2 border-b border-border pb-4">
+            <Button
+              variant={memberTab === "users" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setMemberTab("users")}
+              className="gap-1.5 flex-1"
+            >
+              <Users className="w-4 h-4" />
+              From Users
+            </Button>
+            <Button
+              variant={memberTab === "invite" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setMemberTab("invite")}
+              className="gap-1.5 flex-1"
+            >
+              <Mail className="w-4 h-4" />
+              Invite by Email
+            </Button>
+          </div>
+
+          {/* From Users Tab */}
+          {memberTab === "users" && (
+            <div className="space-y-4 py-2">
+              <UserSelect
+                multiple
+                companyScoped
+                selectedUsers={selectedUsersForMember}
+                onSelect={setSelectedUsersForMember}
+                excludeIds={
+                  (selectedTeam?.members
+                    ?.map((m) => m.user_id)
+                    .filter(Boolean) as string[]) || []
+                }
+                excludeEmails={
+                  (selectedTeam?.members
+                    ?.map((m) => m.email?.toLowerCase())
+                    .filter(Boolean) as string[]) || []
+                }
+                placeholder="Search company users..."
+                maxResults={20}
+              />
+            </div>
+          )}
+
+          {/* Invite by Email Tab */}
+          {memberTab === "invite" && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-lg bg-secondary/30 p-4 text-sm text-muted-foreground">
+                <p>
+                  Enter an email address to invite someone. If they&apos;re
+                  already registered, they&apos;ll be added to your company and
+                  team. Otherwise, they&apos;ll receive a signup invitation.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="memberInviteEmail">Email Address *</Label>
+                <Input
+                  id="memberInviteEmail"
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => {
+                    setInviteEmail(e.target.value);
+                    setInviteError(null);
+                  }}
+                  placeholder="someone@example.com"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleMemberInviteByEmail();
+                    }
+                  }}
+                />
+              </div>
+              {inviteError && (
+                <p className="text-sm text-destructive">{inviteError}</p>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={resetMemberDialog}>
+              Cancel
+            </Button>
+            {memberTab === "users" && (
+              <Button
+                onClick={handleAddUsersAsMember}
+                disabled={submitting || selectedUsersForMember.length === 0}
+              >
+                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Add{" "}
+                {selectedUsersForMember.length > 0
+                  ? `${selectedUsersForMember.length} Member${
+                      selectedUsersForMember.length > 1 ? "s" : ""
+                    }`
+                  : "Members"}
+              </Button>
+            )}
+            {memberTab === "invite" && (
+              <Button
+                onClick={handleMemberInviteByEmail}
+                disabled={submitting || !inviteEmail.trim()}
+              >
+                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Send Invite
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
