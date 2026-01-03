@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import OpenAI from "openai";
 import { trackOpenAIUsage } from "@/lib/track-usage";
+import { getCurrentCompanyAdmin } from "@/lib/company-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -15,11 +16,33 @@ interface FilterParams {
   testerId?: string;
 }
 
+async function checkAccess(id: string) {
+  const admin = await getCurrentCompanyAdmin();
+  if (!admin) return { error: "Unauthorized", status: 401 };
+
+  const supabase = createAdminClient();
+  const { data: session } = await supabase
+    .from("sessions")
+    .select("company_id")
+    .eq("id", id)
+    .single();
+
+  if (!session || session.company_id !== admin.company_id) {
+    return { error: "Forbidden", status: 403 };
+  }
+  return { supabase };
+}
+
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const { id } = params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status as number });
+
+  const supabase = access.supabase!;
 
   try {
     // Parse optional filter parameters from request body
@@ -35,12 +58,11 @@ export async function POST(
       // No body or invalid JSON - that's fine, use no filters
     }
 
-    // Fetch session with notes
-    const supabase = createAdminClient();
+    // Fetch session with notes (Using same supabase client)
     const { data: session, error } = await supabase
       .from("sessions")
       .select(
-        "*, scenes (*), testers (*), notes (*, scene:scenes (*), tester:testers (*))",
+        "*, scenes (*), testers (*), notes (*, scene:scenes (*), tester:testers (*))"
       )
       .eq("id", id)
       .single();
@@ -52,7 +74,7 @@ export async function POST(
     if (!session.notes || session.notes.length === 0) {
       return NextResponse.json(
         { error: "No notes to summarize" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -70,14 +92,14 @@ export async function POST(
           if (filters.testerId && note.tester_id !== filters.testerId)
             return false;
           return true;
-        },
+        }
       );
     }
 
     if (filteredNotes.length === 0) {
       return NextResponse.json(
         { error: "No notes match the selected filters" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -90,17 +112,17 @@ export async function POST(
           }) =>
             note.tester
               ? `${note.tester.first_name} ${note.tester.last_name}`
-              : "Unknown",
-        ),
-      ),
+              : "Unknown"
+        )
+      )
     );
     const sceneNames = Array.from(
       new Set(
         filteredNotes.map(
           (note: { scene?: { name: string } | null }) =>
-            note.scene?.name || "Unknown",
-        ),
-      ),
+            note.scene?.name || "Unknown"
+        )
+      )
     );
 
     // Format notes for the AI prompt
@@ -120,7 +142,7 @@ export async function POST(
             ? `${note.tester.first_name} ${note.tester.last_name}`
             : "Unknown Tester";
           return `[Category: ${note.category.toUpperCase()}] [Scene: ${sceneName}] [Tester: ${testerName}]\n"${transcript}"`;
-        },
+        }
       )
       .join("\n\n");
 
@@ -230,14 +252,14 @@ IMPORTANT: Be generous with including notes as actionable items. Most tester fee
       if (error.status === 401) {
         return NextResponse.json(
           { error: "Invalid OpenAI API key. Please check your configuration." },
-          { status: 500 },
+          { status: 500 }
         );
       }
     }
 
     return NextResponse.json(
       { error: "Failed to generate summary" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

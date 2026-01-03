@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/server";
 import { trackSMTPUsage } from "@/lib/track-usage";
+import { getCurrentCompanyAdmin } from "@/lib/company-auth";
 
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
@@ -14,11 +15,33 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+async function checkAccess(id: string) {
+  const admin = await getCurrentCompanyAdmin();
+  if (!admin) return { error: "Unauthorized", status: 401 };
+
+  const supabase = createAdminClient();
+  const { data: session } = await supabase
+    .from("sessions")
+    .select("company_id")
+    .eq("id", id)
+    .single();
+
+  if (!session || session.company_id !== admin.company_id) {
+    return { error: "Forbidden", status: 403 };
+  }
+  return { supabase };
+}
+
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status as number });
+
+  const supabase = access.supabase!;
 
   try {
     const { testers, sessionName } = await req.json();
@@ -26,11 +49,10 @@ export async function POST(
     if (!testers || !Array.isArray(testers) || testers.length === 0) {
       return NextResponse.json(
         { error: "No testers provided" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const supabase = createAdminClient();
     // Fetch session join code
     const { data: sessionData, error: sessionError } = await supabase
       .from("sessions")
@@ -42,7 +64,7 @@ export async function POST(
       console.error("Error fetching session join code:", sessionError);
       return NextResponse.json(
         { error: "Failed to fetch session join code" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 

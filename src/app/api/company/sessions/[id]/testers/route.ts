@@ -1,13 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { generateInviteToken } from "@/lib/utils";
+import { getCurrentCompanyAdmin } from "@/lib/company-auth";
+
+async function checkAccess(id: string) {
+  const admin = await getCurrentCompanyAdmin();
+  if (!admin) return { error: "Unauthorized", status: 401 };
+
+  const supabase = createAdminClient();
+  const { data: session } = await supabase
+    .from("sessions")
+    .select("company_id")
+    .eq("id", id)
+    .single();
+
+  if (!session || session.company_id !== admin.company_id) {
+    return { error: "Forbidden", status: 403 };
+  }
+  return { supabase };
+}
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = createAdminClient();
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status });
+
+  const supabase = access.supabase!;
   const { data } = await supabase
     .from("testers")
     .select("*")
@@ -18,15 +40,19 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status });
+
+  const supabase = access.supabase!;
   const body = await req.json();
-  const supabase = createAdminClient();
 
   // Helper to find user by email (case-insensitive)
   async function findUserByEmail(
-    email: string | null | undefined,
+    email: string | null | undefined
   ): Promise<string | null> {
     if (!email) return null;
     const { data } = await supabase
@@ -69,7 +95,7 @@ export async function POST(
             ? userMap.get(normalizedEmail) || null
             : null,
         };
-      },
+      }
     );
 
     const { data, error } = await supabase
@@ -88,7 +114,7 @@ export async function POST(
   if (!first_name || !last_name) {
     return NextResponse.json(
       { error: "First name and last name are required" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -115,11 +141,28 @@ export async function POST(
   return NextResponse.json(data, { status: 201 });
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  // Safe DELETE: Check session access first
+  const { id } = await params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status });
+
   const testerId = new URL(req.url).searchParams.get("testerId");
   if (!testerId)
     return NextResponse.json({ error: "ID required" }, { status: 400 });
-  const supabase = createAdminClient();
-  await supabase.from("testers").delete().eq("id", testerId);
+
+  const supabase = access.supabase!;
+  
+  // Ensure the tester belongs to the session (extra safety)
+  await supabase
+    .from("testers")
+    .delete()
+    .eq("id", testerId)
+    .eq("session_id", id);
+    
   return NextResponse.json({ success: true });
 }

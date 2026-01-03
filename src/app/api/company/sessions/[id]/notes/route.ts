@@ -1,13 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { getCurrentCompanyAdmin } from "@/lib/company-auth";
+
+async function checkAccess(id: string) {
+  const admin = await getCurrentCompanyAdmin();
+  if (!admin) return { error: "Unauthorized", status: 401 };
+
+  const supabase = createAdminClient();
+  const { data: session } = await supabase
+    .from("sessions")
+    .select("company_id")
+    .eq("id", id)
+    .single();
+
+  if (!session || session.company_id !== admin.company_id) {
+    return { error: "Forbidden", status: 403 };
+  }
+  return { supabase };
+}
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const { id } = params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status });
+
+  const supabase = access.supabase!;
   const testerId = new URL(req.url).searchParams.get("testerId");
-  const supabase = createAdminClient();
+
   let query = supabase
     .from("notes")
     .select("*, scene:scenes (*), tester:testers (*)")
@@ -20,9 +43,14 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const { id } = params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status });
+
+  const supabase = access.supabase!;
   const body = await req.json();
   const {
     scene_id,
@@ -35,9 +63,9 @@ export async function POST(
   if (!scene_id || !tester_id)
     return NextResponse.json(
       { error: "Scene/Tester required" },
-      { status: 400 },
+      { status: 400 }
     );
-  const supabase = createAdminClient();
+
   const { data } = await supabase
     .from("notes")
     .insert({

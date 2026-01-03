@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import type { PollQuestion } from "@/types";
+import { getCurrentCompanyAdmin } from "@/lib/company-auth";
 
 interface PollQuestionInput {
   question: string;
@@ -9,17 +9,38 @@ interface PollQuestionInput {
   required?: boolean;
 }
 
+async function checkAccess(id: string) {
+  const admin = await getCurrentCompanyAdmin();
+  if (!admin) return { error: "Unauthorized", status: 401 };
+
+  const supabase = createAdminClient();
+  const { data: session } = await supabase
+    .from("sessions")
+    .select("company_id")
+    .eq("id", id)
+    .single();
+
+  if (!session || session.company_id !== admin.company_id) {
+    return { error: "Forbidden", status: 403 };
+  }
+  return { supabase };
+}
+
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const { id } = params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status });
+
   const body = await req.json();
   const { name, description, poll_questions } = body;
   if (!name)
     return NextResponse.json({ error: "Scene name required" }, { status: 400 });
 
-  const supabase = createAdminClient();
+  const supabase = access.supabase!;
 
   // Get the current max order_index for this session
   const { data: existingScenes } = await supabase
@@ -58,7 +79,7 @@ export async function POST(
         options: q.options,
         order_index: index,
         required: q.required || false,
-      }),
+      })
     );
 
     await supabase.from("poll_questions").insert(pollQuestionsToInsert);
@@ -76,15 +97,19 @@ export async function POST(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const { id } = params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status });
+
   const body = await req.json();
   const { sceneId, name, description, poll_questions, order_index } = body;
   if (!sceneId)
     return NextResponse.json({ error: "Scene ID required" }, { status: 400 });
 
-  const supabase = createAdminClient();
+  const supabase = access.supabase!;
   const updateData: {
     name?: string;
     description?: string | null;
@@ -94,18 +119,32 @@ export async function PATCH(
   if (description !== undefined) updateData.description = description || null;
   if (order_index !== undefined) updateData.order_index = order_index;
 
+  // Verify scene belongs to session
+  const { data: scene } = await supabase
+    .from("scenes")
+    .select("id")
+    .eq("id", sceneId)
+    .eq("session_id", id)
+    .single();
+
+  if (!scene) {
+    return NextResponse.json(
+      { error: "Scene not found in this session" },
+      { status: 404 }
+    );
+  }
+
   const { data, error } = await supabase
     .from("scenes")
     .update(updateData)
     .eq("id", sceneId)
-    .eq("session_id", id)
     .select()
     .single();
 
   if (error)
     return NextResponse.json(
       { error: "Failed to update scene" },
-      { status: 500 },
+      { status: 500 }
     );
 
   // Update poll questions if provided
@@ -123,7 +162,7 @@ export async function PATCH(
           options: q.options,
           order_index: index,
           required: q.required || false,
-        }),
+        })
       );
 
       await supabase.from("poll_questions").insert(pollQuestionsToInsert);
@@ -142,20 +181,24 @@ export async function PATCH(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const { id } = params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status });
+
   const body = await req.json();
   const { sceneIds } = body; // Array of scene IDs in the new order
 
   if (!Array.isArray(sceneIds)) {
     return NextResponse.json(
       { error: "sceneIds array required" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
-  const supabase = createAdminClient();
+  const supabase = access.supabase!;
 
   // Update order_index for all scenes
   const updates = sceneIds.map((sceneId: string, index: number) => ({
@@ -169,7 +212,7 @@ export async function PUT(
       .from("scenes")
       .update({ order_index: update.order_index })
       .eq("id", update.id)
-      .eq("session_id", id),
+      .eq("session_id", id)
   );
 
   await Promise.all(updatePromises);
@@ -179,17 +222,22 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
+  const { id } = params;
+  const access = await checkAccess(id);
+  if (access.error)
+    return NextResponse.json({ error: access.error }, { status: access.status });
+
   const sceneId = new URL(req.url).searchParams.get("sceneId");
   if (!sceneId)
     return NextResponse.json({ error: "Scene ID required" }, { status: 400 });
 
-  const supabase = createAdminClient();
+  const supabase = access.supabase!;
   await supabase
     .from("scenes")
     .delete()
     .eq("id", sceneId)
-    .eq("session_id", params.id);
+    .eq("session_id", id);
   return NextResponse.json({ success: true });
 }
