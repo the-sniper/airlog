@@ -1626,6 +1626,7 @@ export default function SessionDetailPage({
       const validPollQuestions = editScenePollQuestions
         .filter((q) => q.question.trim() && q.options.some((o) => o.trim()))
         .map((q) => ({
+          id: q.id,
           question: q.question.trim(),
           question_type: q.question_type,
           options: q.options.filter((o) => o.trim()),
