@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentCompanyAdmin } from "@/lib/company-auth";
 import { trackSMTPUsage } from "@/lib/track-usage";
+import { notifyUser } from "@/lib/user-system-notifications";
 
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
@@ -116,6 +117,19 @@ export async function POST(request: NextRequest) {
         .eq("id", existingUser.id);
 
       if (updateError) throw updateError;
+
+      // Send notification to the user that they have been added
+      await notifyUser({
+        userId: existingUser.id,
+        type: "company_added",
+        title: `You've been added to ${admin.company.name}`,
+        message: `You have been added to the company ${admin.company.name}. You can now access company resources.`,
+        metadata: {
+          companyId: admin.company.id,
+          companyName: admin.company.name,
+        },
+        emailRecipients: [existingUser.email],
+      });
       
       // Log audit action
       const { logAdminAction } = await import("@/lib/audit-logs");

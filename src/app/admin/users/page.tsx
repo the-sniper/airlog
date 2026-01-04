@@ -14,6 +14,7 @@ import {
   Loader2,
   Ban,
   CheckCircle2,
+  UserMinus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,6 +98,9 @@ export default function AdminUsersPage() {
   const [assignUser, setAssignUser] = useState<User | null>(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
   const [isAssignLoading, setIsAssignLoading] = useState(false);
+
+  const [removingUser, setRemovingUser] = useState<User | null>(null);
+  const [isRemoveLoading, setIsRemoveLoading] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -317,6 +321,43 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleRemoveCompanyClick = (user: User) => {
+    setRemovingUser(user);
+  };
+
+  const handleRemoveCompanySubmit = async () => {
+    if (!removingUser) return;
+    setIsRemoveLoading(true);
+    try {
+      const res = await fetch(`/api/admin/users/${removingUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company_id: null }),
+      });
+
+      if (res.ok) {
+        toast({
+          title: "User removed from company",
+          description: "User has been removed from the company.",
+          variant: "success",
+        });
+        setRemovingUser(null);
+        fetchUsers();
+      } else {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to remove user from company");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsRemoveLoading(false);
+    }
+  };
+
   const UserCard = ({ user }: { user: User }) => {
     // If deleted_at is missing from API but we know it's disabled via some other way, we can't tell easily.
     // But we are manually adding it in optimistic update.
@@ -412,6 +453,15 @@ export default function AdminUsersPage() {
                     <DropdownMenuItem onClick={() => handleAssignClick(user)}>
                       <Building2 className="w-4 h-4 mr-2" />
                       Assign to Company
+                    </DropdownMenuItem>
+                  )}
+                  {user.company && (
+                    <DropdownMenuItem
+                      onClick={() => handleRemoveCompanyClick(user)}
+                      className="text-amber-600 focus:text-amber-700 dark:text-amber-500 dark:focus:text-amber-400"
+                    >
+                      <UserMinus className="w-4 h-4 mr-2" />
+                      Remove from Company
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem
@@ -755,6 +805,59 @@ export default function AdminUsersPage() {
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               )}
               Assign User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove Company Confirmation Dialog */}
+      <Dialog
+        open={!!removingUser}
+        onOpenChange={(open) => !open && setRemovingUser(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove User from Company</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove{" "}
+              <strong>
+                {removingUser?.first_name} {removingUser?.last_name}
+              </strong>{" "}
+              from <strong>{removingUser?.company?.name}</strong>?
+              <br />
+              <br />
+              They will no longer be part of this company and will lose access
+              to any company-specific resources.
+              {removingUser?.company_admins &&
+                removingUser.company_admins.length > 0 && (
+                  <>
+                    <br />
+                    <br />
+                    <strong className="text-amber-600">
+                      Warning: This user is an admin/owner of the company. Their
+                      admin privileges will also be revoked.
+                    </strong>
+                  </>
+                )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setRemovingUser(null)}
+              disabled={isRemoveLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRemoveCompanySubmit}
+              disabled={isRemoveLoading}
+            >
+              {isRemoveLoading && (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              )}
+              Remove from Company
             </Button>
           </DialogFooter>
         </DialogContent>

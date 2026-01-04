@@ -21,6 +21,7 @@ export async function GET() {
       last_name: user.last_name,
       email: user.email,
       created_at: user.created_at,
+      deleted_at: user.deleted_at,
       company: userData?.company || null,
     },
   });

@@ -55,6 +55,15 @@ export async function DELETE(
       user_agent: req.headers.get("user-agent"),
     });
 
+    // 4. Notify User
+    const { notifyUser } = await import("@/lib/user-system-notifications");
+    await notifyUser({
+        userId: id,
+        type: "account_disabled",
+        title: "Account Disabled",
+        message: "Your account has been disabled by an administrator."
+    });
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Error disabling user:", error);
@@ -97,6 +106,67 @@ export async function PATCH(
     if (first_name !== undefined) updates.first_name = first_name;
     if (last_name !== undefined) updates.last_name = last_name;
     if (company_id !== undefined) updates.company_id = company_id;
+
+    // Handle company removal side-effects
+    if (company_id === null && oldUser?.company_id) {
+      // 1. Remove from company_admins if they were an admin
+      const { error: adminError } = await supabase
+        .from("company_admins")
+        .delete()
+        .eq("user_id", id)
+        .eq("company_id", oldUser.company_id);
+
+      if (adminError) {
+        console.error("Error removing company admin:", adminError);
+      }
+
+      // 2. Fetch company name for notification
+      const { data: company } = await supabase
+        .from("companies")
+        .select("name")
+        .eq("id", oldUser.company_id)
+        .single();
+
+      if (company) {
+        // 3. Notify user
+        const { notifyUser } = await import("@/lib/user-system-notifications");
+        await notifyUser({
+          userId: id,
+          type: "company_removed",
+          title: `Removed from ${company.name}`,
+          message: `You have been removed from the company ${company.name}.`,
+          metadata: {
+            companyName: company.name,
+          },
+        });
+      }
+    }
+
+    // Handle company assignment/change side-effects
+    if (company_id && company_id !== oldUser?.company_id) {
+      // 1. Fetch company name for notification
+      const { data: company } = await supabase
+        .from("companies")
+        .select("name")
+        .eq("id", company_id)
+        .single();
+
+      if (company) {
+        // 2. Notify user
+        const { notifyUser } = await import("@/lib/user-system-notifications");
+        await notifyUser({
+          userId: id,
+          type: "company_added",
+          title: `You've been added to ${company.name}`,
+          message: `You have been assigned to the company ${company.name} by an administrator.`,
+          metadata: {
+            companyName: company.name,
+            companyId: company_id,
+          },
+          emailRecipients: [oldUser?.email || email],
+        });
+      }
+    }
 
     // Update public.users
     if (Object.keys(updates).length > 0) {
@@ -195,6 +265,15 @@ async function handleRestore(req: NextRequest, id: string, admin: any) {
             target_id: id,
             ip_address: req.headers.get("x-forwarded-for") || "unknown",
             user_agent: req.headers.get("user-agent"),
+        });
+
+        // 4. Notify User
+        const { notifyUser } = await import("@/lib/user-system-notifications");
+        await notifyUser({
+            userId: id,
+            type: "account_enabled",
+            title: "Account Reactivated",
+            message: "Your account has been reactivated. You can now log in."
         });
 
         return NextResponse.json({ success: true });

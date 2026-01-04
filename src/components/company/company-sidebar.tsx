@@ -38,6 +38,9 @@ import {
 interface CompanyAuthData {
   admin: {
     role: string;
+    user?: {
+      deleted_at?: string | null;
+    };
   };
   company: {
     name: string;
@@ -60,6 +63,12 @@ export function CompanySidebar() {
         const res = await fetch("/api/company/auth/me");
         if (res.ok) {
           const data: CompanyAuthData = await res.json();
+
+          if (data.admin.user?.deleted_at && typeof window !== "undefined") {
+            window.location.href = "/account-disabled";
+            return;
+          }
+
           setIsOwner(data.admin.role === "owner");
           setCompany(data.company);
         }
@@ -283,6 +292,12 @@ export function CompanyMobileHeader() {
         const res = await fetch("/api/company/auth/me");
         if (res.ok) {
           const data: CompanyAuthData = await res.json();
+
+          if (data.admin.user?.deleted_at && typeof window !== "undefined") {
+            window.location.href = "/account-disabled";
+            return;
+          }
+
           setIsOwner(data.admin.role === "owner");
           setCompany(data.company);
         }

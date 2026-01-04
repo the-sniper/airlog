@@ -115,7 +115,7 @@ export async function getCurrentCompanyAdmin(): Promise<CompanyAdmin | null> {
     .select(
       `
       id, company_id, user_id, role, created_at,
-      user:users(id, first_name, last_name, email),
+      user:users(id, first_name, last_name, email, deleted_at),
       company:companies(id, name, slug, logo_url, description, contact_email, subscription_tier, max_teams, max_sessions_per_month, is_active, created_at, updated_at)
     `,
     )

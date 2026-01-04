@@ -76,7 +76,7 @@ export async function POST(
     // Verify team belongs to company
     const { data: team } = await supabase
       .from("teams")
-      .select("id")
+      .select("id, name")
       .eq("id", params.teamId)
       .eq("company_id", admin.company_id)
       .single();
@@ -127,6 +127,29 @@ export async function POST(
       .select();
 
     if (error) throw error;
+
+    // Notify added members
+    const { notifyUser } = await import("@/lib/user-system-notifications");
+    
+    // We can only notify users who have a user_id. 
+    // If they were added by email only (no user_id), they might be external testers?
+    // But usually members have user_id if they are in the system.
+    // The insert returns 'data' which should have user_id if it was passed or generated?
+    // Actually team_members table usually links users.
+    
+    await Promise.all(
+        (data || []).map(async (member) => {
+            if (member.user_id) {
+                await notifyUser({
+                    userId: member.user_id,
+                    type: "team_added",
+                    title: "Added to Team",
+                    message: `You have been added to the team ${team.name}.`,
+                    metadata: { teamName: team.name }
+                });
+            }
+        })
+    );
 
     return NextResponse.json({
       added: data?.length || 0,

@@ -16,7 +16,11 @@ export async function GET() {
       admin: {
         id: admin.id,
         role: admin.role,
-        user: admin.user,
+        user: {
+          ...admin.user,
+          // @ts-ignore - TS might not know about deleted_at yet if interface not updated
+          deleted_at: (admin.user as any).deleted_at
+        },
       },
       company: admin.company,
     });

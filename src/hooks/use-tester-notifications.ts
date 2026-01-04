@@ -12,7 +12,11 @@ export type NotificationKind =
   | "session_completed"
   | "session_restarted"
   | "join_request_approved"
-  | "join_request_rejected";
+  | "join_request_rejected"
+  | "account_disabled"
+  | "account_enabled"
+  | "team_added"
+  | "team_removed";
 
 const toastVariantMap: Record<
   NotificationKind,
@@ -25,6 +29,10 @@ const toastVariantMap: Record<
   session_restarted: "default",
   join_request_approved: "success",
   join_request_rejected: "destructive",
+  account_disabled: "destructive",
+  account_enabled: "success",
+  team_added: "success",
+  team_removed: "warning",
 };
 
 export type Notification = {

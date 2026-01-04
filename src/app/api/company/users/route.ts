@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentCompanyAdmin } from "@/lib/company-auth";
+import { notifyUser } from "@/lib/user-system-notifications";
 
 // GET users belonging to the current company
 export async function GET(request: NextRequest) {
@@ -113,6 +114,19 @@ export async function POST(request: NextRequest) {
         join_method: 'admin_add'
       })
       .eq("id", user.id);
+
+    // Send notification
+    await notifyUser({
+      userId: user.id,
+      type: "company_added",
+      title: `You've been added to ${admin.company.name}`,
+      message: `You have been added to the company ${admin.company.name}. You can now access company resources.`,
+      metadata: {
+        companyId: admin.company.id,
+        companyName: admin.company.name,
+      },
+      emailRecipients: [user.email],
+    });
 
     if (updateError) throw updateError;
 

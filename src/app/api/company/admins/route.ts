@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentCompanyAdmin, isCompanyOwner } from "@/lib/company-auth";
+import { notifyUser } from "@/lib/user-system-notifications";
 import bcrypt from "bcryptjs";
 
 // GET all admins for the current company
@@ -146,6 +147,20 @@ export async function POST(request: NextRequest) {
     .from("users")
     .update({ company_id: admin.company_id })
     .eq("id", userId);
+
+  // Send notification
+  await notifyUser({
+    userId: userId,
+    type: "company_added",
+    title: `You've been added as an Administrator to ${admin.company.name}`,
+    message: `You have been granted administrator access to the company ${admin.company.name}.`,
+    metadata: {
+      companyId: admin.company.id,
+      companyName: admin.company.name,
+      role: role,
+    },
+    emailRecipients: [email.toLowerCase().trim()],
+  });
 
   return NextResponse.json(companyAdmin, { status: 201 });
 }

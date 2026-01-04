@@ -47,8 +47,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; memberId: string }> },
 ) {
   try {
-    const { memberId } = await params;
+    const { memberId, id: teamId } = await params;
     const supabase = await createClient();
+
+    // 1. Fetch info before delete to notify
+    const { data: memberData } = await supabase
+        .from("team_members")
+        .select("user_id, team:teams(name)")
+        .eq("id", memberId)
+        .single();
 
     const { error } = await supabase
       .from("team_members")
@@ -56,6 +63,23 @@ export async function DELETE(
       .eq("id", memberId);
 
     if (error) throw error;
+
+    // 2. Notify user
+    if (memberData?.user_id) {
+        const { notifyUser } = await import("@/lib/user-system-notifications");
+        // Cast team because of deep select if TS complains, or just access safely
+        // supabase types might be loose or strict depending on generation
+        const teamName = (memberData.team as any)?.name || "a team";
+        
+        await notifyUser({
+            userId: memberData.user_id,
+            type: "team_removed",
+            title: "Removed from Team",
+            message: `You have been removed from the team ${teamName}.`,
+            metadata: { teamName: teamName }
+        });
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting team member:", error);

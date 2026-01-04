@@ -11,6 +11,10 @@ import {
   FileCheck2,
   Play,
   X,
+  Ban,
+  ShieldCheck,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 import { SessionWithScenes, Tester } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -90,6 +94,28 @@ const kindMeta: Record<
     label: "Declined",
     icon: <X className="w-4 h-4 text-red-500" strokeWidth={1.75} />,
     badgeVariant: "destructive",
+  },
+  account_disabled: {
+    label: "Disabled",
+    icon: <Ban className="w-4 h-4 text-red-500" strokeWidth={1.75} />,
+    badgeVariant: "destructive",
+  },
+  account_enabled: {
+    label: "Restored",
+    icon: (
+      <ShieldCheck className="w-4 h-4 text-emerald-500" strokeWidth={1.75} />
+    ),
+    badgeVariant: "active",
+  },
+  team_added: {
+    label: "Team Added",
+    icon: <UserPlus className="w-4 h-4 text-blue-500" strokeWidth={1.75} />,
+    badgeVariant: "secondary",
+  },
+  team_removed: {
+    label: "Team Removed",
+    icon: <UserMinus className="w-4 h-4 text-amber-500" strokeWidth={1.75} />,
+    badgeVariant: "outline",
   },
 };
 
@@ -181,7 +207,7 @@ export function TesterNotifications({
           </div>
         ) : (
           notifications.map((notification) => {
-            const meta = kindMeta[notification.kind];
+            const meta = kindMeta[notification.kind] || kindMeta.session_added; // Fallback to avoid crash
             return (
               <div
                 key={notification.id}
