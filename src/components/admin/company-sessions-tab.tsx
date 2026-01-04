@@ -88,7 +88,7 @@ export function CompanySessionsTab({
             </div>
             <h3 className="font-semibold mb-2">No sessions yet</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              This company hasn't created any testing sessions yet
+              This company hasn&apos;t created any testing sessions yet
             </p>
           </CardContent>
         </Card>
