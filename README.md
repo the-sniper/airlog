@@ -46,6 +46,9 @@ A modern, full-stack Next.js web application for capturing and organizing tester
 - **JWT-Based Sessions** – Secure token-based authentication using `jose`
 - **Password Management** – Signup, login, and password reset with email verification
 - **Protected Routes** – Middleware-based route protection for admin and tester areas
+- **Role-Based Access Control** – Hierarchical permissions (Super Admin → Company Owner → Admin → Tester)
+
+> 📖 See [Role Privileges Documentation](docs/ROLE_PRIVILEGES.md) for detailed role permissions
 
 ### Analytics Dashboard
 
@@ -319,6 +322,21 @@ npm run dev
 
 ---
 
+## Roles & Permissions
+
+AirLog uses a hierarchical role-based access control system:
+
+| Role | Scope | Key Capabilities |
+|------|-------|------------------|
+| **Super Admin** | Platform-wide | Full platform access, company management, user moderation, service monitoring |
+| **Company Owner** | Company-specific | Company settings, admin management, teams, sessions, reports |
+| **Company Admin** | Company-specific | Teams, sessions, testers, reports (no admin management) |
+| **Tester** | Session-specific | Join sessions, record notes, edit transcripts, respond to polls |
+
+> 📖 For detailed permissions matrix, see [Role Privileges Documentation](docs/ROLE_PRIVILEGES.md)
+
+---
+
 ## User Flows
 
 ### Admin Flow
@@ -345,23 +363,27 @@ npm run dev
 
 ## Database Schema
 
-The application uses 23 database migrations located in `supabase/migrations/`. Key tables include:
+The application uses 35+ database migrations located in `supabase/migrations/`. Key tables include:
 
 | Table                            | Purpose                                                |
 | -------------------------------- | ------------------------------------------------------ |
+| `super_admins`                   | Platform-level administrator accounts                  |
+| `companies`                      | Company/organization entities with subscription tiers  |
+| `company_admins`                 | Company administrators with role (owner/admin)         |
+| `users`                          | User accounts with authentication and company links    |
 | `sessions`                       | Session metadata, status, timestamps, join codes       |
 | `scenes`                         | Tasks/scenes within sessions with descriptions         |
 | `testers`                        | Tester info with invite tokens and session association |
 | `notes`                          | Transcribed feedback with categories and AI summaries  |
 | `teams`                          | Team definitions for grouping testers                  |
 | `team_members`                   | Team membership with user associations                 |
-| `users`                          | User accounts with authentication data                 |
 | `pending_invites`                | Session invitations awaiting acceptance                |
 | `password_reset_tokens`          | Password reset request tracking                        |
 | `poll_questions`                 | Polling questions for sessions                         |
 | `notifications`                  | Admin notifications with severity and email tracking   |
 | `admin_notification_preferences` | Email notification preferences for admins              |
 | `service_usage`                  | API usage tracking for monitoring and billing          |
+| `company_join_requests`          | User requests to join companies                        |
 
 ---
 
