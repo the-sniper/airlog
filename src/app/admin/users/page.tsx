@@ -478,6 +478,7 @@ export default function AdminUsersPage() {
         });
         setAssignUser(null);
         fetchUsers();
+        fetchJoinRequests();
       } else {
         const error = await res.json();
         throw new Error(error.error || "Failed to assign user");

@@ -60,6 +60,7 @@ interface PendingInvite {
 export default function CompanyMembersPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [members, setMembers] = useState<User[]>([]);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -101,6 +102,12 @@ export default function CompanyMembersPage() {
       console.error("Error fetching invites:", error);
     }
   }, []);
+
+  const handleRefreshInvites = async () => {
+    setRefreshing(true);
+    await fetchInvites();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -441,8 +448,16 @@ export default function CompanyMembersPage() {
                     Users who have been invited but haven&apos;t registered yet
                   </CardDescription>
                 </div>
-                <Button variant="ghost" size="icon" onClick={fetchInvites}>
-                  <RefreshCw className="w-4 h-4" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefreshInvites}
+                  disabled={refreshing}
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+                  />
+                  Refresh
                 </Button>
               </div>
             </CardHeader>
