@@ -144,13 +144,14 @@ export default function AdminCompaniesPage() {
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={handleRefresh}
             disabled={refreshing}
           >
             <RefreshCw
-              className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+              className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
             />
+            Refresh
           </Button>
           <Button onClick={() => setCreateDialog(true)}>
             <Plus className="w-4 h-4 mr-2" />

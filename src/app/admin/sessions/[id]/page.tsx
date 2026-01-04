@@ -2575,13 +2575,13 @@ export default function SessionDetailPage({
                         <span className="sm:hidden">Add</span>
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={refreshSession}
                         disabled={loading || refreshingSession}
                       >
                         <RefreshCw
-                          className={`w-4 h-4 ${
+                          className={`w-4 h-4 mr-2 ${
                             refreshingSession ? "animate-spin" : ""
                           }`}
                         />

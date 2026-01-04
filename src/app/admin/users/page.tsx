@@ -50,7 +50,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 import Link from "next/link";
 
 interface User {
@@ -72,6 +72,7 @@ interface User {
 export default function AdminUsersPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("users");
@@ -122,8 +123,14 @@ export default function AdminUsersPage() {
       });
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [searchQuery, toast]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchUsers();
+  };
 
   // Debounce search
   useEffect(() => {
@@ -504,8 +511,16 @@ export default function AdminUsersPage() {
             </p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={fetchUsers}>
-          <RefreshCw className="w-4 h-4" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={refreshing}
+        >
+          <RefreshCw
+            className={cn("w-4 h-4 mr-2", refreshing && "animate-spin")}
+          />
+          Refresh
         </Button>
       </div>
 
