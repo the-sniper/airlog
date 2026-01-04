@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import type { PollQuestion } from "@/types";
 
 interface PollQuestionInput {
+  id?: string;
   question: string;
   question_type: "radio" | "checkbox";
   options: string[];
@@ -110,23 +111,62 @@ export async function PATCH(
 
   // Update poll questions if provided
   if (poll_questions !== undefined) {
-    // Delete existing poll questions for this scene
-    await supabase.from("poll_questions").delete().eq("scene_id", sceneId);
+    // Get existing poll questions to determine what to delete
+    const { data: existingQuestions } = await supabase
+      .from("poll_questions")
+      .select("id")
+      .eq("scene_id", sceneId);
 
-    // Insert new poll questions
-    if (poll_questions && poll_questions.length > 0) {
-      const pollQuestionsToInsert = poll_questions.map(
-        (q: PollQuestionInput, index: number) => ({
+    const existingIds = new Set(existingQuestions?.map((q) => q.id) || []);
+    const inputIds = new Set(
+      poll_questions
+        .filter((q: PollQuestionInput) => q.id && existingIds.has(q.id))
+        .map((q: PollQuestionInput) => q.id)
+    );
+
+    // Prepare upsert data
+    const pollQuestionsToUpsert = poll_questions.map(
+      (q: PollQuestionInput, index: number) => {
+        // Base object
+        const base = {
           scene_id: sceneId,
           question: q.question,
           question_type: q.question_type,
           options: q.options,
           order_index: index,
           required: q.required || false,
-        }),
-      );
+        };
 
-      await supabase.from("poll_questions").insert(pollQuestionsToInsert);
+        // For existing, allow ID to be passed for update
+        // For new, we can let DB trigger handle ID or pass the client one if we want.
+        // If we pass the client generated ID for new ones, it acts as an insert.
+        // To be safe and let Supabase/Postgres handle ID generation for completely new rows if needed (though client sends UUID usually),
+        // we can include ID if provided.
+        return q.id ? { ...base, id: q.id } : base;
+      }
+    );
+
+    // Upsert (Update existing, Insert new)
+    const { error: upsertError } = await supabase
+      .from("poll_questions")
+      .upsert(pollQuestionsToUpsert); // upsert matches on primary key 'id'
+
+    if (upsertError) {
+      console.error("Error upserting poll questions:", upsertError);
+      return NextResponse.json(
+        { error: "Failed to update poll questions" },
+        { status: 500 }
+      );
+    }
+
+    // Delete questions that are no longer present
+    const idsToDelete = Array.from(existingIds).filter((id) => !inputIds.has(id as string));
+
+    if (idsToDelete.length > 0) {
+      await supabase
+        .from("poll_questions")
+        .delete()
+        .in("id", idsToDelete);
     }
   }
 

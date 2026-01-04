@@ -545,7 +545,7 @@ export default function UsagePage() {
           </div>
         </div>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => fetchData(true)}
           disabled={refreshing}

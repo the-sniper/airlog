@@ -253,20 +253,21 @@ export default function AdminDashboard() {
               </TabsList>
             </Tabs>
             <Button
-              variant="outline"
-              size="icon"
+              variant="ghost"
+              size="sm"
               onClick={handleRefresh}
               disabled={refreshing}
               className={cn(
-                "shrink-0 h-9 w-9 backdrop-blur-sm",
+                "shrink-0 gap-2 h-9 backdrop-blur-sm px-3",
                 isLightBg
-                  ? "bg-slate-800/10 border-slate-400/30 text-slate-700 hover:bg-slate-800/20 hover:text-slate-900"
-                  : "bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                  ? "bg-slate-800/10 text-slate-700 hover:bg-slate-800/20 hover:text-slate-900"
+                  : "bg-white/10 text-white hover:bg-white/20 hover:text-white"
               )}
             >
               <RefreshCw
                 className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
               />
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
         </div>

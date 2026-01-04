@@ -109,21 +109,29 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Check if invite already exists
+  // Check if there's already a pending (unclaimed) invite
   const { data: existingInvite } = await supabase
     .from("pending_invites")
-    .select("id")
+    .select("id, claimed_at")
     .eq("email", normalizedEmail)
     .eq("invite_type", invite_type)
     .eq("target_id", target_id)
-    .is("claimed_at", null)
     .single();
 
   if (existingInvite) {
-    return NextResponse.json(
-      { error: "Invite already pending for this email" },
-      { status: 409 },
-    );
+    if (!existingInvite.claimed_at) {
+      // Unclaimed invite already exists - don't create duplicate
+      return NextResponse.json(
+        { error: "Invite already pending for this email" },
+        { status: 409 },
+      );
+    } else {
+      // Claimed invite exists - delete it so we can create a fresh one
+      await supabase
+        .from("pending_invites")
+        .delete()
+        .eq("id", existingInvite.id);
+    }
   }
 
   // Get target name for email

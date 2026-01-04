@@ -79,7 +79,7 @@ export async function clearAuthCookie() {
 export async function adminExists(): Promise<boolean> {
   const supabase = createAdminClient();
   const { count } = await supabase
-    .from("admin_users")
+    .from("super_admins")
     .select("*", { count: "exact", head: true });
   return (count ?? 0) > 0;
 }
@@ -94,7 +94,7 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
 
   const supabase = createAdminClient();
   const { data } = await supabase
-    .from("admin_users")
+    .from("super_admins")
     .select("id, email, created_at, last_login")
     .eq("id", payload.adminId)
     .single();
@@ -116,7 +116,7 @@ export async function createAdmin(
   const supabase = createAdminClient();
 
   const { error } = await supabase
-    .from("admin_users")
+    .from("super_admins")
     .insert({ email, password_hash: passwordHash });
 
   if (error) {
@@ -134,7 +134,7 @@ export async function loginAdmin(
   const supabase = createAdminClient();
 
   const { data: admin } = await supabase
-    .from("admin_users")
+    .from("super_admins")
     .select("*")
     .eq("email", email)
     .single();
@@ -150,7 +150,7 @@ export async function loginAdmin(
 
   // Update last login
   await supabase
-    .from("admin_users")
+    .from("super_admins")
     .update({ last_login: new Date().toISOString() })
     .eq("id", admin.id);
 

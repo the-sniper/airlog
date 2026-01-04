@@ -17,6 +17,7 @@ export interface AppUser {
   email: string;
   password_hash: string;
   created_at: string;
+  deleted_at?: string | null;
 }
 
 export function hashToken(token: string) {
@@ -79,7 +80,7 @@ export async function getCurrentUser(): Promise<AppUser | null> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("users")
-    .select("id, first_name, last_name, email, password_hash, created_at")
+    .select("id, first_name, last_name, email, password_hash, created_at, deleted_at")
     .eq("id", payload.userId)
     .single();
 

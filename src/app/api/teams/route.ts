@@ -1,14 +1,25 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// GET all teams with members count
-export async function GET() {
+// GET all teams with members count and company info
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get("company_id");
+
     const supabase = await createClient();
-    const { data, error } = await supabase
+    let query = supabase
       .from("teams")
-      .select("*, members:team_members(count)")
+      .select(
+        "*, members:team_members(count), company:companies(id, name, slug)",
+      )
       .order("created_at", { ascending: false });
+
+    if (companyId) {
+      query = query.eq("company_id", companyId);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return NextResponse.json(data);
@@ -34,7 +45,7 @@ function generateInviteToken(): string {
 // POST create new team
 export async function POST(request: Request) {
   try {
-    const { name } = await request.json();
+    const { name, company_id } = await request.json();
 
     if (!name?.trim()) {
       return NextResponse.json(
@@ -49,6 +60,7 @@ export async function POST(request: Request) {
       .insert({
         name: name.trim(),
         invite_token: generateInviteToken(),
+        company_id: company_id || null,
       })
       .select()
       .single();

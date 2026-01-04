@@ -1684,6 +1684,7 @@ export default function SessionDetailPage({
       const validPollQuestions = editScenePollQuestions
         .filter((q) => q.question.trim() && q.options.some((o) => o.trim()))
         .map((q) => ({
+          id: q.id,
           question: q.question.trim(),
           question_type: q.question_type,
           options: q.options.filter((o) => o.trim()),
@@ -2174,6 +2175,11 @@ export default function SessionDetailPage({
                   <Edit2 className="w-4 h-4" />
                 </Button>
               </div>
+              {session?.companies?.name && (
+                <p className="text-sm text-primary font-medium tracking-wide uppercase mb-1">
+                  {session.companies.name}
+                </p>
+              )}
               <h1 className="text-xl sm:text-2xl font-bold">{session.name}</h1>
               {session.build_version && (
                 <p className="text-sm text-muted-foreground font-mono">
@@ -2569,13 +2575,13 @@ export default function SessionDetailPage({
                         <span className="sm:hidden">Add</span>
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={refreshSession}
                         disabled={loading || refreshingSession}
                       >
                         <RefreshCw
-                          className={`w-4 h-4 ${
+                          className={`w-4 h-4 mr-2 ${
                             refreshingSession ? "animate-spin" : ""
                           }`}
                         />
@@ -3758,12 +3764,6 @@ export default function SessionDetailPage({
                 <div className="text-center py-8 text-muted-foreground">
                   <UsersRound className="w-10 h-10 mx-auto mb-3 opacity-50" />
                   <p className="text-sm mb-2">No teams created yet</p>
-                  <Link href="/admin/teams">
-                    <Button size="sm" variant="outline">
-                      <Plus className="w-4 h-4" />
-                      Create Team
-                    </Button>
-                  </Link>
                 </div>
               ) : (
                 <>
@@ -5079,12 +5079,6 @@ export default function SessionDetailPage({
               <div className="text-center py-8 text-muted-foreground">
                 <UsersRound className="w-10 h-10 mx-auto mb-3 opacity-50" />
                 <p className="text-sm mb-2">No teams available</p>
-                <Link href="/admin/teams">
-                  <Button size="sm" variant="outline">
-                    <Plus className="w-4 h-4" />
-                    Create Team
-                  </Button>
-                </Link>
               </div>
             ) : (
               <div className="space-y-2">

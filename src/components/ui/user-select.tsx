@@ -30,6 +30,8 @@ interface UserSelectProps {
   maxResults?: number;
   /** Class name for the container */
   className?: string;
+  /** If true, fetch users from company-scoped endpoint instead of admin endpoint */
+  companyScoped?: boolean;
 }
 
 export function UserSelect({
@@ -41,6 +43,7 @@ export function UserSelect({
   selectedUsers = [],
   maxResults = 10,
   className,
+  companyScoped = false,
 }: UserSelectProps) {
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<UserOption[]>([]);
@@ -64,7 +67,10 @@ export function UserSelect({
       params.set("limit", String(maxResults + excludeIds.length)); // Get extra to account for excluded
       // Note: We don't exclude from API - we show them as disabled instead
 
-      const res = await fetch(`/api/admin/users?${params}`);
+      const endpoint = companyScoped
+        ? "/api/company/users"
+        : "/api/admin/users";
+      const res = await fetch(`${endpoint}?${params}`);
       if (res.ok) {
         const data = await res.json();
         setUsers(data);
@@ -74,7 +80,7 @@ export function UserSelect({
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, excludeIds.length, maxResults]);
+  }, [debouncedSearch, excludeIds.length, maxResults, companyScoped]);
 
   useEffect(() => {
     fetchUsers();
@@ -167,9 +173,9 @@ export function UserSelect({
                 isExcluded
                   ? "opacity-50 cursor-not-allowed bg-muted/30"
                   : selected
-                    ? "bg-primary/5 hover:bg-primary/10"
-                    : "hover:bg-secondary/50",
-                "border-b border-border last:border-b-0",
+                  ? "bg-primary/5 hover:bg-primary/10"
+                  : "hover:bg-secondary/50",
+                "border-b border-border last:border-b-0"
               )}
             >
               {multiple && (
@@ -179,8 +185,8 @@ export function UserSelect({
                     isExcluded
                       ? "bg-muted border-muted-foreground/20"
                       : selected
-                        ? "bg-primary border-primary text-primary-foreground"
-                        : "border-muted-foreground/30",
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : "border-muted-foreground/30"
                   )}
                 >
                   {(selected || isExcluded) && <Check className="w-3 h-3" />}

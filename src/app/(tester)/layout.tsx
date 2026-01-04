@@ -13,6 +13,11 @@ export default function TesterLayout({
     first_name: string;
     last_name: string;
     email: string;
+    company?: {
+      id: string;
+      name: string;
+      logo_url: string | null;
+    } | null;
   } | null>(null);
 
   useEffect(() => {
@@ -21,8 +26,17 @@ export default function TesterLayout({
         const res = await fetch("/api/users/me", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
-          // API returns { user: {...} }, extract the user object
-          setUser(data.user || data);
+          const userData = data.user || data;
+
+          if (
+            (userData.deleted_at || userData.banned) &&
+            typeof window !== "undefined"
+          ) {
+            window.location.href = "/account-disabled";
+            return;
+          }
+
+          setUser(userData);
         }
       } catch {
         // Ignore - user not logged in

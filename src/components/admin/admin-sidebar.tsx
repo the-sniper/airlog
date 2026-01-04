@@ -20,6 +20,8 @@ import {
   Clock,
   Gauge,
   Plus,
+  User,
+  Building2,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useTheme } from "@/components/common/theme-provider";
@@ -92,6 +94,17 @@ export function AdminSidebar() {
             Dashboard
           </Link>
           <Link
+            href="/admin/companies"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/admin/companies")
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
+          >
+            <Building2 className="w-4 h-4" strokeWidth={1.75} />
+            Companies
+          </Link>
+          <Link
             href="/admin/sessions"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isActive("/admin/sessions")
@@ -102,16 +115,17 @@ export function AdminSidebar() {
             <FolderKanban className="w-4 h-4" strokeWidth={1.75} />
             Sessions
           </Link>
+
           <Link
-            href="/admin/teams"
+            href="/admin/users"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/teams")
+              isActive("/admin/users")
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
           >
-            <Users2 className="w-4 h-4" strokeWidth={1.75} />
-            Teams
+            <User className="w-4 h-4" strokeWidth={1.75} />
+            Users
           </Link>
           <Link
             href="/admin/usage"
@@ -370,10 +384,10 @@ export function AdminMobileHeader({
               </Link>
 
               <Link
-                href="/admin/teams"
+                href="/admin/users"
                 onClick={() => setDrawerOpen(false)}
                 className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/admin/teams")
+                  isActive("/admin/users")
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-transparent bg-muted/30 text-foreground hover:border-border"
                 }`}
@@ -381,17 +395,17 @@ export function AdminMobileHeader({
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isActive("/admin/teams")
+                      isActive("/admin/users")
                         ? "bg-primary text-primary-foreground"
                         : "bg-background border border-border/60 text-muted-foreground"
                     }`}
                   >
-                    <Users2 className="w-5 h-5" strokeWidth={1.75} />
+                    <User className="w-5 h-5" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-medium">Teams</p>
+                    <p className="font-medium">Users</p>
                     <p className="text-xs text-muted-foreground">
-                      Invite and collaborate
+                      Manage all system users
                     </p>
                   </div>
                 </div>
@@ -530,18 +544,6 @@ export function AdminMobileHeader({
                 Create
               </span>
             </div>
-
-            <Link
-              href="/admin/teams"
-              className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
-                isActive("/admin/teams")
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Users2 className="w-6 h-6" strokeWidth={1.5} />
-              <span className="text-[10px] font-medium">Teams</span>
-            </Link>
 
             <Link
               href="/admin/usage"

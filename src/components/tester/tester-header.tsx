@@ -17,6 +17,7 @@ import {
   LogOut,
   ChevronDown,
   User,
+  Building2,
 } from "lucide-react";
 import { useTheme } from "@/components/common/theme-provider";
 import {
@@ -40,6 +41,11 @@ interface TesterHeaderProps {
     first_name: string;
     last_name: string;
     email: string;
+    company?: {
+      id: string;
+      name: string;
+      logo_url: string | null;
+    } | null;
   } | null;
 }
 
@@ -72,7 +78,7 @@ export function TesterHeader({ user }: TesterHeaderProps) {
   return (
     <>
       <header className="h-16 border-b border-border/50 bg-card/80 glass flex items-center justify-between px-4 z-40">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <Link href="/dashboard" className="flex items-center gap-3">
             <Image
               src="/logo.svg"
@@ -89,6 +95,25 @@ export function TesterHeader({ user }: TesterHeaderProps) {
               className="hidden dark:block"
             />
           </Link>
+          {user?.company && (
+            <div className="hidden md:flex items-center gap-3">
+              <div className="h-6 w-px bg-border/50" />
+              <div className="flex items-center gap-2">
+                {user.company.logo_url ? (
+                  <img
+                    src={user.company.logo_url}
+                    alt={user.company.name}
+                    className="w-5 h-5 rounded-full object-contain"
+                  />
+                ) : (
+                  <Building2 className="w-4 h-4 text-muted-foreground" />
+                )}
+                <span className="text-xs font-medium text-muted-foreground max-w-[150px] truncate">
+                  {user.company.name}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <nav className="hidden md:flex items-center gap-3 mr-4">
@@ -99,6 +124,7 @@ export function TesterHeader({ user }: TesterHeaderProps) {
               Dashboard
             </Link>
           </nav>
+
           <TesterNotifications userId={user?.id} />
           <div className="hidden md:block">
             <DropdownMenu modal={false}>
@@ -222,6 +248,22 @@ export function TesterHeader({ user }: TesterHeaderProps) {
                   You are logged in as
                 </p>
                 <p className="font-semibold">{fullName || "User"}</p>
+                {user?.company && (
+                  <div className="flex items-center gap-2 mt-2 p-2 bg-muted/50 rounded-lg border border-border/50">
+                    {user.company.logo_url ? (
+                      <img
+                        src={user.company.logo_url}
+                        alt={user.company.name}
+                        className="w-4 h-4 rounded-full object-cover"
+                      />
+                    ) : (
+                      <Building2 className="w-3 h-3 text-muted-foreground" />
+                    )}
+                    <span className="text-xs font-medium text-muted-foreground truncate">
+                      {user.company.name}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <Link

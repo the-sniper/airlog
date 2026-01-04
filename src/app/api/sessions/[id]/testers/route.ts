@@ -24,6 +24,14 @@ export async function POST(
   const body = await req.json();
   const supabase = createAdminClient();
 
+  // Fetch session to get company_id for auto-approval
+  const { data: session } = await supabase
+    .from("sessions")
+    .select("company_id")
+    .eq("id", id)
+    .single();
+  const companyId = session?.company_id;
+
   // Helper to find user by email (case-insensitive)
   async function findUserByEmail(
     email: string | null | undefined,
@@ -80,6 +88,31 @@ export async function POST(
       console.error("[API POST /testers] Bulk insert error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Auto-approve: Associate added users with the company
+    if (companyId) {
+      const userIdsToAssociate = testersToInsert
+        .map((t: { user_id: string | null }) => t.user_id)
+        .filter((uid: string | null): uid is string => uid !== null);
+
+      if (userIdsToAssociate.length > 0) {
+        await supabase
+          .from("users")
+          .update({ 
+            company_id: companyId,
+            join_method: 'admin_add'
+          })
+          .in("id", userIdsToAssociate)
+          .is("company_id", null);
+
+        await supabase
+          .from("company_join_requests")
+          .delete()
+          .in("user_id", userIdsToAssociate)
+          .eq("company_id", companyId);
+      }
+    }
+
     return NextResponse.json(data, { status: 201 });
   }
 
@@ -112,6 +145,25 @@ export async function POST(
     console.error("[API POST /testers] Insert error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Auto-approve: Associate the user with the company
+  if (userId && companyId) {
+    await supabase
+      .from("users")
+      .update({ 
+        company_id: companyId, 
+        join_method: 'admin_add'
+      })
+      .eq("id", userId)
+      .is("company_id", null);
+
+    await supabase
+      .from("company_join_requests")
+      .delete()
+      .eq("user_id", userId)
+      .eq("company_id", companyId);
+  }
+
   return NextResponse.json(data, { status: 201 });
 }
 
