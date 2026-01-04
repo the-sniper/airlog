@@ -22,6 +22,9 @@ import {
   Crown,
   UserPlus,
   UserCheck,
+  Copy,
+  Link2,
+  Check,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useTheme } from "@/components/common/theme-provider";
@@ -43,6 +46,7 @@ interface CompanyAuthData {
     };
   };
   company: {
+    id: string;
     name: string;
     logo_url: string | null;
   };
@@ -56,6 +60,8 @@ export function CompanySidebar() {
   const [company, setCompany] = useState<CompanyAuthData["company"] | null>(
     null
   );
+  const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkRole() {
@@ -71,6 +77,17 @@ export function CompanySidebar() {
 
           setIsOwner(data.admin.role === "owner");
           setCompany(data.company);
+
+          // Fetch company invite link
+          try {
+            const inviteRes = await fetch("/api/company/invite-link");
+            if (inviteRes.ok) {
+              const inviteData = await inviteRes.json();
+              setInviteToken(inviteData.token);
+            }
+          } catch (err) {
+            console.error("Error fetching invite link:", err);
+          }
         }
       } catch {}
     }
@@ -224,6 +241,51 @@ export function CompanySidebar() {
             </Link>
           )}
         </nav>
+        {/* Company Invite Banner */}
+        {company && inviteToken && (
+          <div className="px-4 pb-3">
+            <div className="p-3 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Link2 className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-bold text-primary uppercase tracking-wide">
+                  Company Invite Link
+                </span>
+              </div>
+              <p className="text-[10px] text-muted-foreground mb-2 leading-relaxed">
+                Share this link to invite users to {company.name}
+              </p>
+              <div className="flex items-center gap-1.5">
+                <div className="flex-1 bg-background/50 rounded px-2 py-1.5 border border-border/50 min-w-0">
+                  <p className="text-[10px] font-mono text-foreground/70 truncate">
+                    {typeof window !== "undefined"
+                      ? `/invite/${inviteToken}`
+                      : "..."}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2 shrink-0"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      navigator.clipboard.writeText(
+                        `${window.location.origin}/invite/${inviteToken}`
+                      );
+                      setInviteLinkCopied(true);
+                      setTimeout(() => setInviteLinkCopied(false), 2000);
+                    }
+                  }}
+                >
+                  {inviteLinkCopied ? (
+                    <Check className="w-3.5 h-3.5 text-green-500" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="p-4 border-t border-border/50 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
@@ -285,6 +347,8 @@ export function CompanyMobileHeader() {
   const [company, setCompany] = useState<CompanyAuthData["company"] | null>(
     null
   );
+  const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkRole() {
@@ -300,6 +364,17 @@ export function CompanyMobileHeader() {
 
           setIsOwner(data.admin.role === "owner");
           setCompany(data.company);
+
+          // Fetch company invite link
+          try {
+            const inviteRes = await fetch("/api/company/invite-link");
+            if (inviteRes.ok) {
+              const inviteData = await inviteRes.json();
+              setInviteToken(inviteData.token);
+            }
+          } catch (err) {
+            console.error("Error fetching invite link:", err);
+          }
         }
       } catch {}
     }
@@ -671,6 +746,52 @@ export function CompanyMobileHeader() {
               )}
             </div>
           </div>
+
+          {/* Company Invite Banner */}
+          {company && inviteToken && (
+            <div className="px-5 pb-3">
+              <div className="p-3.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Link2 className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-bold text-primary uppercase tracking-wide">
+                    Company Invite Link
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                  Share this link to invite users to {company.name}
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-background/50 rounded-lg px-3 py-2 border border-border/50 min-w-0">
+                    <p className="text-[10px] font-mono text-foreground/70 truncate">
+                      {typeof window !== "undefined"
+                        ? `/invite/${inviteToken}`
+                        : "..."}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-9 px-3 shrink-0"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        navigator.clipboard.writeText(
+                          `${window.location.origin}/invite/${inviteToken}`
+                        );
+                        setInviteLinkCopied(true);
+                        setTimeout(() => setInviteLinkCopied(false), 2000);
+                      }
+                    }}
+                  >
+                    {inviteLinkCopied ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="px-5 pb-6 space-y-3">
             <div className="rounded-xl border border-border/60 bg-muted/10">

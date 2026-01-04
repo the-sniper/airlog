@@ -17,6 +17,8 @@ import {
   Building2,
   Crown,
   Shield,
+  Copy,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,6 +86,10 @@ export default function CompanyMembersPage() {
     invite: PendingInvite | null;
   }>({ open: false, invite: null });
 
+  // Company invite link states
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
+
   const fetchMembers = useCallback(async () => {
     try {
       const res = await fetch("/api/company/users");
@@ -117,6 +123,17 @@ export default function CompanyMembersPage() {
       setLoading(true);
       await Promise.all([fetchMembers(), fetchInvites()]);
       setLoading(false);
+
+      // Fetch company invite link
+      try {
+        const inviteRes = await fetch("/api/company/invite-link");
+        if (inviteRes.ok) {
+          const inviteData = await inviteRes.json();
+          setInviteToken(inviteData.token);
+        }
+      } catch (err) {
+        console.error("Error fetching invite link:", err);
+      }
     }
     loadData();
   }, [fetchMembers, fetchInvites]);
@@ -336,6 +353,61 @@ export default function CompanyMembersPage() {
             Pending ({pendingInvites.length})
           </TabsTrigger>
         </TabsList>
+
+        {/* Company Invite Link Banner */}
+        {inviteToken && (
+          <div className="mt-6">
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/0">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Link2 className="w-4 h-4 text-primary" />
+                  <CardTitle className="text-base text-primary">
+                    Company Invite Link
+                  </CardTitle>
+                </div>
+                <CardDescription>
+                  Share this link to invite users to Collidascope Art
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-background/50 rounded-lg px-3 py-2.5 border border-border/50 min-w-0">
+                    <p className="text-sm font-mono text-foreground/70 truncate">
+                      {typeof window !== "undefined"
+                        ? `${window.location.origin}/invite/${inviteToken}`
+                        : "..."}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        navigator.clipboard.writeText(
+                          `${window.location.origin}/invite/${inviteToken}`
+                        );
+                        setInviteLinkCopied(true);
+                        setTimeout(() => setInviteLinkCopied(false), 2000);
+                      }
+                    }}
+                  >
+                    {inviteLinkCopied ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2 text-green-500" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Members Tab */}
         <TabsContent value="members" className="mt-6">

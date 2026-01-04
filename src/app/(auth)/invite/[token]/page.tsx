@@ -35,7 +35,7 @@ interface Company {
 }
 
 interface InviteData {
-  email: string;
+  email: string | null;
   company: Company;
 }
 
@@ -53,6 +53,7 @@ export default function CompanyInviteSignupPage({
   // Form state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -92,6 +93,14 @@ export default function CompanyInviteSignupPage({
       setFormError("Please enter your first and last name.");
       return;
     }
+    
+    // For company-wide invites (no specific email), require email input
+    const emailToUse = inviteData?.email || email.trim();
+    if (!emailToUse) {
+      setFormError("Please enter your email address.");
+      return;
+    }
+    
     if (password !== confirmPassword) {
       setFormError("Passwords do not match.");
       return;
@@ -109,7 +118,7 @@ export default function CompanyInviteSignupPage({
         body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
-          email: inviteData?.email,
+          email: emailToUse,
           password,
         }),
       });
@@ -225,10 +234,17 @@ export default function CompanyInviteSignupPage({
             </CardDescription>
 
             {/* Invite confirmation badge */}
-            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Invite verified for {inviteData?.email}</span>
-            </div>
+            {inviteData?.email ? (
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Invite verified for {inviteData.email}</span>
+              </div>
+            ) : (
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Open invite - Join {company?.name}</span>
+              </div>
+            )}
           </CardHeader>
 
           <CardContent className="pt-4 space-y-5">
@@ -268,17 +284,36 @@ export default function CompanyInviteSignupPage({
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={inviteData?.email || ""}
-                    className="pl-9 h-11 bg-secondary/50 cursor-not-allowed"
-                    readOnly
-                  />
+                  {inviteData?.email ? (
+                    <Input
+                      id="email"
+                      type="email"
+                      value={inviteData.email}
+                      className="pl-9 h-11 bg-secondary/50 cursor-not-allowed"
+                      readOnly
+                    />
+                  ) : (
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your.email@example.com"
+                      className="pl-9 h-11"
+                      required
+                      autoComplete="email"
+                    />
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  This email is linked to your invite
-                </p>
+                {inviteData?.email ? (
+                  <p className="text-xs text-muted-foreground">
+                    This email is linked to your invite
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Enter your email to join {company?.name}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
