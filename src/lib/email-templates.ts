@@ -482,6 +482,38 @@ export function createRolePromotionEmail(params: RolePromotionParams): string {
   });
 }
 
+interface RoleDemotionParams {
+  firstName: string;
+  companyName: string;
+  newRole: 'admin' | 'user';
+  loginUrl: string;
+  email: string;
+}
+
+export function createRoleDemotionEmail(params: RoleDemotionParams): string {
+  const roleDisplay = params.newRole === 'admin' ? 'Admin' : 'User';
+  const roleDescription = params.newRole === 'admin' 
+    ? 'You now have administrative privileges, allowing you to manage sessions, teams, and users within your company.'
+    : 'You are now a regular member of the company. You can participate in sessions and view projects you are assigned to.';
+
+  const body = `
+    ${createParagraph(`Hi ${params.firstName},`)}
+    ${createParagraph(
+      `Your role in <strong>${params.companyName}</strong> on AirLog has been updated to <strong>${roleDisplay}</strong>.`
+    )}
+    ${createParagraph(roleDescription)}
+    ${createButton('Access Dashboard', params.loginUrl)}
+    ${createDivider()}
+    ${createTinyText('If you have any questions about this change, please contact your company owner or support.')}
+  `;
+
+  return createBaseEmail({
+    heading: 'Role Update',
+    body,
+    footer: 'airlog-pro.vercel.app',
+  });
+}
+
 // ============================================================================
 // EXPORTS
 // ============================================================================

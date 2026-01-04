@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentAdmin } from "@/lib/auth";
 
+
+
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -92,7 +95,7 @@ export async function PATCH(
         return handleRestore(req, id, admin);
     }
 
-    const { first_name, last_name, email, company_id } = body;
+    const { first_name, last_name, email, company_id, role } = body;
     const supabase = createAdminClient();
 
     // Fetch current state for logging
@@ -152,18 +155,119 @@ export async function PATCH(
         .single();
 
       if (company) {
-        // 2. Notify user
+        // Check for pending join request
+        const { data: joinRequest } = await supabase
+          .from("company_join_requests")
+          .select("id")
+          .eq("user_id", id)
+          .eq("company_id", company_id)
+          .eq("status", "pending")
+          .single();
+
+        if (joinRequest) {
+          // Approve join request
+          await supabase
+            .from("company_join_requests")
+            .update({
+              status: "approved",
+              processed_at: new Date().toISOString(),
+              processed_by: admin.id,
+            })
+            .eq("id", joinRequest.id);
+
+          updates.join_method = 'signup';
+
+          // Notify: Join Request Approved
+          const { notifyUser } = await import("@/lib/user-system-notifications");
+          await notifyUser({
+            userId: id,
+            type: "join_request_approved",
+            title: `Welcome to ${company.name}!`,
+            message: `Your request to join ${company.name} has been approved. You now have access to company testing sessions.`,
+            metadata: {
+              companyName: company.name,
+              companyId: company_id,
+            },
+            emailRecipients: [oldUser?.email || email],
+          });
+        } else {
+          updates.join_method = 'admin_add';
+          
+          // 2. Notify user (Generic Add)
+          const { notifyUser } = await import("@/lib/user-system-notifications");
+          await notifyUser({
+            userId: id,
+            type: "company_added",
+            title: `You've been added to ${company.name}`,
+            message: `You have been assigned to the company ${company.name} by an administrator.`,
+            metadata: {
+              companyName: company.name,
+              companyId: company_id,
+            },
+            emailRecipients: [oldUser?.email || email],
+          });
+        }
+      }
+    }
+
+    // Handle role update
+    const targetCompanyId = company_id !== undefined ? company_id : oldUser?.company_id;
+
+    if (targetCompanyId && role !== undefined) {
+      // Fetch current admin role
+      const { data: currentAdmin } = await supabase
+        .from("company_admins")
+        .select("id, role")
+        .eq("user_id", id)
+        .eq("company_id", targetCompanyId)
+        .single();
+      
+      const currentRole = currentAdmin?.role || "user";
+      
+      if (role !== currentRole) {
+        // Fetch company name for notification
+        const { data: company } = await supabase
+          .from("companies")
+          .select("name")
+          .eq("id", targetCompanyId)
+          .single();
+        const companyName = company?.name || "the company";
+
+        // Perform Update
+        if (role === "user") {
+          // Demote to user (remove admin)
+          if (currentAdmin) {
+            await supabase.from("company_admins").delete().eq("id", currentAdmin.id);
+          }
+        } else {
+          // Promote/Change (Insert or Update)
+          if (currentRole === "user") {
+            // Insert
+            await supabase.from("company_admins").insert({
+              company_id: targetCompanyId,
+              user_id: id,
+              role: role
+            });
+          } else {
+            // Update
+            if (currentAdmin) {
+              await supabase.from("company_admins").update({ role }).eq("id", currentAdmin.id);
+            }
+          }
+        }
+        
+        // Notify
         const { notifyUser } = await import("@/lib/user-system-notifications");
         await notifyUser({
           userId: id,
-          type: "company_added",
-          title: `You've been added to ${company.name}`,
-          message: `You have been assigned to the company ${company.name} by an administrator.`,
-          metadata: {
-            companyName: company.name,
-            companyId: company_id,
-          },
-          emailRecipients: [oldUser?.email || email],
+          type: "role_updated",
+          title: "Role Updated",
+          message: `Your role in ${companyName} has been updated.`,
+          metadata: { 
+            companyName, 
+            newRole: role, 
+            isDemotion: currentRole === "owner" && role === "admin" 
+          }
         });
       }
     }

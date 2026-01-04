@@ -93,7 +93,7 @@ export function CompanySessionsTab({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 mt-6">
           {sessions.map((s) => (
             <Card
               key={s.id}

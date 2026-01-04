@@ -15,6 +15,10 @@ import {
   Ban,
   CheckCircle2,
   UserMinus,
+  Check,
+  X,
+  Clock,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +53,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDate, cn } from "@/lib/utils";
 import Link from "next/link";
@@ -67,6 +72,24 @@ interface User {
   company_admins?: {
     role: string;
   }[];
+  join_method?: "signup" | "invite" | "admin_add";
+}
+
+interface JoinRequest {
+  id: string;
+  status: string;
+  requested_at: string;
+  company_id: string;
+  company: {
+    id: string;
+    name: string;
+  };
+  user: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
 }
 
 export default function AdminUsersPage() {
@@ -103,6 +126,22 @@ export default function AdminUsersPage() {
   const [removingUser, setRemovingUser] = useState<User | null>(null);
   const [isRemoveLoading, setIsRemoveLoading] = useState(false);
 
+  // Join Request states
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
+  const [processingRequest, setProcessingRequest] = useState<string | null>(
+    null
+  );
+  const [rejectDialog, setRejectDialog] = useState<{
+    open: boolean;
+    request: JoinRequest | null;
+  }>({ open: false, request: null });
+  const [rejectionReason, setRejectionReason] = useState("");
+
+  // Role Change states
+  const [roleUser, setRoleUser] = useState<User | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string>("user");
+  const [isRoleLoading, setIsRoleLoading] = useState(false);
+
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -129,8 +168,19 @@ export default function AdminUsersPage() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchUsers();
+    await Promise.all([fetchUsers(), fetchJoinRequests()]);
   };
+
+  const fetchJoinRequests = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/join-requests");
+      if (res.ok) {
+        setJoinRequests(await res.json());
+      }
+    } catch (error) {
+      console.error("Error fetching join requests:", error);
+    }
+  }, []);
 
   // Debounce search
   useEffect(() => {
@@ -140,9 +190,124 @@ export default function AdminUsersPage() {
     return () => clearTimeout(timer);
   }, [fetchUsers]);
 
+  // Fetch join requests on mount
+  useEffect(() => {
+    fetchJoinRequests();
+  }, [fetchJoinRequests]);
+
   const admins = users.filter(
     (u) => u.company_admins && u.company_admins.length > 0
   );
+
+  // Join Request Handlers
+  const handleApproveRequest = async (request: JoinRequest) => {
+    setProcessingRequest(request.id);
+    try {
+      const res = await fetch("/api/admin/join-requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId: request.id, action: "approve" }),
+      });
+
+      if (res.ok) {
+        toast({
+          title: "Request approved!",
+          description: `${request.user.first_name} ${request.user.last_name} has been added to ${request.company.name}.`,
+          variant: "success",
+        });
+        fetchJoinRequests();
+        fetchUsers();
+      } else {
+        const result = await res.json();
+        toast({
+          title: "Error",
+          description: result.error || "Failed to approve request",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setProcessingRequest(null);
+    }
+  };
+
+  const handleRejectRequest = async () => {
+    if (!rejectDialog.request) return;
+    setProcessingRequest(rejectDialog.request.id);
+
+    try {
+      const res = await fetch("/api/admin/join-requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: rejectDialog.request.id,
+          action: "reject",
+          rejectionReason: rejectionReason.trim() || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        toast({
+          title: "Request rejected",
+          description: `The request from ${rejectDialog.request.user.first_name} has been rejected.`,
+        });
+        fetchJoinRequests();
+        setRejectDialog({ open: false, request: null });
+        setRejectionReason("");
+      } else {
+        const result = await res.json();
+        toast({
+          title: "Error",
+          description: result.error || "Failed to reject request",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setProcessingRequest(null);
+    }
+  };
+
+  // Role Change Handlers
+  const handleRoleChangeClick = (user: User) => {
+    setRoleUser(user);
+    const currentRole =
+      user.company_admins && user.company_admins.length > 0
+        ? user.company_admins[0].role
+        : "user";
+    setSelectedRole(currentRole);
+  };
+
+  const handleRoleSubmit = async () => {
+    if (!roleUser) return;
+    setIsRoleLoading(true);
+    try {
+      const res = await fetch(`/api/admin/users/${roleUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: selectedRole }),
+      });
+
+      if (res.ok) {
+        toast({
+          title: "Role updated",
+          description: "User role has been updated.",
+          variant: "success",
+        });
+        setRoleUser(null);
+        fetchUsers();
+      } else {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to update role");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsRoleLoading(false);
+    }
+  };
 
   // Edit Handlers
   const handleEditClick = (user: User) => {
@@ -472,6 +637,20 @@ export default function AdminUsersPage() {
               No Company
             </span>
           )}
+
+          {user.company && user.join_method && (
+            <Badge
+              variant="secondary"
+              className="text-[10px] h-5 px-1.5 font-normal bg-muted/50 hidden lg:inline-flex"
+            >
+              {user.join_method === "invite"
+                ? "Invited"
+                : user.join_method === "admin_add"
+                ? "Added by Admin"
+                : "Self Signup"}
+            </Badge>
+          )}
+
           <span className="text-sm text-muted-foreground whitespace-nowrap hidden md:block">
             {formatDate(user.created_at)}
           </span>
@@ -502,6 +681,14 @@ export default function AdminUsersPage() {
                     <DropdownMenuItem onClick={() => handleAssignClick(user)}>
                       <Building2 className="w-4 h-4 mr-2" />
                       Assign to Company
+                    </DropdownMenuItem>
+                  )}
+                  {user.company && (
+                    <DropdownMenuItem
+                      onClick={() => handleRoleChangeClick(user)}
+                    >
+                      <UserCheck className="w-4 h-4 mr-2" />
+                      Manage Role
                     </DropdownMenuItem>
                   )}
                   {user.company && (
@@ -568,7 +755,7 @@ export default function AdminUsersPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="users" className="gap-2">
             <Users className="w-4 h-4" />
             Users ({users.length})
@@ -576,6 +763,10 @@ export default function AdminUsersPage() {
           <TabsTrigger value="admins" className="gap-2">
             <Shield className="w-4 h-4" />
             Admins ({admins.length})
+          </TabsTrigger>
+          <TabsTrigger value="pending" className="gap-2">
+            <Clock className="w-4 h-4" />
+            Pending ({joinRequests.length})
           </TabsTrigger>
         </TabsList>
 
@@ -651,6 +842,100 @@ export default function AdminUsersPage() {
                 <div className="space-y-2">
                   {admins.map((user) => (
                     <UserCard key={user.id} user={user} variant="manager" />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Pending Join Requests Tab */}
+        <TabsContent value="pending" className="mt-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">
+                    Pending Join Requests
+                  </CardTitle>
+                  <CardDescription>
+                    Users who have requested to join companies during signup
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary">{joinRequests.length} pending</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {joinRequests.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <Clock className="w-12 h-12 mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="font-semibold mb-2">No pending requests</h3>
+                  <p className="text-sm text-muted-foreground">
+                    When users request to join companies during signup,
+                    they&apos;ll appear here
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {joinRequests.map((request) => (
+                    <div
+                      key={request.id}
+                      className="flex items-center justify-between p-4 rounded-lg bg-secondary/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-primary">
+                            {request.user.first_name[0]}
+                            {request.user.last_name[0]}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {request.user.first_name} {request.user.last_name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {request.user.email}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs gap-1">
+                              <Building2 className="w-3 h-3" />
+                              {request.company.name}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              Requested {formatDate(request.requested_at)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleApproveRequest(request)}
+                          disabled={processingRequest === request.id}
+                        >
+                          {processingRequest === request.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Check className="w-4 h-4 mr-1" />
+                              Approve
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() =>
+                            setRejectDialog({ open: true, request })
+                          }
+                          disabled={processingRequest === request.id}
+                        >
+                          <X className="w-4 h-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -915,6 +1200,138 @@ export default function AdminUsersPage() {
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               )}
               Remove from Company
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Reject Request Dialog */}
+      <Dialog
+        open={rejectDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRejectDialog({ open: false, request: null });
+            setRejectionReason("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Request</DialogTitle>
+            <DialogDescription>
+              Reject the request from{" "}
+              <strong>
+                {rejectDialog.request?.user.first_name}{" "}
+                {rejectDialog.request?.user.last_name}
+              </strong>
+              ? They won&apos;t be able to access company resources.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="rejection-reason">Reason (optional)</Label>
+              <Textarea
+                id="rejection-reason"
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Let the user know why their request was rejected..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setRejectDialog({ open: false, request: null })}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRejectRequest}
+              disabled={!!processingRequest}
+            >
+              {processingRequest ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : null}
+              Reject Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Role Change Dialog */}
+      <Dialog
+        open={!!roleUser}
+        onOpenChange={(open) => !open && setRoleUser(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Manage User Role</DialogTitle>
+            <DialogDescription>
+              Update the role for{" "}
+              <strong>
+                {roleUser?.first_name} {roleUser?.last_name}
+              </strong>{" "}
+              in {roleUser?.company?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Select Role</Label>
+              <Select value={selectedRole} onValueChange={setSelectedRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a role..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="owner">
+                    <div className="flex items-center">
+                      <Crown className="w-4 h-4 mr-2 text-amber-500" />
+                      <div>
+                        <p className="font-medium">Company Owner</p>
+                        <p className="text-xs text-muted-foreground">
+                          Full access to all settings and billing
+                        </p>
+                      </div>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center">
+                      <Shield className="w-4 h-4 mr-2 text-blue-500" />
+                      <div>
+                        <p className="font-medium">Company Admin</p>
+                        <p className="text-xs text-muted-foreground">
+                          Can manage teams, sessions and users
+                        </p>
+                      </div>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="user">
+                    <div className="flex items-center">
+                      <Users className="w-4 h-4 mr-2 text-gray-500" />
+                      <div>
+                        <p className="font-medium">Company Member</p>
+                        <p className="text-xs text-muted-foreground">
+                          Regular access to assigned projects
+                        </p>
+                      </div>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setRoleUser(null)}
+              disabled={isRoleLoading}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleRoleSubmit} disabled={isRoleLoading}>
+              {isRoleLoading && (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              )}
+              Update Role
             </Button>
           </DialogFooter>
         </DialogContent>

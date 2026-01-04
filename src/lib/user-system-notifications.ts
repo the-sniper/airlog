@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import nodemailer from "nodemailer";
-import { createBaseEmail, createParagraph, createButton, createDivider, createTinyText } from "@/lib/email-templates";
+import { createBaseEmail, createParagraph, createButton, createDivider, createTinyText, createRolePromotionEmail, createRoleDemotionEmail, createJoinRequestApprovedEmail } from "@/lib/email-templates";
 
 export type UserSystemNotificationType =
   | "account_disabled"
@@ -8,7 +8,11 @@ export type UserSystemNotificationType =
   | "team_added"
   | "team_removed"
   | "company_added"
-  | "company_removed";
+  | "team_removed"
+  | "company_added"
+  | "company_removed"
+  | "role_updated"
+  | "join_request_approved";
 
 interface NotifyUserParams {
   userId: string;
@@ -82,7 +86,9 @@ export async function notifyUser(params: NotifyUserParams) {
 
     if (!emailTo) return;
 
-    const emailHtml = getEmailHtml(params.type, firstName, params);
+    if (!emailTo) return;
+
+    const emailHtml = getEmailHtml(params.type, firstName, params, emailTo);
     const subject = getEmailSubject(params.type, params);
 
     await transporter.sendMail({
@@ -113,13 +119,26 @@ function getEmailSubject(type: UserSystemNotificationType, params: NotifyUserPar
       return `You've been added to ${params.metadata?.companyName || "a company"}`;
     case "company_removed":
       return `You've been removed from ${params.metadata?.companyName || "a company"}`;
+    case "role_updated":
+      const { newRole, companyName } = params.metadata || {};
+      if (newRole === 'user') return `Role updated at ${companyName || 'your company'}`;
+      // Logic to determine if promotion or not is hard here without old role, but usually upgrade/downgrade messages differ.
+      // We'll use a generic one or "You've been promoted" if checkable.
+      // Simply: "Your role has been updated at [Company]" is safe, but template has "You're now an Owner!".
+      // Template sets its own Heading.
+      // Subject should be consistent.
+      return `Your role has been updated at ${companyName || 'your company'}`;
+    case "join_request_approved":
+      return `Welcome to ${params.metadata?.companyName || "the company"}!`;
     default:
       return "Notification from AirLog";
   }
 }
 
-function getEmailHtml(type: UserSystemNotificationType, firstName: string, params: NotifyUserParams): string {
+function getEmailHtml(type: UserSystemNotificationType, firstName: string, params: NotifyUserParams, emailTo: string): string {
   let body = "";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const loginUrl = `${baseUrl}/login`;
 
   switch (type) {
     case "account_disabled":
@@ -171,6 +190,33 @@ function getEmailHtml(type: UserSystemNotificationType, firstName: string, param
         ${createParagraph('You no longer have access to this company\'s resources.')}
       `;
       break;
+    case "role_updated":
+      const { newRole, companyName: roleCompName, isDemotion } = params.metadata || {};
+      if (newRole === 'user' || isDemotion) {
+        return createRoleDemotionEmail({
+          firstName,
+          companyName: roleCompName,
+          newRole: 'user',
+          loginUrl,
+          email: emailTo
+        });
+      } else {
+        // Owner or Admin
+        // Assumption: Promote
+        return createRolePromotionEmail({
+          firstName,
+          companyName: roleCompName,
+          newRole,
+          loginUrl,
+          email: emailTo
+        });
+      }
+    case "join_request_approved":
+      return createJoinRequestApprovedEmail({
+        firstName,
+        companyName: params.metadata?.companyName || "the company",
+        dashboardUrl: `${baseUrl}/dashboard`,
+      });
   }
 
   return createBaseEmail({
