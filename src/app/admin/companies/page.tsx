@@ -41,6 +41,7 @@ interface Company {
   admins: { count: number }[];
   teams: { count: number }[];
   sessions: { count: number }[];
+  users: { count: number }[];
 }
 
 export default function AdminCompaniesPage() {
@@ -199,11 +200,11 @@ export default function AdminCompaniesPage() {
               <div>
                 <p className="text-2xl font-bold">
                   {companies.reduce(
-                    (sum, c) => sum + (c.admins?.[0]?.count || 0),
+                    (sum, c) => sum + (c.users?.[0]?.count || 0),
                     0
                   )}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Admins</p>
+                <p className="text-sm text-muted-foreground">Total Users</p>
               </div>
             </div>
           </CardContent>
@@ -274,9 +275,9 @@ export default function AdminCompaniesPage() {
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="p-2 rounded-lg bg-secondary/30">
                       <p className="text-lg font-bold">
-                        {company.admins?.[0]?.count || 0}
+                        {company.users?.[0]?.count || 0}
                       </p>
-                      <p className="text-xs text-muted-foreground">Managers</p>
+                      <p className="text-xs text-muted-foreground">Users</p>
                     </div>
                     <div className="p-2 rounded-lg bg-secondary/30">
                       <p className="text-lg font-bold">

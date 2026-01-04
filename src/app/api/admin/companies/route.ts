@@ -17,7 +17,8 @@ export async function GET() {
       *,
       admins:company_admins(count),
       teams:teams(count),
-      sessions:sessions(count)
+      sessions:sessions(count),
+      users:users(count)
     `)
     .order("created_at", { ascending: false });
 

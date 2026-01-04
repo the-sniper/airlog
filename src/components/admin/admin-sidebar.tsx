@@ -104,7 +104,7 @@ export function AdminSidebar() {
             <Building2 className="w-4 h-4" strokeWidth={1.75} />
             Companies
           </Link>
-          <Link
+          {/* <Link
             href="/admin/sessions"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isActive("/admin/sessions")
@@ -114,9 +114,9 @@ export function AdminSidebar() {
           >
             <FolderKanban className="w-4 h-4" strokeWidth={1.75} />
             Sessions
-          </Link>
+          </Link> */}
 
-          <Link
+          {/* <Link
             href="/admin/teams"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isActive("/admin/teams")
@@ -126,7 +126,7 @@ export function AdminSidebar() {
           >
             <Users2 className="w-4 h-4" strokeWidth={1.75} />
             Teams
-          </Link>
+          </Link> */}
 
           <Link
             href="/admin/users"
@@ -366,7 +366,7 @@ export function AdminMobileHeader({
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
               </Link>
 
-              <Link
+              {/* <Link
                 href="/admin/sessions"
                 onClick={() => setDrawerOpen(false)}
                 className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
@@ -393,9 +393,9 @@ export function AdminMobileHeader({
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </Link>
+              </Link> */}
 
-              <Link
+              {/* <Link
                 href="/admin/teams"
                 onClick={() => setDrawerOpen(false)}
                 className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
@@ -422,7 +422,7 @@ export function AdminMobileHeader({
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </Link>
+              </Link> */}
 
               <Link
                 href="/admin/users"
@@ -544,7 +544,7 @@ export function AdminMobileHeader({
           {/* Background with notch cutout effect */}
           <div className="absolute inset-0 bg-card/95 backdrop-blur-xl border-t border-border/50" />
 
-          <div className="relative grid grid-cols-5 items-end h-full w-full">
+          <div className="relative grid grid-cols-3 items-end h-full w-full">
             <Link
               href="/admin"
               className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
@@ -558,44 +558,27 @@ export function AdminMobileHeader({
             </Link>
 
             <Link
-              href="/admin/sessions"
+              href="/admin/companies"
               className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
-                isActive("/admin/sessions")
+                isActive("/admin/companies")
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <FolderKanban className="w-6 h-6" strokeWidth={1.5} />
-              <span className="text-[10px] font-medium">Sessions</span>
+              <Building2 className="w-6 h-6" strokeWidth={1.5} />
+              <span className="text-[10px] font-medium">Companies</span>
             </Link>
 
-            {/* Prominent Create Action */}
-            <div className="relative flex flex-col items-center justify-center gap-1 pb-2 h-full w-full">
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2">
-                <Link
-                  href="/admin/sessions/new"
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:scale-105 hover:shadow-xl hover:shadow-primary/30 transition-all border-4 border-background"
-                >
-                  <Plus className="w-7 h-7" strokeWidth={2} />
-                </Link>
-              </div>
-              {/* Spacer matching standard icon size (w-6 h-6) to ensure text alignment */}
-              <div className="w-6 h-6" aria-hidden="true" />
-              <span className="text-[10px] font-medium text-primary">
-                Create
-              </span>
-            </div>
-
             <Link
-              href="/admin/usage"
+              href="/admin/users"
               className={`flex flex-col items-center justify-center gap-1 pb-2 h-full transition-all ${
-                isActive("/admin/usage")
+                isActive("/admin/users")
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Gauge className="w-6 h-6" strokeWidth={1.5} />
-              <span className="text-[10px] font-medium">Usage</span>
+              <User className="w-6 h-6" strokeWidth={1.5} />
+              <span className="text-[10px] font-medium">Users</span>
             </Link>
           </div>
         </nav>

@@ -22,6 +22,8 @@ import {
   EyeOff,
 } from "lucide-react";
 import { TeamsManager } from "@/components/admin/teams-manager";
+import { CompanySessionsTab } from "@/components/admin/company-sessions-tab";
+import type { Session } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,6 +75,12 @@ interface CompanyTeam {
   members: { count: number }[];
 }
 
+interface SessionWithCounts extends Session {
+  scenes: { count: number }[];
+  testers: { count: number }[];
+  notes: { count: number }[];
+}
+
 interface Company {
   id: string;
   name: string;
@@ -104,6 +112,7 @@ export default function CompanyDetailPage({
   const router = useRouter();
   const { toast } = useToast();
   const [company, setCompany] = useState<Company | null>(null);
+  const [sessions, setSessions] = useState<SessionWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
@@ -156,13 +165,25 @@ export default function CompanyDetailPage({
     }
   }, [params.id, router]);
 
+  const fetchSessions = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/companies/${params.id}/sessions`);
+      if (res.ok) {
+        setSessions(await res.json());
+      }
+    } catch (error) {
+      console.error("Failed to fetch sessions:", error);
+    }
+  }, [params.id]);
+
   useEffect(() => {
     fetchCompany();
-  }, [fetchCompany]);
+    fetchSessions();
+  }, [fetchCompany, fetchSessions]);
 
   async function handleRefresh() {
     setRefreshing(true);
-    await fetchCompany();
+    await Promise.all([fetchCompany(), fetchSessions()]);
     setRefreshing(false);
   }
 
@@ -400,12 +421,21 @@ export default function CompanyDetailPage({
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="sessions">Sessions ({sessionCount})</TabsTrigger>
           <TabsTrigger value="teams">Teams ({teamCount})</TabsTrigger>
           <TabsTrigger value="admins">Admins ({adminCount})</TabsTrigger>
           <TabsTrigger value="users">
             Users ({company.users?.length || 0})
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="sessions" className="space-y-4">
+          <CompanySessionsTab
+            companyId={company.id}
+            sessions={sessions}
+            onRefresh={fetchSessions}
+          />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
           <Card>
