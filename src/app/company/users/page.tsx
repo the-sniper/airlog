@@ -15,6 +15,8 @@ import {
   Send,
   Trash2,
   Building2,
+  Crown,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +48,7 @@ interface User {
   email: string;
   created_at: string;
   join_method?: string;
+  company_admin?: { role: string }[];
 }
 
 interface PendingInvite {
@@ -383,11 +386,34 @@ export default function CompanyMembersPage() {
                       className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-sm font-medium text-primary">
-                            {member.first_name[0]}
-                            {member.last_name[0]}
-                          </span>
+                        <div className="relative w-10 h-10">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-sm font-medium text-primary">
+                              {member.first_name[0]}
+                              {member.last_name[0]}
+                            </span>
+                          </div>
+                          {member.company_admin &&
+                            member.company_admin.length > 0 && (
+                              <div
+                                className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 border-background ${
+                                  member.company_admin[0].role === "owner"
+                                    ? "bg-amber-500 text-white"
+                                    : "bg-blue-500 text-white"
+                                }`}
+                                title={
+                                  member.company_admin[0].role === "owner"
+                                    ? "Owner"
+                                    : "Manager"
+                                }
+                              >
+                                {member.company_admin[0].role === "owner" ? (
+                                  <Crown className="w-3 h-3" />
+                                ) : (
+                                  <Shield className="w-3 h-3" />
+                                )}
+                              </div>
+                            )}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">

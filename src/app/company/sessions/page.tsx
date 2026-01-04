@@ -11,6 +11,9 @@ import {
   Square,
   Trash2,
   LayoutGrid,
+  Loader2,
+  Send,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatDate, getStatusLabel } from "@/lib/utils";
 import type { Session } from "@/types";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SessionWithCounts extends Session {
   scenes: { count: number }[];
@@ -39,6 +43,14 @@ export default function CompanySessionsPage() {
     open: boolean;
     session: SessionWithCounts | null;
   }>({ open: false, session: null });
+  const [endSessionDialog, setEndSessionDialog] = useState<{
+    open: boolean;
+    session: SessionWithCounts | null;
+  }>({ open: false, session: null });
+  const [endingSession, setEndingSession] = useState(false);
+  const [sendingReportEmails, setSendingReportEmails] = useState(false);
+  const [dialogSessionData, setDialogSessionData] = useState<any>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchSessions();
@@ -62,13 +74,89 @@ export default function CompanySessionsPage() {
     fetchSessions();
   }
 
-  async function handleEndSession(id: string) {
-    await fetch(`/api/sessions/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "end" }),
-    });
-    fetchSessions();
+  async function openEndSessionDialog(session: SessionWithCounts) {
+    // Fetch full session data with testers first
+    const res = await fetch(`/api/company/sessions/${session.id}`);
+    if (res.ok) {
+      const data = await res.json();
+      setDialogSessionData(data);
+    }
+    // Open dialog after data is fetched
+    setEndSessionDialog({ open: true, session });
+  }
+
+  async function handleEndSession(sendReport: boolean = false) {
+    if (!endSessionDialog.session) return;
+    const id = endSessionDialog.session.id;
+
+    if (sendReport) {
+      setSendingReportEmails(true);
+    } else {
+      setEndingSession(true);
+    }
+
+    try {
+      // End the session first
+      await fetch(`/api/sessions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "end" }),
+      });
+
+      // If sendReport is true, send report emails to all testers
+      if (sendReport) {
+        const testersWithEmail = dialogSessionData?.testers?.filter((t: any) => t.email) || [];
+        if (testersWithEmail.length > 0) {
+          const res = await fetch(`/api/sessions/${id}/report/send`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          if (res.ok) {
+            const result = await res.json();
+            toast({
+              title: "Session ended & report sent!",
+              description: `Report sent to ${result.sent} tester${
+                result.sent !== 1 ? "s" : ""
+              }.`,
+              variant: "success",
+            });
+          } else {
+            toast({
+              title: "Session ended",
+              description:
+                "Failed to send report emails. You can share the report manually.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          toast({
+            title: "Session ended",
+            description: "No testers with email addresses to send report to.",
+          });
+        }
+      } else {
+        toast({
+          title: "Session ended",
+          description: "The testing session has been completed.",
+          variant: "success",
+        });
+      }
+
+      setEndSessionDialog({ open: false, session: null });
+      setDialogSessionData(null);
+      fetchSessions();
+    } catch (error) {
+      console.error("Error ending session:", error);
+      toast({
+        title: "Error",
+        description: "Failed to end session. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setEndingSession(false);
+      setSendingReportEmails(false);
+    }
   }
 
   async function handleDeleteSession() {
@@ -230,7 +318,7 @@ export default function CompanySessionsPage() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => handleEndSession(s.id)}
+                      onClick={() => openEndSessionDialog(s)}
                     >
                       <Square className="w-4 h-4" strokeWidth={2} />
                       End
@@ -257,6 +345,87 @@ export default function CompanySessionsPage() {
           ))}
         </div>
       )}
+
+      {/* End Session Dialog */}
+      <Dialog
+        open={endSessionDialog.open}
+        onOpenChange={(o) => {
+          setEndSessionDialog({ open: o, session: null });
+          if (!o) setDialogSessionData(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>End Testing Session?</DialogTitle>
+            <DialogDescription>
+              Choose how you&apos;d like to end this session.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <div className="rounded-lg bg-secondary/50 p-4 text-sm space-y-3">
+              <div>
+                <p className="font-medium mb-1">Session Summary</p>
+                <ul className="text-muted-foreground space-y-1 text-xs">
+                  <li>• {endSessionDialog.session?.notes?.[0]?.count || 0} notes recorded</li>
+                  <li>
+                    • {endSessionDialog.session?.testers?.[0]?.count || 0} testers participated
+                  </li>
+                  <li>
+                    • {dialogSessionData?.testers?.filter((t: any) => t.email).length || 0}{" "}
+                    testers with email addresses
+                  </li>
+                </ul>
+              </div>
+            </div>
+            {(dialogSessionData?.testers?.filter((t: any) => t.email).length || 0) === 0 && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
+                <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                  No testers have email addresses. Reports can only be shared
+                  manually.
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                onClick={() => handleEndSession(false)}
+                disabled={endingSession || sendingReportEmails}
+                className="flex-1 border-primary text-primary hover:bg-primary/10 hover:text-primary"
+              >
+                {endingSession && <Loader2 className="w-4 h-4 animate-spin" />}
+                <Square className="w-4 h-4" />
+                Just End Session
+              </Button>
+              <Button
+                onClick={() => handleEndSession(true)}
+                disabled={
+                  endingSession ||
+                  sendingReportEmails ||
+                  (dialogSessionData?.testers?.filter((t: any) => t.email).length || 0) === 0
+                }
+                className="flex-1"
+              >
+                {sendingReportEmails && (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                )}
+                <Send className="w-4 h-4" />
+                End & Send Report
+              </Button>
+            </div>
+            <Button
+              variant="ghost"
+              onClick={() => setEndSessionDialog({ open: false, session: null })}
+              disabled={endingSession || sendingReportEmails}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Dialog */}
       <Dialog

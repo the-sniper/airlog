@@ -17,25 +17,13 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminClient();
 
-    // 1. Get IDs of all admins for this company to exclude them
-    const { data: adminData } = await supabase
-      .from("company_admins")
-      .select("user_id")
-      .eq("company_id", admin.company_id);
-
-    const adminIds = adminData?.map((a) => a.user_id) || [];
-
+    // Get all users including admins with their role information (left join to include both admins and regular users)
     let query = supabase
       .from("users")
-      .select("id, first_name, last_name, email, created_at, join_method")
+      .select("id, first_name, last_name, email, created_at, join_method, company_admin:company_admins(role)")
       .eq("company_id", admin.company_id)
       .order("first_name", { ascending: true })
       .limit(limit);
-
-    // Exclude admins
-    if (adminIds.length > 0) {
-      query = query.not("id", "in", `(${adminIds.join(",")})`);
-    }
 
     // Apply search filter if provided
     if (search) {
