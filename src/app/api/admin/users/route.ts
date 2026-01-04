@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from("users")
-    .select("id, first_name, last_name, email, created_at")
+    .select("id, first_name, last_name, email, created_at, deleted_at, company_id, company:companies(id, name), company_admins(role)")
     .order("first_name", { ascending: true })
     .limit(limit);
 

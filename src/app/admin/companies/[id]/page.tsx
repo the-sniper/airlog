@@ -85,6 +85,13 @@ interface Company {
   admins: CompanyAdmin[];
   teams: CompanyTeam[];
   sessions: { count: number }[];
+  users: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    created_at: string;
+  }[];
 }
 
 interface UnassignedTeam {
@@ -493,6 +500,9 @@ export default function CompanyDetailPage({
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="teams">Teams ({teamCount})</TabsTrigger>
           <TabsTrigger value="admins">Admins ({adminCount})</TabsTrigger>
+          <TabsTrigger value="users">
+            Users ({company.users?.length || 0})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -682,6 +692,51 @@ export default function CompanyDetailPage({
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Users</h3>
+          </div>
+
+          <Card>
+            {company.users && company.users.length > 0 ? (
+              <div className="space-y-2">
+                {company.users.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between p-4 rounded-lg bg-secondary/30"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-sm font-medium">
+                        {user.first_name?.[0]}
+                        {user.last_name?.[0]}
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          {user.first_name} {user.last_name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground whitespace-nowrap">
+                      {formatDate(user.created_at)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Users2 className="w-12 h-12 mb-4 text-muted-foreground opacity-50" />
+                <h3 className="font-semibold mb-2">No users found</h3>
+                <p className="text-sm text-muted-foreground">
+                  No users have joined this company yet
+                </p>
+              </div>
+            )}
+          </Card>
         </TabsContent>
       </Tabs>
 

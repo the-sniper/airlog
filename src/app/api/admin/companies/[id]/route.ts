@@ -31,7 +31,14 @@ export async function GET(
         created_at,
         members:team_members(count)
       ),
-      sessions:sessions(count)
+      sessions:sessions(count),
+      users:users(
+        id,
+        first_name,
+        last_name,
+        email,
+        created_at
+      )
     `)
     .eq("id", params.id)
     .single();

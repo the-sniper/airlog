@@ -20,6 +20,7 @@ import {
   Clock,
   Gauge,
   Plus,
+  User,
   Building2,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -124,6 +125,17 @@ export function AdminSidebar() {
           >
             <Users2 className="w-4 h-4" strokeWidth={1.75} />
             Teams
+          </Link>
+          <Link
+            href="/admin/users"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/admin/users")
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
+          >
+            <User className="w-4 h-4" strokeWidth={1.75} />
+            Users
           </Link>
           <Link
             href="/admin/usage"
@@ -404,6 +416,35 @@ export function AdminMobileHeader({
                     <p className="font-medium">Teams</p>
                     <p className="text-xs text-muted-foreground">
                       Invite and collaborate
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </Link>
+
+              <Link
+                href="/admin/users"
+                onClick={() => setDrawerOpen(false)}
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/admin/users")
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isActive("/admin/users")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background border border-border/60 text-muted-foreground"
+                    }`}
+                  >
+                    <User className="w-5 h-5" strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <p className="font-medium">Users</p>
+                    <p className="text-xs text-muted-foreground">
+                      Manage all system users
                     </p>
                   </div>
                 </div>
