@@ -141,6 +141,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to create admin" }, { status: 500 });
   }
 
+  // Update user with company_id
+  await supabase
+    .from("users")
+    .update({ company_id: admin.company_id })
+    .eq("id", userId);
+
   return NextResponse.json(companyAdmin, { status: 201 });
 }
 

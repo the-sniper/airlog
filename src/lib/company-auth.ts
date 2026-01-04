@@ -237,6 +237,12 @@ export async function registerCompany(
     return { success: false, error: adminError.message };
   }
 
+  // Update user with company_id
+  await supabase
+    .from("users")
+    .update({ company_id: company.id })
+    .eq("id", user.id);
+
   return { success: true, companyId: company.id };
 }
 
@@ -330,6 +336,13 @@ export async function inviteCompanyAdmin(
   if (error) {
     return { success: false, error: error.message };
   }
+
+  // Update user's company_id if not set or if they are just joining
+  // For admins, we enforce the company association
+  await supabase
+    .from("users")
+    .update({ company_id: companyId })
+    .eq("id", user.id);
 
   return { success: true };
 }
