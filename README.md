@@ -31,12 +31,14 @@ A modern, full-stack Next.js web application for capturing and organizing tester
 - **AI Summaries** – Generate intelligent session summaries and per-note insights using OpenAI
 - **Smart Categorization** – Keyword and semantic analysis for accurate classification
 
-### Team Management
+### User & Team Management
 
 - **Team Creation** – Organize testers into reusable teams
 - **Member Management** – Add/remove team members with email invitations
 - **Bulk Invites** – Add entire teams to sessions with one click
 - **Team-Based Analytics** – Track team performance across sessions
+- **Bulk Actions** – efficient user management with bulk disable/ban capabilities
+- **Soft Delete** – Graceful user deactivation preserving historical data
 
 ### Authentication & Authorization
 
@@ -59,10 +61,12 @@ A modern, full-stack Next.js web application for capturing and organizing tester
 - **Shareable Reports** – Generate public report links with unique tokens
 - **Email Reports** – Send reports directly to stakeholders via Resend
 - **Session Summaries** – AI-generated executive summaries
+- **Company Reports** – secure, authenticated report views for company stakeholders
 
 ### Real-Time Features
 
 - **Tester Notifications** – In-app notification system for session invites
+- **Persistent Alerts** – Offline-capable notification history ensuring users never miss updates
 - **Auto-Polling** – Real-time updates for active sessions (10-second intervals)
 - **Live Weather Banner** – Dynamic weather display with effects (rain, snow, fog, etc.)
 
@@ -387,6 +391,7 @@ MIT
 
 ## Version History
 
-| Version | Date     | Changes                                           |
-| ------- | -------- | ------------------------------------------------- |
-| 1.0.0   | Dec 2024 | Full-featured MVP with auth, teams, AI, analytics |
+| Version | Date     | Changes                                                                                       |
+| ------- | -------- | --------------------------------------------------------------------------------------------- |
+| 1.0.0   | Dec 2024 | Full-featured MVP with auth, teams, AI, analytics                                             |
+| 1.1.0   | Jan 2025 | Enhanced admin tools (bulk disable), company reports, persistent notifications, and UI polish |
