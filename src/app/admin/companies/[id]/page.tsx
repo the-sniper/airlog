@@ -21,6 +21,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { TeamsManager } from "@/components/admin/teams-manager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -94,13 +95,6 @@ interface Company {
   }[];
 }
 
-interface UnassignedTeam {
-  id: string;
-  name: string;
-  created_at: string;
-  members: { count: number }[];
-}
-
 export default function CompanyDetailPage({
   params,
 }: {
@@ -118,12 +112,6 @@ export default function CompanyDetailPage({
   const [saving, setSaving] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
-  // Unassigned teams for assignment
-  const [unassignedTeams, setUnassignedTeams] = useState<UnassignedTeam[]>([]);
-  const [assignDialog, setAssignDialog] = useState(false);
-  const [selectedTeamToAssign, setSelectedTeamToAssign] = useState<string>("");
-  const [assigning, setAssigning] = useState(false);
-
   // Settings form
   const [settingsForm, setSettingsForm] = useState({
     name: "",
@@ -132,11 +120,6 @@ export default function CompanyDetailPage({
     max_teams: 3,
     max_sessions_per_month: 10,
   });
-
-  // Create team state
-  const [createTeamDialog, setCreateTeamDialog] = useState(false);
-  const [newTeamName, setNewTeamName] = useState("");
-  const [creatingTeam, setCreatingTeam] = useState(false);
 
   // Add admin state
   const [addAdminDialog, setAddAdminDialog] = useState(false);
@@ -172,30 +155,13 @@ export default function CompanyDetailPage({
     }
   }, [params.id, router]);
 
-  const fetchUnassignedTeams = useCallback(async () => {
-    try {
-      const res = await fetch("/api/teams");
-      if (res.ok) {
-        const teams = await res.json();
-        // Filter for teams without a company
-        setUnassignedTeams(
-          teams.filter((t: { company: unknown }) => !t.company)
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching unassigned teams:", error);
-    }
-  }, []);
-
   useEffect(() => {
     fetchCompany();
-    fetchUnassignedTeams();
-  }, [fetchCompany, fetchUnassignedTeams]);
+  }, [fetchCompany]);
 
   async function handleRefresh() {
     setRefreshing(true);
     await fetchCompany();
-    await fetchUnassignedTeams();
     setRefreshing(false);
   }
 
@@ -228,71 +194,6 @@ export default function CompanyDetailPage({
       toast({ title: "Failed to save settings", variant: "destructive" });
     }
     setSaving(false);
-  }
-
-  async function handleAssignTeam() {
-    if (!selectedTeamToAssign) return;
-    setAssigning(true);
-    const res = await fetch(`/api/admin/companies/${params.id}/teams`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ team_id: selectedTeamToAssign }),
-    });
-    if (res.ok) {
-      toast({ title: "Team assigned to company", variant: "success" });
-      setAssignDialog(false);
-      setSelectedTeamToAssign("");
-      fetchCompany();
-      fetchUnassignedTeams();
-    } else {
-      toast({ title: "Failed to assign team", variant: "destructive" });
-    }
-    setAssigning(false);
-  }
-
-  function copyInviteToken(token: string) {
-    navigator.clipboard.writeText(
-      `${window.location.origin}/teams/join/${token}`
-    );
-    setCopiedToken(token);
-    setTimeout(() => setCopiedToken(null), 2000);
-  }
-
-  async function handleCreateTeam() {
-    if (!newTeamName.trim()) return;
-    setCreatingTeam(true);
-    try {
-      // Generate invite token
-      const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-      let inviteToken = "";
-      for (let i = 0; i < 12; i++) {
-        inviteToken += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-
-      const res = await fetch("/api/teams", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newTeamName.trim() }),
-      });
-
-      if (res.ok) {
-        const team = await res.json();
-        // Assign newly created team to this company
-        await fetch(`/api/admin/companies/${params.id}/teams`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ team_id: team.id }),
-        });
-        toast({ title: "Team created!", variant: "success" });
-        setCreateTeamDialog(false);
-        setNewTeamName("");
-        fetchCompany();
-      } else {
-        toast({ title: "Failed to create team", variant: "destructive" });
-      }
-    } finally {
-      setCreatingTeam(false);
-    }
   }
 
   async function handleAddAdmin() {
@@ -560,65 +461,7 @@ export default function CompanyDetailPage({
         </TabsContent>
 
         <TabsContent value="teams" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Teams</h3>
-            <div className="flex items-center gap-2">
-              {unassignedTeams.length > 0 && (
-                <Button variant="outline" onClick={() => setAssignDialog(true)}>
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Assign Legacy Team
-                </Button>
-              )}
-              <Button onClick={() => setCreateTeamDialog(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Team
-              </Button>
-            </div>
-          </div>
-
-          {company.teams.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users2 className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                <p className="text-muted-foreground">
-                  No teams in this company
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-3">
-              {company.teams.map((team) => (
-                <Card key={team.id}>
-                  <CardContent className="py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <Users2 className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{team.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {team.members?.[0]?.count || 0} members
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyInviteToken(team.invite_token)}
-                      >
-                        {copiedToken === team.invite_token ? (
-                          <Check className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <TeamsManager companyId={company.id} />
         </TabsContent>
 
         <TabsContent value="admins" className="space-y-4">
@@ -853,88 +696,6 @@ export default function CompanyDetailPage({
             <Button onClick={handleSaveSettings} disabled={saving}>
               {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
               Save Settings
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Assign Team Dialog */}
-      <Dialog open={assignDialog} onOpenChange={setAssignDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Assign Team to Company</DialogTitle>
-            <DialogDescription>
-              Select a legacy team (without a company) to assign to{" "}
-              {company.name}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <Select
-              value={selectedTeamToAssign}
-              onValueChange={setSelectedTeamToAssign}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a team..." />
-              </SelectTrigger>
-              <SelectContent>
-                {unassignedTeams.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>
-                    {team.name} ({team.members?.[0]?.count || 0} members)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setAssignDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAssignTeam}
-              disabled={assigning || !selectedTeamToAssign}
-            >
-              {assigning && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              Assign Team
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create Team Dialog */}
-      <Dialog open={createTeamDialog} onOpenChange={setCreateTeamDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Team</DialogTitle>
-            <DialogDescription>
-              Create a new team for {company.name}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="team-name">Team Name</Label>
-              <Input
-                id="team-name"
-                value={newTeamName}
-                onChange={(e) => setNewTeamName(e.target.value)}
-                placeholder="QA Testers"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleCreateTeam();
-                }}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setCreateTeamDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateTeam}
-              disabled={creatingTeam || !newTeamName.trim()}
-            >
-              {creatingTeam && (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              )}
-              Create Team
             </Button>
           </DialogFooter>
         </DialogContent>

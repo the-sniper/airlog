@@ -3697,12 +3697,6 @@ export default function SessionDetailPage({
                 <div className="text-center py-8 text-muted-foreground">
                   <UsersRound className="w-10 h-10 mx-auto mb-3 opacity-50" />
                   <p className="text-sm mb-2">No teams created yet</p>
-                  <Link href="/admin/teams">
-                    <Button size="sm" variant="outline">
-                      <Plus className="w-4 h-4" />
-                      Create Team
-                    </Button>
-                  </Link>
                 </div>
               ) : (
                 <>
@@ -4981,12 +4975,6 @@ export default function SessionDetailPage({
               <div className="text-center py-8 text-muted-foreground">
                 <UsersRound className="w-10 h-10 mx-auto mb-3 opacity-50" />
                 <p className="text-sm mb-2">No teams available</p>
-                <Link href="/admin/teams">
-                  <Button size="sm" variant="outline">
-                    <Plus className="w-4 h-4" />
-                    Create Team
-                  </Button>
-                </Link>
               </div>
             ) : (
               <div className="space-y-2">

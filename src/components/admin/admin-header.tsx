@@ -112,16 +112,6 @@ export function AdminHeader({ admin }: AdminHeaderProps) {
             >
               Sessions
             </Link>
-            <Link
-              href="/admin/teams"
-              className={`text-sm transition-colors ${
-                isActive("/admin/teams")
-                  ? "text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Teams
-            </Link>
           </nav>
           <Button
             variant="ghost"
@@ -253,35 +243,6 @@ export function AdminHeader({ admin }: AdminHeaderProps) {
                     <p className="font-medium">Sessions</p>
                     <p className="text-xs text-muted-foreground">
                       Browse and manage sessions
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </Link>
-
-              <Link
-                href="/admin/teams"
-                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
-                  isActive("/admin/teams")
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-border/60 bg-muted/20 hover:border-border"
-                }`}
-                onClick={() => setDrawerOpen(false)}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      isActive("/admin/teams")
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/40 text-muted-foreground"
-                    }`}
-                  >
-                    <Users2 className="w-6 h-6" strokeWidth={1.75} />
-                  </div>
-                  <div>
-                    <p className="font-medium">Teams</p>
-                    <p className="text-xs text-muted-foreground">
-                      Invite and collaborate
                     </p>
                   </div>
                 </div>

@@ -83,7 +83,7 @@ export async function PATCH(
         return handleRestore(req, id, admin);
     }
 
-    const { first_name, last_name, email } = body;
+    const { first_name, last_name, email, company_id } = body;
     const supabase = createAdminClient();
 
     // Fetch current state for logging
@@ -96,6 +96,7 @@ export async function PATCH(
     const updates: any = {};
     if (first_name !== undefined) updates.first_name = first_name;
     if (last_name !== undefined) updates.last_name = last_name;
+    if (company_id !== undefined) updates.company_id = company_id;
 
     // Update public.users
     if (Object.keys(updates).length > 0) {

@@ -41,6 +41,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
@@ -82,6 +89,14 @@ export default function AdminUsersPage() {
 
   const [restoringUser, setRestoringUser] = useState<User | null>(null);
   const [isRestoreLoading, setIsRestoreLoading] = useState(false);
+
+  // Assign Company states
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [assignUser, setAssignUser] = useState<User | null>(null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+  const [isAssignLoading, setIsAssignLoading] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -249,6 +264,59 @@ export default function AdminUsersPage() {
     }
   };
 
+  const fetchCompanies = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/companies");
+      if (res.ok) {
+        setCompanies(await res.json());
+      }
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
+
+  const handleAssignClick = (user: User) => {
+    setAssignUser(user);
+    setSelectedCompanyId("");
+  };
+
+  const handleAssignSubmit = async () => {
+    if (!assignUser || !selectedCompanyId) return;
+    setIsAssignLoading(true);
+    try {
+      const res = await fetch(`/api/admin/users/${assignUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company_id: selectedCompanyId }),
+      });
+
+      if (res.ok) {
+        toast({
+          title: "User assigned",
+          description: `User assigned to company successfully.`,
+          variant: "success",
+        });
+        setAssignUser(null);
+        fetchUsers();
+      } else {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to assign user");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsAssignLoading(false);
+    }
+  };
+
   const UserCard = ({ user }: { user: User }) => {
     // If deleted_at is missing from API but we know it's disabled via some other way, we can't tell easily.
     // But we are manually adding it in optimistic update.
@@ -339,13 +407,21 @@ export default function AdminUsersPage() {
                   Restore Access
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem
-                  className="text-red-600 focus:text-red-700 dark:text-red-400 dark:focus:text-red-300"
-                  onClick={() => handleDisableClick(user)}
-                >
-                  <Ban className="w-4 h-4 mr-2" />
-                  Disable User
-                </DropdownMenuItem>
+                <>
+                  {!user.company && (
+                    <DropdownMenuItem onClick={() => handleAssignClick(user)}>
+                      <Building2 className="w-4 h-4 mr-2" />
+                      Assign to Company
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    className="text-red-600 focus:text-red-700 dark:text-red-400 dark:focus:text-red-300"
+                    onClick={() => handleDisableClick(user)}
+                  >
+                    <Ban className="w-4 h-4 mr-2" />
+                    Disable User
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -622,6 +698,63 @@ export default function AdminUsersPage() {
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               )}
               Restore Access
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Company Dialog */}
+      <Dialog
+        open={!!assignUser}
+        onOpenChange={(open) => !open && setAssignUser(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign User to Company</DialogTitle>
+            <DialogDescription className="pt-2">
+              Assign{" "}
+              <strong>
+                {assignUser?.first_name} {assignUser?.last_name}
+              </strong>{" "}
+              to a company.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4 pt-0">
+            <div className="space-y-2">
+              <Label>Select Company</Label>
+              <Select
+                value={selectedCompanyId}
+                onValueChange={setSelectedCompanyId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a company..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setAssignUser(null)}
+              disabled={isAssignLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssignSubmit}
+              disabled={isAssignLoading || !selectedCompanyId}
+            >
+              {isAssignLoading && (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              )}
+              Assign User
             </Button>
           </DialogFooter>
         </DialogContent>
