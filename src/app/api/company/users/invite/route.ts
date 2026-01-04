@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentCompanyAdmin } from "@/lib/company-auth";
 import { trackSMTPUsage } from "@/lib/track-usage";
 import { notifyUser } from "@/lib/user-system-notifications";
+import { createCompanyInviteEmail } from "@/lib/email-templates";
 
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
@@ -227,36 +228,10 @@ export async function POST(request: NextRequest) {
         from: fromEmail,
         to: normalizedEmail,
         subject: `You're invited to join ${companyName} on AirLog`,
-        html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #14b8a6; font-size: 24px; margin-bottom: 24px;">Join ${companyName} on AirLog</h1>
-          
-          <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-            You've been invited to join <strong>${companyName}</strong> on AirLog, a platform for
-            collecting and managing product feedback.
-          </p>
-          
-          <div style="margin: 32px 0; text-align: center;">
-            <a href="${inviteUrl}" 
-               style="display: inline-block; background-color: #14b8a6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-              Accept Invitation
-            </a>
-          </div>
-          
-          <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
-            Or copy and paste this link into your browser:
-          </p>
-          <p style="background-color: #f3f4f6; padding: 12px; border-radius: 6px; word-break: break-all; font-size: 14px; color: #374151;">
-            ${inviteUrl}
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
-          
-          <p style="color: #9ca3af; font-size: 12px;">
-            This invitation will expire in 7 days. If you didn't expect this invitation, you can ignore this email.
-          </p>
-        </div>
-        `,
+        html: createCompanyInviteEmail({
+          companyName,
+          inviteUrl,
+        }),
       });
 
       const durationMs = Date.now() - startTime;
@@ -358,35 +333,10 @@ export async function PATCH(request: NextRequest) {
         from: fromEmail,
         to: invite.email,
         subject: `Reminder: You're invited to join ${companyName} on AirLog`,
-        html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #14b8a6; font-size: 24px; margin-bottom: 24px;">Reminder: Join ${companyName} on AirLog</h1>
-          
-          <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-            This is a reminder that you've been invited to join <strong>${companyName}</strong> on AirLog.
-          </p>
-          
-          <div style="margin: 32px 0; text-align: center;">
-            <a href="${inviteUrl}" 
-               style="display: inline-block; background-color: #14b8a6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-              Accept Invitation
-            </a>
-          </div>
-          
-          <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
-            Or copy and paste this link into your browser:
-          </p>
-          <p style="background-color: #f3f4f6; padding: 12px; border-radius: 6px; word-break: break-all; font-size: 14px; color: #374151;">
-            ${inviteUrl}
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
-          
-          <p style="color: #9ca3af; font-size: 12px;">
-            This invitation will expire in 7 days. If you didn't expect this invitation, you can ignore this email.
-          </p>
-        </div>
-        `,
+        html: createCompanyInviteEmail({
+          companyName,
+          inviteUrl,
+        }),
       });
 
       const durationMs = Date.now() - startTime;

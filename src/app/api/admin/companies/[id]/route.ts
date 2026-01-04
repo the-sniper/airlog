@@ -37,7 +37,8 @@ export async function GET(
         first_name,
         last_name,
         email,
-        created_at
+        created_at,
+        company_admin:company_admins!company_admins_user_id_fkey(role)
       )
     `)
     .eq("id", params.id)

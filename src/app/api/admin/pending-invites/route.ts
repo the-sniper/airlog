@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentAdmin } from "@/lib/auth";
 import nodemailer from "nodemailer";
+import { createSignupInviteEmail } from "@/lib/email-templates";
 
 export interface PendingInvite {
   id: string;
@@ -179,36 +180,11 @@ export async function POST(req: NextRequest) {
       from: fromEmail,
       to: normalizedEmail,
       subject: `You're invited to join Airlog`,
-      html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #4f6fc5; font-size: 24px; margin-bottom: 24px;">You've Been Invited!</h1>
-          
-          <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-            You've been invited to join ${invite_type === "session" ? "the testing session" : "the team"}: <strong>${targetName}</strong>
-          </p>
-          
-          <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-            To participate, please create an account:
-          </p>
-          
-          <div style="margin: 32px 0; text-align: center;">
-            <a href="${signupUrl}" 
-               style="display: inline-block; background-color: #4f6fc5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 500;">
-              Create Account
-            </a>
-          </div>
-          
-          <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
-            Once you register with this email address, you'll automatically be added to ${targetName}.
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
-          
-          <p style="color: #9ca3af; font-size: 12px;">
-            This invitation expires in 7 days.
-          </p>
-        </div>
-      `,
+      html: createSignupInviteEmail({
+        inviteType: invite_type,
+        targetName,
+        signupUrl,
+      }),
     });
   } catch (emailError) {
     console.error("[API POST /admin/pending-invites] Email error:", emailError);

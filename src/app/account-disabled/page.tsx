@@ -144,7 +144,7 @@ export default function AccountDisabledPage() {
       </div>
 
       <div className="absolute bottom-8 text-xs text-muted-foreground/60">
-        AirLog Platform &copy; {new Date().getFullYear()}
+        airlog-pro.vercel.app &copy; {new Date().getFullYear()}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/server";
+import { createReportReadyEmail } from "@/lib/email-templates";
 
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
@@ -94,38 +95,11 @@ export async function POST(
             from: fromEmail,
             to: tester.email,
             subject: `Testing Report: ${session.name}`,
-            html: `
-              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h1 style="color: #4f6fc5; font-size: 24px; margin-bottom: 24px;">AirLog Testing Report</h1>
-                
-                <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-                  Hi ${tester.first_name},
-                </p>
-                
-                <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-                  Thank you for participating in the testing session for <strong>${session.name}</strong>. The session has been completed and the report is now available.
-                </p>
-                
-                <div style="margin: 32px 0;">
-                  <a href="${reportUrl}" 
-                     style="display: inline-block; background-color: #4f6fc5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 500;">
-                    View Testing Report
-                  </a>
-                </div>
-                
-                <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
-                  Or copy and paste this link into your browser:
-                  <br />
-                  <a href="${reportUrl}" style="color: #4f6fc5;">${reportUrl}</a>
-                </p>
-                
-                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
-                
-                <p style="color: #9ca3af; font-size: 12px;">
-                  This report contains feedback and notes collected during the testing session.
-                </p>
-              </div>
-            `,
+            html: createReportReadyEmail({
+              firstName: tester.first_name,
+              sessionName: session.name,
+              reportUrl,
+            }),
           });
 
           return { testerId: tester.id, success: true };

@@ -365,7 +365,13 @@ export default function AdminUsersPage() {
     }
   };
 
-  const UserCard = ({ user }: { user: User }) => {
+  const UserCard = ({
+    user,
+    variant = "default",
+  }: {
+    user: User;
+    variant?: "default" | "manager";
+  }) => {
     // If deleted_at is missing from API but we know it's disabled via some other way, we can't tell easily.
     // But we are manually adding it in optimistic update.
     const isDisabled = !!user.deleted_at;
@@ -377,31 +383,67 @@ export default function AdminUsersPage() {
         }`}
       >
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
-            {user.first_name?.[0]}
-            {user.last_name?.[0]}
-          </div>
+          {variant === "manager" ? (
+            // Admin tab: Regular avatar without overlay
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
+              {user.first_name?.[0]}
+              {user.last_name?.[0]}
+            </div>
+          ) : (
+            // Users tab: Avatar with overlay icon
+            <div className="relative">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
+                {user.first_name?.[0]}
+                {user.last_name?.[0]}
+              </div>
+              {user.company_admins && user.company_admins.length > 0 && (
+                <div
+                  className={`absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full flex items-center justify-center border-2 border-background ${
+                    user.company_admins[0].role === "owner"
+                      ? "bg-amber-500 text-white"
+                      : "bg-blue-500 text-white"
+                  }`}
+                  title={
+                    user.company_admins[0].role === "owner"
+                      ? "Owner"
+                      : "Manager"
+                  }
+                >
+                  {user.company_admins[0].role === "owner" ? (
+                    <Crown className="w-2.5 h-2.5" />
+                  ) : (
+                    <Shield className="w-2.5 h-2.5" />
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-2">
               <p className="font-medium">
                 {user.first_name} {user.last_name}
               </p>
-              {user.company_admins && user.company_admins.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className={
-                    user.company_admins[0].role === "owner"
-                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/25"
-                      : "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/25"
-                  }
-                >
-                  {user.company_admins[0].role === "owner" ? (
-                    <Crown className="w-3 h-3" />
-                  ) : (
-                    <Shield className="w-3 h-3" />
-                  )}
-                </Badge>
-              )}
+              {variant === "manager" &&
+                user.company_admins &&
+                user.company_admins.length > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className={
+                      user.company_admins[0].role === "owner"
+                        ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/25"
+                        : "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/25"
+                    }
+                  >
+                    {user.company_admins[0].role === "owner" ? (
+                      <Crown className="w-3 h-3 mr-1" />
+                    ) : (
+                      <Shield className="w-3 h-3 mr-1" />
+                    )}
+                    {user.company_admins[0].role === "owner"
+                      ? "Owner"
+                      : "Manager"}
+                  </Badge>
+                )}
               {isDisabled && (
                 <Badge
                   variant="destructive"
@@ -505,7 +547,7 @@ export default function AdminUsersPage() {
             <Users className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">System Users</h1>
+            <h1 className="text-2xl font-bold">Users</h1>
             <p className="text-muted-foreground">
               Manage all registered users across companies
             </p>
@@ -608,7 +650,7 @@ export default function AdminUsersPage() {
               ) : (
                 <div className="space-y-2">
                   {admins.map((user) => (
-                    <UserCard key={user.id} user={user} />
+                    <UserCard key={user.id} user={user} variant="manager" />
                   ))}
                 </div>
               )}

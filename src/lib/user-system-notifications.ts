@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import nodemailer from "nodemailer";
+import { createBaseEmail, createParagraph, createButton, createDivider, createTinyText } from "@/lib/email-templates";
 
 export type UserSystemNotificationType =
   | "account_disabled"
@@ -118,87 +119,63 @@ function getEmailSubject(type: UserSystemNotificationType, params: NotifyUserPar
 }
 
 function getEmailHtml(type: UserSystemNotificationType, firstName: string, params: NotifyUserParams): string {
-  const containerStyle = "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #374151;";
-  const headerStyle = "font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #111827;";
-  const pStyle = "font-size: 16px; line-height: 1.6; margin-bottom: 16px;";
-  const btnStyle = "display: inline-block; background-color: #0d9488; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;";
-  const footerStyle = "font-size: 12px; color: #9ca3af; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;";
-
-  let content = "";
-  let actionBtn = "";
+  let body = "";
 
   switch (type) {
     case "account_disabled":
-      content = `
-        <p style="${pStyle}">Hello ${firstName},</p>
-        <p style="${pStyle}">Your account on AirLog has been disabled by an administrator.</p>
-        <p style="${pStyle}">If you believe this is an error, please contact your company administrator or support.</p>
+      body = `
+        ${createParagraph(`Hello ${firstName},`)}
+        ${createParagraph('Your account on AirLog has been disabled by an administrator.')}
+        ${createParagraph('If you believe this is an error, please contact your company administrator or support.')}
       `;
       break;
     case "account_enabled":
-      content = `
-        <p style="${pStyle}">Hello ${firstName},</p>
-        <p style="${pStyle}">Good news! Your account on AirLog has been reactivated.</p>
-        <p style="${pStyle}">You can now log in and access your workspace.</p>
-      `;
-      actionBtn = `
-        <div style="margin: 24px 0;">
-          <a href="${BASE_URL}/login" style="${btnStyle}">Log In</a>
-        </div>
+      body = `
+        ${createParagraph(`Hello ${firstName},`)}
+        ${createParagraph('Good news! Your account on AirLog has been reactivated.')}
+        ${createParagraph('You can now log in and access your workspace.')}
+        ${createButton('Log In', `${BASE_URL}/login`)}
       `;
       break;
     case "team_added":
       const addedTeam = params.metadata?.teamName || "a team";
-      content = `
-        <p style="${pStyle}">Hello ${firstName},</p>
-        <p style="${pStyle}">You have been added to the team <strong>${addedTeam}</strong>.</p>
-        <p style="${pStyle}">You can now access projects and sessions associated with this team.</p>
-      `;
-      actionBtn = `
-        <div style="margin: 24px 0;">
-          <a href="${BASE_URL}" style="${btnStyle}">View Team</a>
-        </div>
+      body = `
+        ${createParagraph(`Hello ${firstName},`)}
+        ${createParagraph(`You have been added to the team <strong>${addedTeam}</strong>.`)}
+        ${createParagraph('You can now access projects and sessions associated with this team.')}
+        ${createButton('View Team', BASE_URL)}
       `;
       break;
     case "team_removed":
       const removedTeam = params.metadata?.teamName || "a team";
-      content = `
-        <p style="${pStyle}">Hello ${firstName},</p>
-        <p style="${pStyle}">You have been removed from the team <strong>${removedTeam}</strong>.</p>
-        <p style="${pStyle}">You no longer have access to this team's resources.</p>
+      body = `
+        ${createParagraph(`Hello ${firstName},`)}
+        ${createParagraph(`You have been removed from the team <strong>${removedTeam}</strong>.`)}
+        ${createParagraph('You no longer have access to this team\'s resources.')}
       `;
       break;
     case "company_added":
       const companyName = params.metadata?.companyName || "a company";
-      content = `
-        <p style="${pStyle}">Hello ${firstName},</p>
-        <p style="${pStyle}">You have been added to the company <strong>${companyName}</strong>.</p>
-        <p style="${pStyle}">You can now access company resources and collaborate with your team.</p>
-      `;
-      actionBtn = `
-        <div style="margin: 24px 0;">
-          <a href="${BASE_URL}" style="${btnStyle}">Go to Dashboard</a>
-        </div>
+      body = `
+        ${createParagraph(`Hello ${firstName},`)}
+        ${createParagraph(`You have been added to the company <strong>${companyName}</strong>.`)}
+        ${createParagraph('You can now access company resources and collaborate with your team.')}
+        ${createButton('Go to Dashboard', BASE_URL)}
       `;
       break;
     case "company_removed":
       const removedCompanyName = params.metadata?.companyName || "a company";
-      content = `
-        <p style="${pStyle}">Hello ${firstName},</p>
-        <p style="${pStyle}">You have been removed from the company <strong>${removedCompanyName}</strong>.</p>
-        <p style="${pStyle}">You no longer have access to this company's resources.</p>
+      body = `
+        ${createParagraph(`Hello ${firstName},`)}
+        ${createParagraph(`You have been removed from the company <strong>${removedCompanyName}</strong>.`)}
+        ${createParagraph('You no longer have access to this company\'s resources.')}
       `;
       break;
   }
 
-  return `
-    <div style="${containerStyle}">
-      <h1 style="${headerStyle}">${getEmailSubject(type, params)}</h1>
-      ${content}
-      ${actionBtn}
-      <div style="${footerStyle}">
-        <p>AirLog Platform</p>
-      </div>
-    </div>
-  `;
+  return createBaseEmail({
+    heading: getEmailSubject(type, params),
+    body,
+    footer: 'airlog-pro.vercel.app',
+  });
 }

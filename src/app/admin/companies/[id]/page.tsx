@@ -92,6 +92,7 @@ interface Company {
     last_name: string;
     email: string;
     created_at: string;
+    company_admin: { role: string }[];
   }[];
 }
 
@@ -516,7 +517,7 @@ export default function CompanyDetailPage({
                           ) : (
                             <Shield className="w-3 h-3 mr-1" />
                           )}
-                          {admin.role === "owner" ? "Owner" : "Manager"}
+                          {admin.role === "owner" ? "Owner" : "Admin"}
                         </Badge>
                         {admin.role !== "owner" && (
                           <Button
@@ -545,30 +546,52 @@ export default function CompanyDetailPage({
           <Card>
             {company.users && company.users.length > 0 ? (
               <div className="space-y-2">
-                {company.users.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-secondary/30"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-sm font-medium">
-                        {user.first_name?.[0]}
-                        {user.last_name?.[0]}
+                {company.users.map((user) => {
+                  const userRole = user.company_admin?.[0]?.role;
+                  return (
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-4 rounded-lg bg-secondary/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-sm font-medium">
+                          {user.first_name?.[0]}
+                          {user.last_name?.[0]}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">
+                              {user.first_name} {user.last_name}
+                            </p>
+                            {userRole && (
+                              <Badge
+                                variant="secondary"
+                                className={
+                                  userRole === "owner"
+                                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/25"
+                                    : "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/25"
+                                }
+                              >
+                                {userRole === "owner" ? (
+                                  <Crown className="w-3 h-3 mr-1" />
+                                ) : (
+                                  <Shield className="w-3 h-3 mr-1" />
+                                )}
+                                {userRole === "owner" ? "Owner" : "Admin"}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">
-                          {user.first_name} {user.last_name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {user.email}
-                        </p>
+                      <div className="text-sm text-muted-foreground whitespace-nowrap">
+                        {formatDate(user.created_at)}
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground whitespace-nowrap">
-                      {formatDate(user.created_at)}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">

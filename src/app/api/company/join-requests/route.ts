@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentCompanyAdmin } from "@/lib/company-auth";
 import { trackSMTPUsage } from "@/lib/track-usage";
+import { createJoinRequestApprovedEmail, createJoinRequestRejectedEmail } from "@/lib/email-templates";
 
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
@@ -186,36 +187,11 @@ export async function PATCH(request: NextRequest) {
           from: fromEmail,
           to: user.email,
           subject: `Welcome to ${companyName}! Your request has been approved`,
-          html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #14b8a6; font-size: 24px; margin-bottom: 24px;">🎉 You're in!</h1>
-            
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              Hi ${user.first_name},
-            </p>
-            
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              Great news! Your request to join <strong>${companyName}</strong> on AirLog has been approved.
-            </p>
-            
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              You now have full access to participate in testing sessions and collaborate with your team.
-            </p>
-            
-            <div style="margin: 32px 0; text-align: center;">
-              <a href="${baseUrl}/dashboard" 
-                 style="display: inline-block; background-color: #14b8a6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Go to Dashboard
-              </a>
-            </div>
-            
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
-            
-            <p style="color: #9ca3af; font-size: 12px;">
-              Welcome to the team!
-            </p>
-          </div>
-          `,
+          html: createJoinRequestApprovedEmail({
+            firstName: user.first_name,
+            companyName,
+            dashboardUrl: `${baseUrl}/dashboard`,
+          }),
         });
       } else {
         // Rejection email
@@ -223,36 +199,11 @@ export async function PATCH(request: NextRequest) {
           from: fromEmail,
           to: user.email,
           subject: `Update on your request to join ${companyName}`,
-          html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #374151; font-size: 24px; margin-bottom: 24px;">Request Update</h1>
-            
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              Hi ${user.first_name},
-            </p>
-            
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              We wanted to let you know that your request to join <strong>${companyName}</strong> on AirLog was not approved at this time.
-            </p>
-            
-            ${rejectionReason ? `
-            <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 24px 0;">
-              <p style="margin: 0; color: #6b7280; font-size: 14px;"><strong>Reason:</strong></p>
-              <p style="margin: 8px 0 0 0; color: #374151; font-size: 14px;">${rejectionReason}</p>
-            </div>
-            ` : ''}
-            
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              You can still use AirLog to participate in sessions when invited directly by other companies.
-            </p>
-            
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
-            
-            <p style="color: #9ca3af; font-size: 12px;">
-              If you believe this was a mistake, please contact the company directly.
-            </p>
-          </div>
-          `,
+          html: createJoinRequestRejectedEmail({
+            firstName: user.first_name,
+            companyName,
+            rejectionReason,
+          }),
         });
       }
 

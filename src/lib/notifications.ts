@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import nodemailer from "nodemailer";
+import { createAdminNotificationEmail } from "@/lib/email-templates";
 
 export type NotificationSeverity = "critical" | "warning" | "info";
 export type NotificationType =
@@ -134,11 +135,11 @@ async function sendNotificationEmail(notification: Notification): Promise<void> 
     const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER;
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    // Determine email styling based on severity
+    // Severity config for email subject
     const severityConfig = {
-      critical: { color: "#dc2626", label: "CRITICAL" },
-      warning: { color: "#f59e0b", label: "WARNING" },
-      info: { color: "#3b82f6", label: "INFO" },
+      critical: { label: "CRITICAL" },
+      warning: { label: "WARNING" },
+      info: { label: "INFO" },
     };
 
     const config = severityConfig[notification.severity];
@@ -147,27 +148,16 @@ async function sendNotificationEmail(notification: Notification): Promise<void> 
       from: fromEmail,
       to: adminEmail,
       subject: `[${config.label}] ${notification.title} - AirLog`,
-      html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px;">
-          <div style="margin-bottom: 24px;">
-            <span style="display: inline-block; padding: 4px 10px; background-color: ${config.color}15; color: ${config.color}; font-size: 11px; font-weight: 600; border-radius: 4px; letter-spacing: 0.5px;">
-              ${config.label}
-            </span>
-          </div>
-          <h1 style="color: #111827; font-size: 20px; font-weight: 600; margin: 0 0 12px 0; line-height: 1.4;">
-            ${notification.title}
-          </h1>
-          <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0;">
-            ${notification.message}
-          </p>
-          <a href="${baseUrl}/admin" style="display: inline-block; background-color: #0d9488; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;">
-            View Dashboard →
-          </a>
-          <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-            AirLog Admin · ${new Date(notification.created_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
-          </p>
-        </div>
-      `,
+      html: createAdminNotificationEmail({
+        severity: notification.severity,
+        title: notification.title,
+        message: notification.message,
+        dashboardUrl: `${baseUrl}/admin`,
+        timestamp: new Date(notification.created_at).toLocaleString("en-US", { 
+          dateStyle: "medium", 
+          timeStyle: "short" 
+        }),
+      }),
     });
 
     // Update notification to mark email as sent

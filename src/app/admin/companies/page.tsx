@@ -203,7 +203,7 @@ export default function AdminCompaniesPage() {
                     0
                   )}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Managers</p>
+                <p className="text-sm text-muted-foreground">Total Admins</p>
               </div>
             </div>
           </CardContent>
