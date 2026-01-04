@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Building2,
@@ -60,6 +60,7 @@ interface CompanyData {
 export default function CompanySettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [data, setData] = useState<CompanyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -201,7 +202,7 @@ export default function CompanySettingsPage() {
                 size="icon"
                 variant="secondary"
                 className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full shadow-lg border border-black/10"
-                onClick={() => document.getElementById("logo-upload")?.click()}
+                onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="h-4 w-4" />
               </Button>
@@ -332,6 +333,7 @@ export default function CompanySettingsPage() {
           {/* Hidden UI for Image Upload Logic (controlled by button in header) */}
           <div className="hidden">
             <ImageUpload
+              ref={fileInputRef}
               value={logoUrl}
               onChange={setLogoUrl}
               onUpload={onUpload}

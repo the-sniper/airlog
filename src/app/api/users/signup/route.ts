@@ -119,9 +119,22 @@ export async function POST(req: Request) {
       .gt("expires_at", new Date().toISOString());
 
     if (pendingInvites && pendingInvites.length > 0) {
+      let companyIdToAssociate: string | null = null;
+
       for (const invite of pendingInvites) {
         try {
           if (invite.invite_type === "session") {
+            // Look up the session to get its company_id
+            const { data: session } = await supabase
+              .from("sessions")
+              .select("company_id")
+              .eq("id", invite.target_id)
+              .single();
+
+            if (session?.company_id) {
+              companyIdToAssociate = session.company_id;
+            }
+
             // Create tester record for the session
             await supabase.from("testers").insert({
               session_id: invite.target_id,
@@ -132,6 +145,17 @@ export async function POST(req: Request) {
               invite_token: generateInviteToken(),
             });
           } else if (invite.invite_type === "team") {
+            // Look up the team to get its company_id
+            const { data: team } = await supabase
+              .from("teams")
+              .select("company_id")
+              .eq("id", invite.target_id)
+              .single();
+
+            if (team?.company_id) {
+              companyIdToAssociate = team.company_id;
+            }
+
             // Create team member record
             await supabase.from("team_members").insert({
               team_id: invite.target_id,
@@ -151,6 +175,74 @@ export async function POST(req: Request) {
           console.error("[Signup] Error claiming invite:", inviteError);
           // Continue with other invites even if one fails
         }
+      }
+
+      // If we found a company to associate, add the user to that company
+      if (companyIdToAssociate) {
+        try {
+          // Update user's company_id and join_method
+          await supabase
+            .from("users")
+            .update({ 
+              company_id: companyIdToAssociate,
+              join_method: 'invite'
+            })
+            .eq("id", created.id);
+
+          // Delete any pending join request for this company since user is now approved via invite
+          await supabase
+            .from("company_join_requests")
+            .delete()
+            .eq("user_id", created.id)
+            .eq("company_id", companyIdToAssociate);
+
+          // If there was a join request being created for this same company, mark it as not needed
+          if (company_id === companyIdToAssociate) {
+            joinRequestCreated = false;
+          }
+        } catch (companyError) {
+          console.error("[Signup] Error associating user with company:", companyError);
+        }
+      }
+    }
+
+
+
+    // Claim pending company invites (for direct company invites)
+    const { data: companyInvites } = await supabase
+      .from("company_user_invites")
+      .select("*")
+      .eq("email", normalizedEmail)
+      .eq("status", "pending")
+      .gt("expires_at", new Date().toISOString());
+
+    if (companyInvites && companyInvites.length > 0) {
+      for (const invite of companyInvites) {
+        // Mark invite as accepted
+        await supabase
+          .from("company_user_invites")
+          .update({ status: "accepted" })
+          .eq("id", invite.id);
+
+        // Add user to company
+        // If users have multiple invites, the last one processed wins (or we could prioritize)
+        // Since session/team invites also set company_id, we just ensure they get into the company.
+        
+        // Update user's company_id and join_method
+        await supabase
+          .from("users")
+          .update({ 
+            company_id: invite.company_id,
+            join_method: 'invite'
+          })
+          .eq("id", created.id);
+
+        // Delete pending join requests
+        await supabase
+          .from("company_join_requests")
+          .delete()
+          .eq("user_id", created.id)
+          .eq("company_id", invite.company_id);
       }
     }
 

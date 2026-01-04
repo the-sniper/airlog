@@ -17,7 +17,7 @@ async function checkAccess(id: string) {
   if (!session || session.company_id !== admin.company_id) {
     return { error: "Forbidden", status: 403 };
   }
-  return { supabase };
+  return { supabase, companyId: session.company_id };
 }
 
 export async function GET(
@@ -106,6 +106,32 @@ export async function POST(
       console.error("[API POST /testers] Bulk insert error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Auto-approve: Associate added users with the company
+    // Users who are being added by an admin should be automatically part of the company
+    const userIdsToAssociate = testersToInsert
+      .map((t: { user_id: string | null }) => t.user_id)
+      .filter((uid: string | null): uid is string => uid !== null);
+
+    if (userIdsToAssociate.length > 0 && access.companyId) {
+      // Update users who don't already have a company_id
+      await supabase
+        .from("users")
+        .update({ 
+          company_id: access.companyId,
+          join_method: 'admin_add'
+        })
+        .in("id", userIdsToAssociate)
+        .is("company_id", null);
+
+      // Also delete any pending join requests for these users for this company
+      await supabase
+        .from("company_join_requests")
+        .delete()
+        .in("user_id", userIdsToAssociate)
+        .eq("company_id", access.companyId);
+    }
+
     return NextResponse.json(data, { status: 201 });
   }
 
@@ -138,6 +164,27 @@ export async function POST(
     console.error("[API POST /testers] Insert error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Auto-approve: Associate the user with the company if they have a user_id
+  if (userId && access.companyId) {
+    // Update user if they don't already have a company
+    await supabase
+      .from("users")
+      .update({ 
+        company_id: access.companyId,
+        join_method: 'admin_add'
+      })
+      .eq("id", userId)
+      .is("company_id", null);
+
+    // Delete any pending join request for this user
+    await supabase
+      .from("company_join_requests")
+      .delete()
+      .eq("user_id", userId)
+      .eq("company_id", access.companyId);
+  }
+
   return NextResponse.json(data, { status: 201 });
 }
 

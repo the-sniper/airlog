@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("users")
-      .select("id, first_name, last_name, email, created_at")
+      .select("id, first_name, last_name, email, created_at, join_method")
       .eq("company_id", admin.company_id)
       .order("first_name", { ascending: true })
       .limit(limit);
@@ -95,7 +95,10 @@ export async function POST(request: NextRequest) {
     // Add user to company
     const { error: updateError } = await supabase
       .from("users")
-      .update({ company_id: admin.company_id })
+      .update({ 
+        company_id: admin.company_id,
+        join_method: 'admin_add'
+      })
       .eq("id", user.id);
 
     if (updateError) throw updateError;

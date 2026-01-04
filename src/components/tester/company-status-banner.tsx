@@ -87,7 +87,7 @@ export function CompanyStatusBanner() {
               <img
                 src={status.company.logo_url}
                 alt={status.company.name}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
               />
             ) : (
               <Building2 className="h-5 w-5 text-primary" />

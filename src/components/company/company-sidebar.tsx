@@ -211,7 +211,7 @@ export function CompanySidebar() {
               }`}
             >
               <Shield className="w-4 h-4" strokeWidth={1.75} />
-              Manage Managers
+              Managers
             </Link>
           )}
         </nav>
@@ -645,7 +645,7 @@ export function CompanyMobileHeader() {
                       <Shield className="w-5 h-5" strokeWidth={1.75} />
                     </div>
                     <div>
-                      <p className="font-medium">Manage Managers</p>
+                      <p className="font-medium">Managers</p>
                       <p className="text-xs text-muted-foreground">
                         Add or remove team managers
                       </p>

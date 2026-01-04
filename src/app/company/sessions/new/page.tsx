@@ -460,25 +460,28 @@ export default function CompanyNewSessionPage() {
                 Add
               </Button>
             </div>
-            {issueOptions.length === 0 && (
+            {defaultIssueOptions.filter((opt) => !issueOptions.includes(opt))
+              .length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
                   Quick add common issues:
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {defaultIssueOptions.map((option) => (
-                    <Button
-                      key={option}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => addIssueOption(option)}
-                      className="text-xs"
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      {option}
-                    </Button>
-                  ))}
+                  {defaultIssueOptions
+                    .filter((opt) => !issueOptions.includes(opt))
+                    .map((option) => (
+                      <Button
+                        key={option}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addIssueOption(option)}
+                        className="text-xs"
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        {option}
+                      </Button>
+                    ))}
                 </div>
               </div>
             )}

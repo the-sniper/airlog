@@ -45,6 +45,7 @@ interface User {
   last_name: string;
   email: string;
   created_at: string;
+  join_method?: string;
 }
 
 interface PendingInvite {
@@ -382,9 +383,29 @@ export default function CompanyMembersPage() {
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium">
-                            {member.first_name} {member.last_name}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">
+                              {member.first_name} {member.last_name}
+                            </p>
+                            {member.join_method && (
+                              <Badge
+                                variant="secondary"
+                                className={`text-[10px] h-5 px-1.5 font-normal ${
+                                  member.join_method === "invite"
+                                    ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                                    : member.join_method === "admin_add"
+                                    ? "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                                    : "text-muted-foreground"
+                                }`}
+                              >
+                                {member.join_method === "invite"
+                                  ? "Invited"
+                                  : member.join_method === "admin_add"
+                                  ? "Added by Admin"
+                                  : "Self Signup"}
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {member.email}
                           </p>

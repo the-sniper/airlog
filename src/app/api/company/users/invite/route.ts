@@ -109,7 +109,10 @@ export async function POST(request: NextRequest) {
       // User exists without company - add them directly
       const { error: updateError } = await supabase
         .from("users")
-        .update({ company_id: admin.company_id })
+        .update({ 
+          company_id: admin.company_id,
+          join_method: 'admin_add'
+        })
         .eq("id", existingUser.id);
 
       if (updateError) throw updateError;

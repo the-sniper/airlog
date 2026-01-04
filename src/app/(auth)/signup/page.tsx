@@ -58,12 +58,49 @@ function SignupForm() {
   );
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
 
-  // Check if this is an invite flow
-  const isInviteFlow = inviteEmail && callbackUrl.includes("/join/");
+  // Invite flow state
+  const [inviteCompany, setInviteCompany] = useState<Company | null>(null);
+  const [inviteTargetName, setInviteTargetName] = useState<string | null>(null);
+  const [loadingInviteInfo, setLoadingInviteInfo] = useState(!!inviteEmail);
 
-  // Fetch available companies
+  // Check if this is an invite flow (has inviteEmail param)
+  const isInviteFlow = !!inviteEmail;
+
+  // Fetch invite info when inviteEmail is present
+  useEffect(() => {
+    async function fetchInviteInfo() {
+      if (!inviteEmail) return;
+
+      try {
+        const res = await fetch(
+          `/api/public/pending-invite-info?email=${encodeURIComponent(
+            inviteEmail
+          )}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data.hasInvite && data.company) {
+            setInviteCompany(data.company);
+            setInviteTargetName(data.targetName);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching invite info:", err);
+      } finally {
+        setLoadingInviteInfo(false);
+      }
+    }
+    fetchInviteInfo();
+  }, [inviteEmail]);
+
+  // Fetch available companies (only if not in invite flow)
   useEffect(() => {
     async function fetchCompanies() {
+      // Skip if user came from an invite - they don't need to select a company
+      if (inviteEmail) {
+        setLoadingCompanies(false);
+        return;
+      }
       try {
         const res = await fetch("/api/public/companies");
         if (res.ok) {
@@ -76,7 +113,7 @@ function SignupForm() {
       }
     }
     fetchCompanies();
-  }, []);
+  }, [inviteEmail]);
 
   // Sync email state with inviteEmail param (for client-side navigation)
   useEffect(() => {
@@ -186,7 +223,7 @@ function SignupForm() {
                   id="first_name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Areef"
+                  placeholder="John"
                   className="pl-9 h-11"
                   required
                 />
@@ -200,7 +237,7 @@ function SignupForm() {
                   id="last_name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Syed"
+                  placeholder="Doe"
                   className="pl-9 h-11"
                   required
                 />
@@ -223,7 +260,7 @@ function SignupForm() {
                 }`}
                 required
                 autoComplete="email"
-                readOnly={!!isInviteFlow}
+                readOnly={isInviteFlow}
               />
             </div>
             {isInviteFlow && (
@@ -233,8 +270,41 @@ function SignupForm() {
             )}
           </div>
 
-          {/* Company Selection */}
-          {!isInviteFlow && (
+          {/* Company Display - Show readonly if from invite, otherwise show selector */}
+          {isInviteFlow ? (
+            // Show company info from invite (readonly)
+            <div className="space-y-2">
+              <Label>Company</Label>
+              <div className="relative">
+                <div className="w-full flex items-center gap-2 px-3 h-11 rounded-lg border border-border bg-secondary/50 cursor-not-allowed">
+                  {loadingInviteInfo ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      <span className="text-muted-foreground">Loading...</span>
+                    </>
+                  ) : inviteCompany ? (
+                    <>
+                      <Building2 className="w-4 h-4 text-primary" />
+                      <span className="font-medium">{inviteCompany.name}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Building2 className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        No company linked
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+              {inviteCompany && (
+                <p className="text-xs text-muted-foreground">
+                  You&apos;ll be added to {inviteCompany.name}
+                  {inviteTargetName && ` and invited to ${inviteTargetName}`}
+                </p>
+              )}
+            </div>
+          ) : (
             <div className="space-y-2">
               <Label>Company (Optional)</Label>
               <div className="relative">
