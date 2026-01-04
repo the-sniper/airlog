@@ -414,13 +414,13 @@ export default function CompanyMembersPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive"
+                        className="opacity-0 group-hover:opacity-100 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                         onClick={() =>
                           setRemoveDialog({ open: true, user: member })
                         }
                       >
                         <UserMinus className="w-4 h-4 mr-1" />
-                        Remove
+                        Remove User
                       </Button>
                     </div>
                   ))}

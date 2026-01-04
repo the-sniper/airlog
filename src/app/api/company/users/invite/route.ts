@@ -116,6 +116,22 @@ export async function POST(request: NextRequest) {
         .eq("id", existingUser.id);
 
       if (updateError) throw updateError;
+      
+      // Log audit action
+      const { logAdminAction } = await import("@/lib/audit-logs");
+      await logAdminAction({
+        company_admin_id: admin.id,
+        company_id: admin.company_id,
+        action: "ADD_EXISTING_USER",
+        target_resource: "users",
+        target_id: existingUser.id,
+        details: {
+          user_name: `${existingUser.first_name} ${existingUser.last_name}`,
+          method: "direct_add"
+        },
+        ip_address: request.headers.get("x-forwarded-for") || "unknown",
+        user_agent: request.headers.get("user-agent") || undefined,
+      });
 
       return NextResponse.json({
         already_registered: true,
@@ -155,6 +171,21 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) throw error;
+
+    // Log audit action - Audit that an invite was sent
+    const { logAdminAction } = await import("@/lib/audit-logs");
+    await logAdminAction({
+      company_admin_id: admin.id,
+      company_id: admin.company_id,
+      action: "INVITE_USER",
+      target_resource: "company_user_invites",
+      target_id: invite.id,
+      details: {
+        invited_email: normalizedEmail,
+      },
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+      user_agent: request.headers.get("user-agent") || undefined,
+    });
 
     // Fetch company name for the email
     const { data: company } = await supabase

@@ -129,6 +129,23 @@ export async function PATCH(request: NextRequest) {
       if (userUpdateError) throw userUpdateError;
     }
 
+    // Log audit action
+    const { logAdminAction } = await import("@/lib/audit-logs");
+    await logAdminAction({
+      company_admin_id: admin.id,
+      company_id: admin.company_id,
+      action: action === "approve" ? "APPROVE_JOIN_REQUEST" : "REJECT_JOIN_REQUEST",
+      target_resource: "users",
+      target_id: joinRequest.user.id,
+      details: {
+        request_id: requestId,
+        user_name: `${joinRequest.user.first_name} ${joinRequest.user.last_name}`,
+        rejection_reason: action === "reject" ? rejectionReason : undefined,
+      },
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+      user_agent: request.headers.get("user-agent") || undefined,
+    });
+
     // Create persistent in-app notification
     const notificationTitle = action === "approve" 
       ? `Welcome to ${companyName}!`

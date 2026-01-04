@@ -38,6 +38,21 @@ export async function DELETE(
 
     if (error) throw error;
 
+    // Log action
+    const { logAdminAction } = await import("@/lib/audit-logs");
+    await logAdminAction({
+      company_admin_id: admin.id,
+      company_id: admin.company_id,
+      action: "REMOVE_USER",
+      target_resource: "users",
+      target_id: params.userId,
+      details: {
+        user_name: `${user.first_name} ${user.last_name}`,
+      },
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+      user_agent: request.headers.get("user-agent") || undefined,
+    });
+
     return NextResponse.json({
       success: true,
       message: `${user.first_name} ${user.last_name} has been removed from the company`,

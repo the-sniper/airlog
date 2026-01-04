@@ -340,7 +340,7 @@ export default function AdminUsersPage() {
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
+                  className="text-red-600 focus:text-red-700 dark:text-red-400 dark:focus:text-red-300"
                   onClick={() => handleDisableClick(user)}
                 >
                   <Ban className="w-4 h-4 mr-2" />
