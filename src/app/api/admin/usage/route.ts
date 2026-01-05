@@ -120,6 +120,40 @@ async function fetchOpenAICosts(): Promise<OpenAICosts> {
   }
 }
 
+// Helper function to recursively get storage size from a bucket
+async function getStorageBucketSize(
+  supabase: ReturnType<typeof createAdminClient>,
+  bucketName: string,
+  path: string = ""
+): Promise<number> {
+  let totalSize = 0;
+  
+  try {
+    const { data: items, error } = await supabase.storage
+      .from(bucketName)
+      .list(path, { limit: 1000 });
+    
+    if (error || !items) return 0;
+    
+    for (const item of items) {
+      const itemPath = path ? `${path}/${item.name}` : item.name;
+      
+      // Check if it's a file (has metadata with size) or folder (no metadata or id is null)
+      if (item.id && item.metadata?.size) {
+        // It's a file with size
+        totalSize += item.metadata.size;
+      } else if (item.id === null || !item.metadata) {
+        // It's a folder, recurse into it
+        totalSize += await getStorageBucketSize(supabase, bucketName, itemPath);
+      }
+    }
+  } catch (e) {
+    console.log(`Error listing storage path ${bucketName}/${path}:`, e);
+  }
+  
+  return totalSize;
+}
+
 // Fetch Supabase usage via direct database queries
 async function fetchSupabaseUsage(): Promise<SupabaseUsage> {
   const defaultUsage: SupabaseUsage = {
@@ -144,50 +178,88 @@ async function fetchSupabaseUsage(): Promise<SupabaseUsage> {
         databaseSize = dbData;
       } else {
         // Fallback: estimate from table count (rough)
-        // This won't be accurate but provides something
         console.log("get_database_size RPC not available, using fallback");
       }
     } catch (e) {
       console.log("Database size query failed, using fallback");
     }
 
-    // Query storage size by listing all buckets and their objects
+    // Query storage size by listing all buckets and their objects (recursively)
     let storageSize = 0;
     try {
       const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
       
       if (!bucketsError && buckets) {
         for (const bucket of buckets) {
-          const { data: files, error: filesError } = await supabase.storage
-            .from(bucket.name)
-            .list("", { limit: 1000 });
-          
-          if (!filesError && files) {
-            for (const file of files) {
-              // Files have metadata with size
-              if (file.metadata?.size) {
-                storageSize += file.metadata.size;
-              }
-            }
-          }
+          storageSize += await getStorageBucketSize(supabase, bucket.name);
         }
       }
     } catch (e) {
       console.log("Storage size query failed");
     }
 
-    // Note: Egress and MAUs aren't available via direct queries
-    // These would require the Management API with proper access
-    // For now, we link to the Supabase dashboard for these metrics
+    // Calculate MAUs by counting distinct active users
+    // This app uses custom JWT auth (not Supabase Auth), so we count:
+    // 1. Distinct users who joined sessions in the last 30 days (testers with user_id)
+    // 2. Fallback: count all active (non-deleted) users
+    let maus = 0;
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      // Try to count distinct users who have been active (joined sessions) in the last 30 days
+      // This uses the testers table which tracks session participation
+      const { data: activeUsers, error: activeError } = await supabase
+        .from("testers")
+        .select("user_id")
+        .not("user_id", "is", null)
+        .gte("joined_at", thirtyDaysAgo.toISOString());
+      
+      if (!activeError && activeUsers && activeUsers.length > 0) {
+        // Count distinct user_ids
+        const distinctUserIds = new Set(activeUsers.map(t => t.user_id));
+        maus = distinctUserIds.size;
+      }
+      
+      // If no session activity, fall back to counting all active (non-deleted) users
+      if (maus === 0) {
+        const { count, error: countError } = await supabase
+          .from("users")
+          .select("*", { count: "exact", head: true })
+          .is("deleted_at", null);
+        
+        if (!countError && count !== null) {
+          maus = count; // All active registered users
+        }
+      }
+    } catch (e) {
+      console.log("MAU calculation failed:", e);
+      
+      // Final fallback: count all users
+      try {
+        const { count, error: countError } = await supabase
+          .from("users")
+          .select("*", { count: "exact", head: true });
+        
+        if (!countError && count !== null) {
+          maus = count;
+        }
+      } catch {
+        console.log("User count fallback failed");
+      }
+    }
+
+    // Note: Egress is not available via direct queries
+    // This would require the Management API with proper access
 
     return {
       databaseSize,
       storageSize,
       egress: 0, // Not available via direct query
       cachedEgress: 0,
-      maus: 0,
-      // Only show error if we couldn't get any data
-      error: databaseSize === 0 && storageSize === 0 ? "Create get_database_size RPC function for accurate data" : undefined,
+      maus,
+      // Only show error if we couldn't get critical data
+      error: databaseSize === 0 ? "Create get_database_size RPC function for accurate data" : undefined,
     };
   } catch (error) {
     console.error("Error fetching Supabase usage:", error);
