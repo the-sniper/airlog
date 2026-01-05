@@ -483,7 +483,13 @@ export function CompanyMobileHeader() {
             drawerOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="flex flex-col gap-6 px-5 py-6 border-b border-border/50">
+          <div
+            className="flex flex-col gap-6 px-5 border-b border-border/50"
+            style={{
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)",
+              paddingBottom: "24px",
+            }}
+          >
             <div className="flex items-center justify-between">
               <Link href="/" className="flex items-center">
                 <Image

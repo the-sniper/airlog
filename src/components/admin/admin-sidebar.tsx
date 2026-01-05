@@ -307,7 +307,13 @@ export function AdminMobileHeader({
             drawerOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
+          <div
+            className="flex items-center justify-between px-5 border-b border-border/50"
+            style={{
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)",
+              paddingBottom: "16px",
+            }}
+          >
             <div className="flex items-center gap-3">
               <Image
                 src="/logo.svg"
