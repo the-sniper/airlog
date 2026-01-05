@@ -12,7 +12,7 @@ interface HeaderProps {
 
 export function Header({ variant = "home" }: HeaderProps) {
   return (
-    <header className="border-b border-border/40 glass sticky top-0 z-50">
+    <header className="border-b border-border/40 glass sticky top-0 z-50 pwa-fixed-header">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <Image

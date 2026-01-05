@@ -33,6 +33,30 @@
   }
 }
 
+/* iOS PWA status bar filler - fills the notch/status bar area with a solid background */
+/* Base padding for main content below fixed header */
+.pwa-main-offset {
+  padding-top: 4rem;
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  @media all and (display-mode: standalone) {
+    .pwa-header-safe-area {
+      padding-top: env(safe-area-inset-top);
+    }
+
+    /* Fixed header with safe area - used for app headers */
+    .pwa-fixed-header {
+      padding-top: env(safe-area-inset-top);
+    }
+
+    /* Adjust main content to account for header + safe area in PWA mode */
+    .pwa-main-offset {
+      padding-top: calc(4rem + env(safe-area-inset-top)) !important;
+    }
+  }
+}
+
 /* Hide scrollbars for touch-friendly horizontal rails */
 .no-scrollbar {
   -ms-overflow-style: none;

@@ -82,7 +82,9 @@ export default function TesterLayout({
       </div>
 
       <TesterHeader user={user} />
-      <main className="min-h-[calc(100vh-4rem)] relative z-10">{children}</main>
+      <main className="min-h-screen relative z-10 pwa-main-offset">
+        {children}
+      </main>
     </div>
   );
 }

@@ -25,7 +25,7 @@ export default function CompanyLayout({
       <CompanySidebar />
       <CompanyMobileHeader />
 
-      <main className="md:pl-64 pt-16 md:pt-0 pb-20 md:pb-0 min-h-screen overflow-x-hidden">
+      <main className="md:pl-64 pwa-main-offset md:pt-0 pb-20 md:pb-0 min-h-screen overflow-x-hidden">
         <div className="p-6 md:p-8 overflow-x-hidden">{children}</div>
       </main>
     </div>

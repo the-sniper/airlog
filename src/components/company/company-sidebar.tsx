@@ -421,7 +421,7 @@ export function CompanyMobileHeader() {
   return (
     <>
       {/* Top Header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50">
+      <header className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass z-50 pwa-fixed-header">
         <div className="flex items-center justify-between h-full px-4">
           <Link href="/" className="flex items-center gap-3">
             <Image
