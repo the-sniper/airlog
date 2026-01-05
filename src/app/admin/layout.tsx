@@ -5,6 +5,7 @@ import {
   AdminSidebar,
   AdminMobileHeader,
 } from "@/components/admin/admin-sidebar";
+import { AdminRoleProvider } from "@/contexts/admin-role-context";
 
 export default function AdminLayout({
   children,
@@ -20,13 +21,15 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <AdminSidebar />
-      <AdminMobileHeader />
+    <AdminRoleProvider>
+      <div className="min-h-screen bg-background overflow-x-hidden">
+        <AdminSidebar />
+        <AdminMobileHeader />
 
-      <main className="md:pl-64 pt-16 md:pt-0 pb-20 md:pb-0 min-h-screen overflow-x-hidden">
-        <div className="p-6 md:p-8 overflow-x-hidden">{children}</div>
-      </main>
-    </div>
+        <main className="md:pl-64 pt-16 md:pt-0 pb-20 md:pb-0 min-h-screen overflow-x-hidden">
+          <div className="p-6 md:p-8 overflow-x-hidden">{children}</div>
+        </main>
+      </div>
+    </AdminRoleProvider>
   );
 }

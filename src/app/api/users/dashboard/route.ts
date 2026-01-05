@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/user-auth";
+import { getCurrentAdmin } from "@/lib/auth";
 
 interface DashboardStats {
   user: {
@@ -42,8 +44,63 @@ interface DashboardStats {
   }[];
 }
 
+// Check if Super Admin is impersonating as User
+async function getSuperAdminImpersonation(): Promise<{
+  isSuperAdmin: boolean;
+  superAdmin: any | null;
+}> {
+  const cookieStore = await cookies();
+  const viewingRole = cookieStore.get("admin_viewing_role")?.value;
+  
+  if (viewingRole !== "user") {
+    return { isSuperAdmin: false, superAdmin: null };
+  }
+  
+  const superAdmin = await getCurrentAdmin();
+  if (!superAdmin) {
+    return { isSuperAdmin: false, superAdmin: null };
+  }
+  
+  return { isSuperAdmin: true, superAdmin };
+}
+
 export async function GET() {
   try {
+    // Check for Super Admin impersonation first
+    const impersonation = await getSuperAdminImpersonation();
+    
+    if (impersonation.isSuperAdmin) {
+      // Return mock dashboard data for Super Admin impersonating as User
+      const response: DashboardStats = {
+        user: {
+          id: impersonation.superAdmin.id,
+          firstName: "Super",
+          lastName: "Admin (as User)",
+          email: impersonation.superAdmin.email,
+        },
+        sessions: {
+          total: 0,
+          active: 0,
+          completed: 0,
+          pending: 0,
+        },
+        notes: {
+          total: 0,
+          byCategory: {
+            bug: 0,
+            feature: 0,
+            ux: 0,
+            performance: 0,
+            other: 0,
+          },
+        },
+        recentActivity: [],
+        recentSessions: [],
+      };
+      return NextResponse.json(response);
+    }
+    
+    // Normal user flow
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

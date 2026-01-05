@@ -20,6 +20,9 @@ const USER_JWT_SECRET = new TextEncoder().encode(
 );
 const USER_COOKIE_NAME = "user_session";
 
+// Super Admin viewing role cookie (for impersonation)
+const ADMIN_VIEW_ROLE_COOKIE = "admin_viewing_role";
+
 // Super Admin routes (platform admin)
 const ADMIN_PROTECTED_ROUTES = ["/admin"];
 const ADMIN_AUTH_ROUTES = ["/admin/login"];
@@ -41,8 +44,30 @@ const TESTER_AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/invite"];
 // Public routes (no auth required)
 const PUBLIC_ROUTES = ["/", "/join"];
 
+// Helper to check if Super Admin is impersonating
+async function getSuperAdminImpersonation(request: NextRequest): Promise<{
+  isSuperAdmin: boolean;
+  viewingRole: string | null;
+}> {
+  const adminToken = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+  if (!adminToken) {
+    return { isSuperAdmin: false, viewingRole: null };
+  }
+
+  try {
+    await jwtVerify(adminToken, ADMIN_JWT_SECRET);
+    const viewingRole = request.cookies.get(ADMIN_VIEW_ROLE_COOKIE)?.value;
+    return { isSuperAdmin: true, viewingRole: viewingRole || "super_admin" };
+  } catch {
+    return { isSuperAdmin: false, viewingRole: null };
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Check if Super Admin is impersonating another role
+  const { isSuperAdmin, viewingRole } = await getSuperAdminImpersonation(request);
 
   // === SUPER ADMIN ROUTE HANDLING ===
   const isAdminProtectedRoute = ADMIN_PROTECTED_ROUTES.some(
@@ -105,15 +130,25 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Unauthenticated access to protected company route -> redirect to company login
-    if (isCompanyProtectedRoute && !isCompanyAuthenticated) {
+    // Super Admin impersonating Owner/Manager can access company routes
+    const isSuperAdminImpersonatingCompany = isSuperAdmin && 
+      (viewingRole === "owner" || viewingRole === "manager");
+
+    // Allow access if company authenticated OR super admin impersonating
+    if (isCompanyProtectedRoute && !isCompanyAuthenticated && !isSuperAdminImpersonatingCompany) {
       const loginUrl = new URL("/company/login", request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
     }
 
     // Authenticated access to company auth route -> redirect to company dashboard
-    if (isCompanyAuthRoute && isCompanyAuthenticated) {
+    // But if Super Admin is impersonating, let them through to the login page if they want
+    if (isCompanyAuthRoute && isCompanyAuthenticated && !isSuperAdmin) {
+      return NextResponse.redirect(new URL("/company", request.url));
+    }
+
+    // If Super Admin is impersonating and hits auth route, redirect to company dashboard
+    if (isCompanyAuthRoute && isSuperAdminImpersonatingCompany) {
       return NextResponse.redirect(new URL("/company", request.url));
     }
 
@@ -141,15 +176,23 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Unauthenticated access to protected tester route -> redirect to login
-    if (isTesterProtectedRoute && !isUserAuthenticated) {
+    // Super Admin impersonating User can access tester routes
+    const isSuperAdminImpersonatingUser = isSuperAdmin && viewingRole === "user";
+
+    // Allow access if user authenticated OR super admin impersonating
+    if (isTesterProtectedRoute && !isUserAuthenticated && !isSuperAdminImpersonatingUser) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
     }
 
     // Authenticated access to tester auth route -> redirect to dashboard
-    if (isTesterAuthRoute && isUserAuthenticated) {
+    if (isTesterAuthRoute && isUserAuthenticated && !isSuperAdmin) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    // If Super Admin is impersonating User and hits auth route, redirect to dashboard
+    if (isTesterAuthRoute && isSuperAdminImpersonatingUser) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
@@ -187,3 +230,4 @@ export const config = {
     // Note: /report routes are intentionally excluded to allow public access to shared reports
   ],
 };
+

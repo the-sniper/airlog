@@ -5,6 +5,7 @@ import { PWAProvider } from "@/components/common/pwa-provider";
 import { InstallBanner } from "@/components/common/install-banner";
 import { ServiceWorkerRegistration } from "@/components/common/service-worker-registration";
 import { Toaster } from "@/components/ui/toaster";
+import { FloatingRoleSelector } from "@/components/admin/floating-role-selector";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -129,6 +130,7 @@ export default function RootLayout({
             <InstallBanner />
             <ServiceWorkerRegistration />
             <Toaster />
+            <FloatingRoleSelector />
           </PWAProvider>
         </ThemeProvider>
       </body>

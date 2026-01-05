@@ -681,7 +681,7 @@ export function TeamsManager({ companyId, className }: TeamsManagerProps) {
               </CardTitle>
             </div>
             {/* Invite Link Section */}
-            {selectedTeam?.invite_token && (
+            {/* {selectedTeam?.invite_token && (
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                 <div className="flex items-center gap-2 mb-2">
                   <Link2 className="w-4 h-4 text-primary" />
@@ -722,7 +722,7 @@ export function TeamsManager({ companyId, className }: TeamsManagerProps) {
                   Share this link with team members to let them register
                 </p>
               </div>
-            )}
+            )} */}
           </CardHeader>
           <CardContent>
             {loadingTeam ? (

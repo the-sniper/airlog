@@ -104,7 +104,25 @@ export function CompanySidebar() {
     return pathname.startsWith(href);
   };
 
+  // Helper to check if Super Admin is impersonating
+  const isImpersonating = () => {
+    if (typeof document === "undefined") return false;
+    const match = document.cookie.match(/(^| )admin_viewing_role=([^;]+)/);
+    return match && match[2] !== "super_admin";
+  };
+
   const handleLogout = async () => {
+    // Check if Super Admin is impersonating this role
+    if (isImpersonating()) {
+      // Clear impersonation cookie and redirect to admin
+      document.cookie = "admin_viewing_role=super_admin;path=/;SameSite=Lax";
+      localStorage.setItem("admin_viewing_role", "super_admin");
+      router.push("/admin");
+      router.refresh();
+      return;
+    }
+
+    // Normal company admin logout
     await fetch("/api/company/auth/logout", { method: "POST" });
     router.push("/company/login");
     router.refresh();
@@ -391,7 +409,25 @@ export function CompanyMobileHeader() {
     return pathname.startsWith(href);
   };
 
+  // Helper to check if Super Admin is impersonating (mobile)
+  const isImpersonating = () => {
+    if (typeof document === "undefined") return false;
+    const match = document.cookie.match(/(^| )admin_viewing_role=([^;]+)/);
+    return match && match[2] !== "super_admin";
+  };
+
   const handleLogout = async () => {
+    // Check if Super Admin is impersonating this role
+    if (isImpersonating()) {
+      // Clear impersonation cookie and redirect to admin
+      document.cookie = "admin_viewing_role=super_admin;path=/;SameSite=Lax";
+      localStorage.setItem("admin_viewing_role", "super_admin");
+      router.push("/admin");
+      router.refresh();
+      return;
+    }
+
+    // Normal company admin logout
     await fetch("/api/company/auth/logout", { method: "POST" });
     router.push("/company/login");
     router.refresh();

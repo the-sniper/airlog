@@ -35,11 +35,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { RoleSelector } from "@/components/admin/role-selector";
+import { useAdminRole } from "@/contexts/admin-role-context";
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  // Get current viewing role
+  let viewingRole = "super_admin";
+  try {
+    const context = useAdminRole();
+    viewingRole = context.viewingRole;
+  } catch {
+    // Context not available, default to super_admin
+  }
 
   // Check if a nav item is active
   const isActive = (href: string) => {
@@ -59,6 +70,11 @@ export function AdminSidebar() {
     router.push("/admin/login");
     router.refresh();
   };
+
+  // Define which nav items are visible for each role
+  const showSuperAdminNav = viewingRole === "super_admin";
+  const showCompanyNav = viewingRole === "owner" || viewingRole === "manager";
+  const showUserNav = viewingRole === "user";
 
   return (
     <aside className="fixed inset-y-0 left-0 w-64 border-r border-border/50 bg-card/30 hidden md:block">
@@ -82,78 +98,148 @@ export function AdminSidebar() {
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
-          <Link
-            href="/admin"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin")
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4" strokeWidth={1.75} />
-            Dashboard
-          </Link>
-          <Link
-            href="/admin/companies"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/companies")
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <Building2 className="w-4 h-4" strokeWidth={1.75} />
-            Companies
-          </Link>
-          {/* <Link
-            href="/admin/sessions"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/sessions")
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <FolderKanban className="w-4 h-4" strokeWidth={1.75} />
-            Sessions
-          </Link> */}
+          {/* Super Admin Navigation */}
+          {showSuperAdminNav && (
+            <>
+              <Link
+                href="/admin"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive("/admin")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" strokeWidth={1.75} />
+                Dashboard
+              </Link>
+              <Link
+                href="/admin/companies"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive("/admin/companies")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <Building2 className="w-4 h-4" strokeWidth={1.75} />
+                Companies
+              </Link>
+              <Link
+                href="/admin/users"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive("/admin/users")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <User className="w-4 h-4" strokeWidth={1.75} />
+                Users
+              </Link>
+              <Link
+                href="/admin/usage"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive("/admin/usage")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <Gauge className="w-4 h-4" strokeWidth={1.75} />
+                Usage
+              </Link>
+            </>
+          )}
 
-          {/* <Link
-            href="/admin/teams"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/teams")
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <Users2 className="w-4 h-4" strokeWidth={1.75} />
-            Teams
-          </Link> */}
+          {/* Company Owner/Manager Navigation */}
+          {showCompanyNav && (
+            <>
+              <Link
+                href="/company"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === "/company"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" strokeWidth={1.75} />
+                Dashboard
+              </Link>
+              <Link
+                href="/company/sessions"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith("/company/sessions")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <FolderKanban className="w-4 h-4" strokeWidth={1.75} />
+                Sessions
+              </Link>
+              <Link
+                href="/company/users"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith("/company/users")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <UserPlus className="w-4 h-4" strokeWidth={1.75} />
+                Users
+              </Link>
+              <Link
+                href="/company/teams"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith("/company/teams")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <Users2 className="w-4 h-4" strokeWidth={1.75} />
+                Teams
+              </Link>
+            </>
+          )}
 
-          <Link
-            href="/admin/users"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/users")
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <User className="w-4 h-4" strokeWidth={1.75} />
-            Users
-          </Link>
-          <Link
-            href="/admin/usage"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive("/admin/usage")
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <Gauge className="w-4 h-4" strokeWidth={1.75} />
-            Usage
-          </Link>
+          {/* User Navigation */}
+          {showUserNav && (
+            <>
+              <Link
+                href="/dashboard"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === "/dashboard"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" strokeWidth={1.75} />
+                Dashboard
+              </Link>
+              <Link
+                href="/sessions"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith("/sessions")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <FolderKanban className="w-4 h-4" strokeWidth={1.75} />
+                My Sessions
+              </Link>
+              <Link
+                href="/profile"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith("/profile")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <User className="w-4 h-4" strokeWidth={1.75} />
+                Profile
+              </Link>
+            </>
+          )}
         </nav>
         <div className="p-4 border-t border-border/50 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+            <RoleSelector />
             <div className="flex items-center gap-1">
               <NotificationCenter />
               <ThemeToggle />
@@ -486,6 +572,14 @@ export function AdminMobileHeader({
           </div>
 
           <div className="px-5 pb-6 space-y-3">
+            {/* Role Selector */}
+            <div className="rounded-xl border border-border/60 bg-muted/10 px-4 py-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+                Viewing As
+              </p>
+              <RoleSelector />
+            </div>
+
             <div className="rounded-xl border border-border/60 bg-muted/10">
               <button
                 type="button"
