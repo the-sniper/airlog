@@ -5,6 +5,7 @@ import { PWAProvider } from "@/components/common/pwa-provider";
 import { InstallBanner } from "@/components/common/install-banner";
 import { ServiceWorkerRegistration } from "@/components/common/service-worker-registration";
 import { Toaster } from "@/components/ui/toaster";
+import { AnalyticsTracker } from "@/components/analytics-tracker";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -128,6 +129,7 @@ export default function RootLayout({
             {children}
             <InstallBanner />
             <ServiceWorkerRegistration />
+            <AnalyticsTracker />
             <Toaster />
           </PWAProvider>
         </ThemeProvider>

@@ -10,11 +10,20 @@ import {
   Clock,
   Building2,
   ArrowUpRight,
+  Eye,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { formatDate, cn } from "@/lib/utils";
 import {
   LineChart,
@@ -37,6 +46,8 @@ interface UserAnalytics {
     activeUsers: number;
     newSignups: number;
     retentionRate: number;
+    totalVisits: number;
+    uniqueVisitors: number;
   };
   userGrowth: { date: string; count: number; cumulative: number }[];
   loginActivity: { date: string; logins: number }[];
@@ -48,6 +59,14 @@ interface UserAnalytics {
     last_login_at: string | null;
     created_at: string;
     company?: { id: string; name: string } | null;
+  }[];
+  recentViews: {
+    id: string;
+    path: string;
+    ip_address: string | null;
+    domain: string | null;
+    user?: { email: string } | null;
+    created_at: string;
   }[];
 }
 
@@ -337,6 +356,133 @@ function RecentLoginsTable({
   );
 }
 
+function PageViewItem({
+  view,
+  getRelativeTime,
+}: {
+  view: UserAnalytics["recentViews"][0];
+  getRelativeTime: (date: string) => string;
+}) {
+  return (
+    <div className="flex flex-col gap-1 pb-3 border-b border-border/50 last:border-0 last:pb-0">
+      <div className="flex items-center justify-between">
+        <span
+          className="text-sm font-medium truncate max-w-[180px]"
+          title={view.path}
+        >
+          {view.path}
+        </span>
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {getRelativeTime(view.created_at)}
+        </span>
+      </div>
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="bg-secondary px-1.5 py-0.5 rounded text-[10px] font-mono">
+            {view.ip_address || "Unknown IP"}
+          </span>
+          {view.domain && (
+            <span className="text-[10px] text-muted-foreground/70 bg-secondary/50 px-1.5 py-0.5 rounded border border-border/50">
+              {view.domain}
+            </span>
+          )}
+        </div>
+        {view.user && (
+          <span className="truncate max-w-[100px]" title={view.user.email}>
+            {view.user.email}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RecentPageViewsTable({
+  views,
+}: {
+  views: UserAnalytics["recentViews"];
+}) {
+  const [showAll, setShowAll] = useState(false);
+
+  const getRelativeTime = (date: string) => {
+    const now = new Date();
+    const then = new Date(date);
+    const diffMs = now.getTime() - then.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    return formatDate(date);
+  };
+
+  return (
+    <>
+      <Card className="lg:col-span-1">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base font-medium flex items-center gap-2">
+              <Eye className="w-4 h-4 text-primary" />
+              Recent Page Views
+            </CardTitle>
+            {views && views.length > 5 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs gap-1"
+                onClick={() => setShowAll(true)}
+              >
+                View All
+                <ArrowUpRight className="w-3 h-3" />
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {views && views.length > 0 ? (
+            <div className="space-y-4">
+              {views.slice(0, 5).map((view) => (
+                <PageViewItem
+                  key={view.id}
+                  view={view}
+                  getRelativeTime={getRelativeTime}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground text-sm">
+              No page views recorded yet
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* All Page Views Dialog */}
+      <Dialog open={showAll} onOpenChange={setShowAll}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-primary" />
+              All Page Views
+            </DialogTitle>
+            <DialogDescription>
+              Complete history of page views on your site
+            </DialogDescription>
+          </DialogHeader>
+          <div className="overflow-y-auto max-h-[60vh] pr-2 space-y-4">
+            {views?.map((view) => (
+              <PageViewItem
+                key={view.id}
+                view={view}
+                getRelativeTime={getRelativeTime}
+              />
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 function LoadingSkeleton() {
   return (
     <div className="space-y-6">
@@ -468,7 +614,7 @@ export default function AnalyticsPage() {
       ) : analytics ? (
         <div className="space-y-6">
           {/* Stat Cards */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard
               title="Total Users"
               value={analytics.stats.totalUsers}
@@ -503,6 +649,20 @@ export default function AnalyticsPage() {
               variant="default"
               subtitle="Returning users"
             />
+            <StatCard
+              title="Total Page Views"
+              value={analytics.stats.totalVisits}
+              icon={<Eye className="h-5 w-5" />}
+              variant="default"
+              subtitle="All page loads"
+            />
+            <StatCard
+              title="Unique Visitors"
+              value={analytics.stats.uniqueVisitors}
+              icon={<Globe className="h-5 w-5" />}
+              variant="primary"
+              subtitle="Distinct IP/Cookie"
+            />
           </div>
 
           {/* Charts Row */}
@@ -511,60 +671,10 @@ export default function AnalyticsPage() {
             <LoginActivityChart data={analytics.loginActivity} />
           </div>
 
-          {/* Recent Logins */}
+          {/* Recent Logins & Views */}
           <div className="grid gap-4 lg:grid-cols-3">
             <RecentLoginsTable logins={analytics.recentLogins} />
-            {/* Additional stats card */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  Quick Stats
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between py-2 border-b border-border/50">
-                  <span className="text-sm text-muted-foreground">
-                    Total Users
-                  </span>
-                  <span className="text-sm font-medium">
-                    {analytics.stats.totalUsers}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b border-border/50">
-                  <span className="text-sm text-muted-foreground">
-                    Active This Period
-                  </span>
-                  <span className="text-sm font-medium text-emerald-500">
-                    {analytics.stats.activeUsers}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b border-border/50">
-                  <span className="text-sm text-muted-foreground">
-                    New Signups
-                  </span>
-                  <span className="text-sm font-medium text-amber-500">
-                    {analytics.stats.newSignups}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b border-border/50">
-                  <span className="text-sm text-muted-foreground">
-                    Retention Rate
-                  </span>
-                  <span className="text-sm font-medium">
-                    {analytics.stats.retentionRate}%
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2">
-                  <span className="text-sm text-muted-foreground">
-                    Inactive Users
-                  </span>
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {analytics.stats.totalUsers - analytics.stats.activeUsers}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+            <RecentPageViewsTable views={analytics.recentViews} />
           </div>
         </div>
       ) : (

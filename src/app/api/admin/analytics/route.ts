@@ -9,6 +9,8 @@ interface UserAnalytics {
     activeUsers: number;
     newSignups: number;
     retentionRate: number;
+    totalVisits: number;
+    uniqueVisitors: number;
   };
   userGrowth: { date: string; count: number; cumulative: number }[];
   loginActivity: { date: string; logins: number }[];
@@ -20,6 +22,14 @@ interface UserAnalytics {
     last_login_at: string | null;
     created_at: string;
     company?: { id: string; name: string } | null;
+  }[];
+  recentViews: {
+    id: string;
+    path: string;
+    ip_address: string | null;
+    domain: string | null;
+    user?: { email: string } | null;
+    created_at: string;
   }[];
 }
 
@@ -151,16 +161,76 @@ export async function GET(req: NextRequest) {
         company: Array.isArray(u.company) ? u.company[0] : u.company,
       }));
 
+    // Fetch visitor stats (safely handle if table missing)
+    let totalVisits = 0;
+    let uniqueVisitors = 0;
+
+    try {
+      const { count } = await supabase
+        .from("page_views")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", startDate.toISOString());
+      
+      totalVisits = count || 0;
+
+      // For unique visitors, fetch IDs (limit to prevent memory issues, e.g. 5000)
+      const { data: visitors } = await supabase
+        .from("page_views")
+        .select("visitor_id")
+        .gte("created_at", startDate.toISOString())
+        .limit(10000);
+        
+      if (visitors) {
+        const uniqueIds = new Set(visitors.map(v => v.visitor_id).filter(Boolean));
+        uniqueVisitors = uniqueIds.size;
+      }
+    } catch (e) {
+      console.warn("Page views table missing or error:", e);
+    }
+
+    // Fetch recent views with IPs
+    let recentViews: UserAnalytics["recentViews"] = [];
+    try {
+      const { data: views } = await supabase
+        .from("page_views")
+        .select(`
+          id,
+          path,
+          ip_address,
+          domain,
+          created_at,
+          user:users(email)
+        `)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (views) {
+        recentViews = views.map((v: any) => ({
+          id: v.id,
+          path: v.path,
+          ip_address: v.ip_address,
+          domain: v.domain,
+          user: Array.isArray(v.user) ? v.user[0] : v.user,
+          created_at: v.created_at,
+        }));
+      }
+    } catch (e) {
+       // Ignore if table doesn't exist yet
+    }
+
     const analytics: UserAnalytics = {
       stats: {
         totalUsers,
         activeUsers,
         newSignups,
         retentionRate,
+        totalVisits,
+        uniqueVisitors,
       },
       userGrowth: filteredUserGrowth,
       loginActivity,
       recentLogins,
+      recentViews,
     };
 
     return NextResponse.json(analytics);
