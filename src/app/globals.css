@@ -39,20 +39,21 @@
   padding-top: 4rem;
 }
 
+/* PWA standalone mode - apply safe area padding */
 @supports (padding-top: env(safe-area-inset-top)) {
   @media all and (display-mode: standalone) {
     .pwa-header-safe-area {
-      padding-top: env(safe-area-inset-top);
+      padding-top: calc(env(safe-area-inset-top) + 12px);
     }
 
-    /* Fixed header with safe area - used for app headers */
+    /* Fixed header with safe area - used for app headers, adds extra 12px buffer for better spacing */
     .pwa-fixed-header {
-      padding-top: env(safe-area-inset-top);
+      padding-top: calc(env(safe-area-inset-top) + 12px);
     }
 
-    /* Adjust main content to account for header + safe area in PWA mode */
+    /* Adjust main content to account for header + safe area + buffer in PWA mode */
     .pwa-main-offset {
-      padding-top: calc(4rem + env(safe-area-inset-top)) !important;
+      padding-top: calc(4rem + env(safe-area-inset-top) + 12px) !important;
     }
   }
 }
