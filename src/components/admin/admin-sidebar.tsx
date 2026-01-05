@@ -22,6 +22,7 @@ import {
   Plus,
   User,
   Building2,
+  Activity,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useTheme } from "@/components/common/theme-provider";
@@ -138,6 +139,17 @@ export function AdminSidebar() {
           >
             <User className="w-4 h-4" strokeWidth={1.75} />
             Users
+          </Link>
+          <Link
+            href="/admin/analytics"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive("/admin/analytics")
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
+          >
+            <Activity className="w-4 h-4" strokeWidth={1.75} />
+            Analytics
           </Link>
           <Link
             href="/admin/usage"
@@ -465,6 +477,35 @@ export function AdminMobileHeader({
                     <p className="font-medium">Users</p>
                     <p className="text-xs text-muted-foreground">
                       Manage all system users
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </Link>
+
+              <Link
+                href="/admin/analytics"
+                onClick={() => setDrawerOpen(false)}
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/admin/analytics")
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-transparent bg-muted/30 text-foreground hover:border-border"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isActive("/admin/analytics")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background border border-border/60 text-muted-foreground"
+                    }`}
+                  >
+                    <Activity className="w-5 h-5" strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <p className="font-medium">Analytics</p>
+                    <p className="text-xs text-muted-foreground">
+                      User activity tracking
                     </p>
                   </div>
                 </div>
