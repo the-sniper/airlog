@@ -55,6 +55,15 @@ export async function GET(req: NextRequest) {
 
     const supabase = createAdminClient();
 
+    // Get allowed domain from NEXT_PUBLIC_APP_URL for filtering page views
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    let allowedDomain: string;
+    try {
+      allowedDomain = new URL(appUrl).host; // includes port if present
+    } catch {
+      allowedDomain = "localhost:3000";
+    }
+
     // Fetch all users with company info
     const { data: users, error: usersError } = await supabase
       .from("users")
@@ -169,6 +178,7 @@ export async function GET(req: NextRequest) {
       const { count } = await supabase
         .from("page_views")
         .select("*", { count: "exact", head: true })
+        .eq("domain", allowedDomain)
         .gte("created_at", startDate.toISOString());
       
       totalVisits = count || 0;
@@ -177,6 +187,7 @@ export async function GET(req: NextRequest) {
       const { data: visitors } = await supabase
         .from("page_views")
         .select("visitor_id")
+        .eq("domain", allowedDomain)
         .gte("created_at", startDate.toISOString())
         .limit(10000);
         
@@ -201,6 +212,7 @@ export async function GET(req: NextRequest) {
           created_at,
           user:users(email)
         `)
+        .eq("domain", allowedDomain)
         .order("created_at", { ascending: false })
         .limit(20);
 

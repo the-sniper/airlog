@@ -10,6 +10,21 @@ export async function POST(req: NextRequest) {
     const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("x-real-ip");
     const domain = req.headers.get("host");
 
+    // Only track page views for the configured app URL
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    let allowedDomain: string;
+    try {
+      allowedDomain = new URL(appUrl).host; // includes port if present
+    } catch {
+      allowedDomain = "localhost:3000";
+    }
+
+    // Check if the request domain matches the allowed domain
+    if (domain !== allowedDomain) {
+      // Skip tracking for non-matching domains
+      return NextResponse.json({ success: true, skipped: true });
+    }
+
     // Get visitor ID from cookie or generate new one
     let visitorId = req.cookies.get("visitor_id")?.value;
     const isNewVisitor = !visitorId;
