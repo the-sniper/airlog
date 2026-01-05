@@ -172,10 +172,13 @@ html {
   max-width: 100%;
 }
 
-/* Prevent layout shift when Radix UI locked-scroll is active */
+/* Prevent layout shift and scrolling when drawer is open - iOS compatible */
 body[data-scroll-locked] {
-  padding-right: 0px !important;
+  position: fixed;
+  width: 100%;
   overflow: hidden !important;
+  touch-action: none;
+  -webkit-overflow-scrolling: auto;
 }
 
 html:has(body[data-scroll-locked]) {

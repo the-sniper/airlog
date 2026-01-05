@@ -234,15 +234,27 @@ export function AdminMobileHeader({
     }
   };
 
+  // Lock body scroll when drawer is open - iOS compatible
   useEffect(() => {
     if (drawerOpen) {
-      document.body.style.overflow = "hidden";
+      const scrollY = window.scrollY;
+      document.body.setAttribute("data-scroll-locked", "");
+      document.body.style.top = `-${scrollY}px`;
     } else {
-      document.body.style.overflow = "";
+      const scrollY = document.body.style.top;
+      document.body.removeAttribute("data-scroll-locked");
+      document.body.style.top = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
     }
-
     return () => {
-      document.body.style.overflow = "";
+      const scrollY = document.body.style.top;
+      document.body.removeAttribute("data-scroll-locked");
+      document.body.style.top = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
     };
   }, [drawerOpen]);
 

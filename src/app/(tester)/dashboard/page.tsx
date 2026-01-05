@@ -179,6 +179,14 @@ export default function DashboardPage() {
         {/* Company Status Banner */}
         <CompanyStatusBanner />
 
+        {/* Active Sessions - Show on mobile right after banner */}
+        {dashboardData && (
+          <SessionCards
+            sessions={dashboardData.recentSessions}
+            className="lg:hidden"
+          />
+        )}
+
         {/* Stats Cards */}
         {dashboardData && (
           <StatsCards
@@ -187,12 +195,16 @@ export default function DashboardPage() {
           />
         )}
 
-        {/* Activity Chart & Sessions */}
+        {/* Activity Chart & Sessions - Desktop layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {dashboardData && (
             <>
               <ActivityChart data={dashboardData.recentActivity} />
-              <SessionCards sessions={dashboardData.recentSessions} />
+              {/* Active Sessions - Show on desktop in the grid */}
+              <SessionCards
+                sessions={dashboardData.recentSessions}
+                className="hidden lg:block"
+              />
             </>
           )}
         </div>

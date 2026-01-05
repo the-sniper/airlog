@@ -70,7 +70,7 @@ function FormattedDescription({ text }: { text: string }) {
               <span>{item}</span>
             </li>
           ))}
-        </ul>,
+        </ul>
       );
       currentList = [];
     }
@@ -94,7 +94,7 @@ function FormattedDescription({ text }: { text: string }) {
       elements.push(
         <p key={`text-${index}`} className="text-sm">
           {trimmed}
-        </p>,
+        </p>
       );
     }
   });
@@ -116,7 +116,7 @@ export default function TesterSessionPage({
   const [data, setData] = useState<JoinData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ message: string; type: string } | null>(
-    null,
+    null
   );
   const [selectedScene, setSelectedScene] = useState<string>("");
   const [notes, setNotes] = useState<Note[]>([]);
@@ -132,10 +132,10 @@ export default function TesterSessionPage({
   } | null>(null);
   const [reportedIssues, setReportedIssues] = useState<string[]>([]);
   const [pollResponses, setPollResponses] = useState<Record<string, string[]>>(
-    {},
+    {}
   );
   const [savingPollResponse, setSavingPollResponse] = useState<string | null>(
-    null,
+    null
   );
   const [recorderExpanded, setRecorderExpanded] = useState(false);
   const [pollPanelOpen, setPollPanelOpen] = useState(false);
@@ -150,6 +150,31 @@ export default function TesterSessionPage({
     description: string | null;
   } | null>(null);
   const authCheckDoneRef = useRef(false);
+
+  // Lock body scroll when recorder panel or poll panel is open - iOS compatible
+  useEffect(() => {
+    const isModalOpen = recorderExpanded || pollPanelOpen;
+    if (isModalOpen) {
+      const scrollY = window.scrollY;
+      document.body.setAttribute("data-scroll-locked", "");
+      document.body.style.top = `-${scrollY}px`;
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.removeAttribute("data-scroll-locked");
+      document.body.style.top = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
+    }
+    return () => {
+      const scrollY = document.body.style.top;
+      document.body.removeAttribute("data-scroll-locked");
+      document.body.style.top = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
+    };
+  }, [recorderExpanded, pollPanelOpen]);
 
   useEffect(() => {
     // Check if user is admin
@@ -330,7 +355,7 @@ export default function TesterSessionPage({
   async function fetchNotes(sessionId: string, testerId: string) {
     try {
       const res = await fetch(
-        `/api/sessions/${sessionId}/notes?testerId=${testerId}`,
+        `/api/sessions/${sessionId}/notes?testerId=${testerId}`
       );
       if (res.ok) setNotes(await res.json());
     } catch {}
@@ -340,7 +365,7 @@ export default function TesterSessionPage({
   }
   function handleNoteUpdated(updatedNote: Note) {
     setNotes((prev) =>
-      prev.map((n) => (n.id === updatedNote.id ? updatedNote : n)),
+      prev.map((n) => (n.id === updatedNote.id ? updatedNote : n))
     );
   }
   function handleNoteDeleted(noteId: string) {
@@ -362,7 +387,7 @@ export default function TesterSessionPage({
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reported_issues: newIssues }),
-        },
+        }
       );
     } catch (error) {
       console.error("Failed to save reported issues:", error);
@@ -372,7 +397,7 @@ export default function TesterSessionPage({
   async function handlePollResponse(
     questionId: string,
     questionType: string,
-    option: string,
+    option: string
   ) {
     if (!data) return;
 
@@ -504,7 +529,7 @@ export default function TesterSessionPage({
                 <div className="grid gap-3">
                   <Link
                     href={`/login?callbackUrl=${encodeURIComponent(
-                      `/join/${sessionCode}`,
+                      `/join/${sessionCode}`
                     )}`}
                   >
                     <Button className="w-full h-12" size="lg">
@@ -515,7 +540,7 @@ export default function TesterSessionPage({
 
                   <Link
                     href={`/signup?callbackUrl=${encodeURIComponent(
-                      `/join/${sessionCode}`,
+                      `/join/${sessionCode}`
                     )}`}
                   >
                     <Button variant="outline" className="w-full h-12" size="lg">
@@ -602,8 +627,8 @@ export default function TesterSessionPage({
               >
                 Continue Testing
               </Button>
-              <Link href="/join">
-                <Button variant="ghost">Join Different Session</Button>
+              <Link href="/dashboard">
+                <Button variant="ghost">Go to Dashboard</Button>
               </Link>
             </div>
           </CardContent>
@@ -613,7 +638,7 @@ export default function TesterSessionPage({
 
   const { session, tester } = data;
   const currentScene = session.scenes?.find(
-    (s: Scene) => s.id === selectedScene,
+    (s: Scene) => s.id === selectedScene
   );
 
   // Convert tester data to user format for the header
@@ -633,10 +658,10 @@ export default function TesterSessionPage({
   const pollQuestions = currentScene?.poll_questions || [];
   const hasPollQuestions = pollQuestions.length > 0;
   const answeredPollCount = pollQuestions.filter(
-    (q: PollQuestion) => pollResponses[q.id]?.length > 0,
+    (q: PollQuestion) => pollResponses[q.id]?.length > 0
   ).length;
   const unansweredRequired = pollQuestions.filter(
-    (q: PollQuestion) => q.required && !pollResponses[q.id]?.length,
+    (q: PollQuestion) => q.required && !pollResponses[q.id]?.length
   );
   const hasUnansweredRequired = unansweredRequired.length > 0;
 
@@ -648,7 +673,7 @@ export default function TesterSessionPage({
       {/* Tester Header */}
       <TesterHeader user={user} />
 
-      <div className="min-h-screen gradient-mesh flex flex-col">
+      <div className="min-h-screen gradient-mesh flex flex-col pt-16">
         {/* Session Info Bar */}
         <div className="border-b border-border bg-card/80 glass sticky top-16 z-40 h-14 flex items-center justify-between px-4">
           {/* Left: Session info */}
@@ -697,7 +722,7 @@ export default function TesterSessionPage({
                     const err = await res.json().catch(() => ({}));
                     console.error("Leave failed:", res.status, err);
                     alert(
-                      `Failed to leave session: ${err.error || "Unknown error"}`,
+                      `Failed to leave session: ${err.error || "Unknown error"}`
                     );
                     // Do NOT setHasLeft(true) here, so user sees it failed
                   }
@@ -933,7 +958,7 @@ export default function TesterSessionPage({
                                     handlePollResponse(
                                       q.id,
                                       q.question_type,
-                                      option,
+                                      option
                                     )
                                   }
                                   disabled={isSaving}

@@ -81,27 +81,31 @@ export function CompanyStatusBanner() {
   if (status.hasCompany && status.company) {
     return (
       <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 overflow-hidden flex-shrink-0">
-            {status.company.logo_url ? (
-              <img
-                src={status.company.logo_url}
-                alt={status.company.name}
-                className="h-full w-full object-contain"
-              />
-            ) : (
-              <Building2 className="h-5 w-5 text-primary" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium truncate">{status.company.name}</p>
-            <p className="text-sm text-muted-foreground">
-              You are a member of this company
-            </p>
+        <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 py-4 px-4">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1 w-full sm:w-auto">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 overflow-hidden flex-shrink-0">
+              {status.company.logo_url ? (
+                <img
+                  src={status.company.logo_url}
+                  alt={status.company.name}
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <Building2 className="h-5 w-5 text-primary" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium truncate text-sm sm:text-base">
+                {status.company.name}
+              </p>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                You are a member of this company
+              </p>
+            </div>
           </div>
           <Badge
             variant="outline"
-            className="border-primary/50 text-primary flex-shrink-0"
+            className="border-primary/50 text-primary flex-shrink-0 self-start sm:self-center"
           >
             <Check className="h-3 w-3 mr-1" />
             Member
@@ -115,19 +119,26 @@ export function CompanyStatusBanner() {
   if (status.pendingRequest) {
     return (
       <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-            <Clock className="h-5 w-5 text-primary" />
+        <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 py-4 px-4">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1 w-full sm:w-auto">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+              <Clock className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm sm:text-base">
+                Waiting for approval
+              </p>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Your request to join{" "}
+                <strong>{status.pendingRequest.company.name}</strong> is pending
+                review by the company admin.
+              </p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="font-medium">Waiting for approval</p>
-            <p className="text-sm text-muted-foreground">
-              Your request to join{" "}
-              <strong>{status.pendingRequest.company.name}</strong> is pending
-              review by the company admin.
-            </p>
-          </div>
-          <Badge variant="outline" className="border-primary/50 text-primary">
+          <Badge
+            variant="outline"
+            className="border-primary/50 text-primary flex-shrink-0 self-start sm:self-center"
+          >
             Pending
           </Badge>
         </CardContent>
@@ -139,13 +150,13 @@ export function CompanyStatusBanner() {
   if (status.rejectedRequest) {
     return (
       <Card className="border-destructive/20 bg-destructive/5">
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+        <CardContent className="flex items-start gap-3 sm:gap-4 py-4 px-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10 flex-shrink-0">
             <AlertCircle className="h-5 w-5 text-destructive" />
           </div>
-          <div className="flex-1">
-            <p className="font-medium">Request declined</p>
-            <p className="text-sm text-muted-foreground">
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-sm sm:text-base">Request declined</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Your request to join{" "}
               <strong>{status.rejectedRequest.company.name}</strong> was
               declined.

@@ -20,6 +20,7 @@ interface Session {
 
 interface SessionCardsProps {
   sessions: Session[];
+  className?: string;
 }
 
 function formatDate(dateStr: string): string {
@@ -31,12 +32,12 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export function SessionCards({ sessions }: SessionCardsProps) {
+export function SessionCards({ sessions, className }: SessionCardsProps) {
   // Filter to only show active sessions
   const activeSessions = sessions.filter((s) => s.status === "active");
 
   return (
-    <Card className="glass border-border/50">
+    <Card className={`glass border-border/50 ${className || ""}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold flex items-center gap-2">

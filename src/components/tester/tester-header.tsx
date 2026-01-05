@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -51,9 +51,24 @@ interface TesterHeaderProps {
 
 export function TesterHeader({ user }: TesterHeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  // Check if a nav item is active
+  const isActive = (href: string) => {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+    if (href === "/sessions") {
+      return pathname === "/sessions" || pathname.startsWith("/sessions/");
+    }
+    if (href === "/profile") {
+      return pathname === "/profile";
+    }
+    return pathname === href;
+  };
 
   const cycleTheme = () => {
     if (theme === "auto") setTheme("light");
@@ -63,22 +78,34 @@ export function TesterHeader({ user }: TesterHeaderProps) {
 
   const fullName = user ? `${user.first_name} ${user.last_name}` : "";
 
-  // Lock body scroll when drawer is open
+  // Lock body scroll when drawer is open - iOS compatible
   useEffect(() => {
     if (drawerOpen) {
+      const scrollY = window.scrollY;
       document.body.setAttribute("data-scroll-locked", "");
+      document.body.style.top = `-${scrollY}px`;
     } else {
+      const scrollY = document.body.style.top;
       document.body.removeAttribute("data-scroll-locked");
+      document.body.style.top = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
     }
     return () => {
+      const scrollY = document.body.style.top;
       document.body.removeAttribute("data-scroll-locked");
+      document.body.style.top = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
     };
   }, [drawerOpen]);
 
   return (
     <>
       <header
-        className="fixed top-0 left-0 right-0 border-b border-border/50 bg-card/80 glass flex items-center justify-between px-4 z-40"
+        className="fixed top-0 left-0 right-0 border-b border-border/50 bg-card/80 glass flex items-center justify-between px-4 z-50"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
           paddingBottom: "12px",
@@ -267,7 +294,7 @@ export function TesterHeader({ user }: TesterHeaderProps) {
                       <img
                         src={user.company.logo_url}
                         alt={user.company.name}
-                        className="w-4 h-4 rounded-full object-cover"
+                        className="w-4 h-4 rounded-full object-contain"
                       />
                     ) : (
                       <Building2 className="w-3 h-3 text-muted-foreground" />
@@ -281,15 +308,31 @@ export function TesterHeader({ user }: TesterHeaderProps) {
 
               <Link
                 href="/dashboard"
-                className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors border-border/60 bg-muted/20 hover:border-border"
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/dashboard")
+                    ? "border-primary/40 bg-primary/10"
+                    : "border-border/60 bg-muted/20 hover:border-border"
+                }`}
                 onClick={() => setDrawerOpen(false)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <div
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      isActive("/dashboard")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
                     <LayoutGrid className="w-6 h-6" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-medium">Dashboard</p>
+                    <p
+                      className={`font-medium ${
+                        isActive("/dashboard") ? "text-primary" : ""
+                      }`}
+                    >
+                      Dashboard
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Your workspace
                     </p>
@@ -300,15 +343,31 @@ export function TesterHeader({ user }: TesterHeaderProps) {
 
               <Link
                 href="/sessions"
-                className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors border-border/60 bg-muted/20 hover:border-border"
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/sessions")
+                    ? "border-primary/40 bg-primary/10"
+                    : "border-border/60 bg-muted/20 hover:border-border"
+                }`}
                 onClick={() => setDrawerOpen(false)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-muted/40 text-muted-foreground flex items-center justify-center">
+                  <div
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      isActive("/sessions")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/40 text-muted-foreground"
+                    }`}
+                  >
                     <Users2 className="w-6 h-6" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-medium">Sessions</p>
+                    <p
+                      className={`font-medium ${
+                        isActive("/sessions") ? "text-primary" : ""
+                      }`}
+                    >
+                      Sessions
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Browse and manage sessions
                     </p>
@@ -319,15 +378,31 @@ export function TesterHeader({ user }: TesterHeaderProps) {
 
               <Link
                 href="/profile"
-                className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors border-border/60 bg-muted/20 hover:border-border"
+                className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition-colors ${
+                  isActive("/profile")
+                    ? "border-primary/40 bg-primary/10"
+                    : "border-border/60 bg-muted/20 hover:border-border"
+                }`}
                 onClick={() => setDrawerOpen(false)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-muted/40 text-muted-foreground flex items-center justify-center">
+                  <div
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      isActive("/profile")
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/40 text-muted-foreground"
+                    }`}
+                  >
                     <User className="w-6 h-6" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="font-medium">Profile</p>
+                    <p
+                      className={`font-medium ${
+                        isActive("/profile") ? "text-primary" : ""
+                      }`}
+                    >
+                      Profile
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Manage your account
                     </p>

@@ -133,16 +133,16 @@ export function StatsCards({ sessions, notes }: StatsCardsProps) {
       </Card>
 
       {/* Category Breakdown */}
-      <Card className="glass border-border/50">
+      <Card className="glass border-border/50 overflow-hidden">
         <CardContent className="pt-6">
           <div className="flex items-start justify-between">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground mb-1">
                 By Category
               </p>
               {categoryData.length > 0 ? (
                 <div className="flex items-center gap-3">
-                  <div className="w-16 h-16">
+                  <div className="w-16 h-16 flex-shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -172,7 +172,7 @@ export function StatsCards({ sessions, notes }: StatsCardsProps) {
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="flex flex-col gap-1 w-full min-w-0">
+                  <div className="flex flex-col gap-1 flex-1 min-w-0 overflow-hidden">
                     {categoryData.map((cat) => (
                       <div
                         key={cat.name}
