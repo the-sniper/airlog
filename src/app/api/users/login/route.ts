@@ -44,6 +44,12 @@ export async function POST(req: Request) {
       );
     }
 
+    // Update last login timestamp for analytics
+    await supabase
+      .from("users")
+      .update({ last_login_at: new Date().toISOString() })
+      .eq("id", user.id);
+
     const token = await createUserToken(user.id);
     await setUserAuthCookie(token);
 
