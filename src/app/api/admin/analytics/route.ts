@@ -158,7 +158,7 @@ export async function GET(req: NextRequest) {
         email: u.email,
         last_login_at: u.last_login_at,
         created_at: u.created_at,
-        company: Array.isArray(u.company) ? u.company[0] : u.company,
+        company: Array.isArray(u.companies) ? u.companies[0] : u.companies,
       }));
 
     // Fetch visitor stats (safely handle if table missing)
