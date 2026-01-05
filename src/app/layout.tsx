@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import { PWAProvider } from "@/components/common/pwa-provider";
@@ -129,7 +130,9 @@ export default function RootLayout({
             {children}
             <InstallBanner />
             <ServiceWorkerRegistration />
-            <AnalyticsTracker />
+            <Suspense fallback={null}>
+              <AnalyticsTracker />
+            </Suspense>
             <Toaster />
           </PWAProvider>
         </ThemeProvider>
