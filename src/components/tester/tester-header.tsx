@@ -77,7 +77,14 @@ export function TesterHeader({ user }: TesterHeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 h-16 border-b border-border/50 bg-card/80 glass flex items-center justify-between px-4 z-40 pwa-fixed-header">
+      <header
+        className="fixed top-0 left-0 right-0 border-b border-border/50 bg-card/80 glass flex items-center justify-between px-4 z-40"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
+          paddingBottom: "12px",
+          minHeight: "4rem",
+        }}
+      >
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="flex items-center gap-3">
             <Image

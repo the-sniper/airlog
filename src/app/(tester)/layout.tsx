@@ -82,7 +82,12 @@ export default function TesterLayout({
       </div>
 
       <TesterHeader user={user} />
-      <main className="min-h-screen relative z-10 pwa-main-offset">
+      <main
+        className="min-h-screen relative z-10"
+        style={{
+          paddingTop: "calc(4rem + env(safe-area-inset-top, 0px) + 12px)",
+        }}
+      >
         {children}
       </main>
     </div>
