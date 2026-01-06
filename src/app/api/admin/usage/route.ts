@@ -54,7 +54,7 @@ interface SupabaseUsage {
 // Fetch OpenAI costs from their Usage API
 // Note: The Usage API requires an Admin API key (sk-admin-*)
 // Regular project keys (sk-proj-*) will get 401 errors on this endpoint
-async function fetchOpenAICosts(): Promise<OpenAICosts> {
+async function fetchOpenAICosts(startDate?: Date): Promise<OpenAICosts> {
   // Prefer admin key for usage API, fall back to regular key
   const adminKey = process.env.OPENAI_ADMIN_KEY || process.env.OPENAI_API_KEY;
   if (!adminKey) {
@@ -62,10 +62,16 @@ async function fetchOpenAICosts(): Promise<OpenAICosts> {
   }
 
   try {
-    // Get usage for the last 30 days
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const startTime = Math.floor(thirtyDaysAgo.getTime() / 1000);
+    // Get usage start time
+    let startTime: number;
+    
+    if (startDate) {
+        startTime = Math.floor(startDate.getTime() / 1000);
+    } else {
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        startTime = Math.floor(thirtyDaysAgo.getTime() / 1000);
+    }
 
     // Use the new Usage API endpoint for completions
     const response = await fetch(
@@ -419,20 +425,35 @@ async function fetchFlyMachines(): Promise<FlyMachineStatus> {
 }
 
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const timeFilter = searchParams.get("timeFilter") || "30d";
+
     const supabase = createAdminClient();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    // Calculate start date based on filter
+    const now = new Date();
+    let startDate = new Date();
+    
+    if (timeFilter === "7d") {
+      startDate.setDate(now.getDate() - 7);
+    } else if (timeFilter === "all") {
+      // Set to a far past date (e.g., project inception or 1 year algo)
+      startDate.setFullYear(2020, 0, 1); 
+    } else {
+      // Default to 30d
+      startDate.setDate(now.getDate() - 30);
+    }
 
     // Fetch all data in parallel
     const [usageResult, openaiCosts, supabaseUsage, whisperHealth, flyMachines] = await Promise.all([
       supabase
         .from("service_usage")
         .select("*")
-        .gte("created_at", thirtyDaysAgo.toISOString())
+        .gte("created_at", startDate.toISOString())
         .order("created_at", { ascending: false }),
-      fetchOpenAICosts(),
+      fetchOpenAICosts(startDate),
       fetchSupabaseUsage(),
       fetchWhisperHealth(),
       fetchFlyMachines(),
@@ -577,7 +598,7 @@ export async function GET() {
       flyio: flyMachines,
       limits: FREE_TIER_LIMITS,
       period: {
-        start: thirtyDaysAgo.toISOString(),
+        start: startDate.toISOString(),
         end: new Date().toISOString(),
       },
     });

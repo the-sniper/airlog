@@ -24,8 +24,8 @@ export function getWeatherGradient(
   }
   if (condition === "cloudy") {
     return isDay
-      ? "from-slate-300 via-gray-400 to-slate-400"
-      : "from-slate-700 via-gray-800 to-slate-900";
+      ? "from-slate-300 via-sky-200/40 to-slate-400"
+      : "from-slate-800 via-indigo-950 to-slate-900";
   }
   if (condition === "fog" || condition === "mist") {
     return isDay
@@ -58,9 +58,9 @@ export function getWeatherTextColor(
 
   if (isLightBg) {
     return {
-      primary: "text-slate-800",
-      secondary: "text-slate-700",
-      muted: "text-slate-600",
+      primary: "text-slate-950",
+      secondary: "text-slate-800",
+      muted: "text-slate-700",
     };
   }
 

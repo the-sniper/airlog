@@ -544,22 +544,22 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       {/* Header Banner */}
-      <div className="relative rounded-xl overflow-hidden border border-border/50 bg-gradient-to-br from-violet-500/20 via-purple-500/10 to-fuchsia-500/20">
+      <div className="relative rounded-xl overflow-hidden border border-border/50 bg-gradient-to-br from-primary/5 via-secondary/10 to-secondary/30">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 border border-white/30 backdrop-blur-sm">
-              <Activity className="h-5 w-5 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-sm">
+              <Activity className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-xs font-medium text-white/80">
+              {/* <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-xs font-medium text-muted-foreground">
                   {formattedDate}
                 </span>
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">
+              </div> */}
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
                 User Analytics
               </h1>
-              <p className="text-sm text-white/80">
+              <p className="text-sm text-muted-foreground">
                 Track user activity and engagement
               </p>
             </div>
@@ -571,33 +571,33 @@ export default function AnalyticsPage() {
               onValueChange={(v) => setTimeFilter(v as typeof timeFilter)}
               className="w-auto"
             >
-              <TabsList className="h-9 bg-white/10 border border-white/20 backdrop-blur-sm">
+              <TabsList className="h-9 bg-background/50 border border-border/50 backdrop-blur-sm">
                 <TabsTrigger
                   value="7d"
-                  className="text-xs px-3 text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20"
+                  className="text-xs px-3 data-[state=active]:bg-background"
                 >
                   7 days
                 </TabsTrigger>
                 <TabsTrigger
                   value="30d"
-                  className="text-xs px-3 text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20"
+                  className="text-xs px-3 data-[state=active]:bg-background"
                 >
                   30 days
                 </TabsTrigger>
                 <TabsTrigger
                   value="all"
-                  className="text-xs px-3 text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20"
+                  className="text-xs px-3 data-[state=active]:bg-background"
                 >
                   All time
                 </TabsTrigger>
               </TabsList>
             </Tabs>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="shrink-0 gap-2 h-9 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm px-3"
+              className="shrink-0 gap-2 h-9 bg-background/50 hover:bg-background backdrop-blur-sm px-3"
             >
               <RefreshCw
                 className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}

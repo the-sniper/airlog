@@ -136,7 +136,7 @@ export function WeatherEffects({
         fadeSpeed: 0.05 + Math.random() * 0.03,
       };
     },
-    [],
+    []
   );
 
   // Draw a realistic snowflake
@@ -176,7 +176,7 @@ export function WeatherEffects({
         ctx.moveTo(branchX, branchY);
         ctx.lineTo(
           branchX + Math.cos(angle + Math.PI / 4) * branchLen,
-          branchY + Math.sin(angle + Math.PI / 4) * branchLen,
+          branchY + Math.sin(angle + Math.PI / 4) * branchLen
         );
         ctx.stroke();
 
@@ -185,7 +185,7 @@ export function WeatherEffects({
         ctx.moveTo(branchX, branchY);
         ctx.lineTo(
           branchX + Math.cos(angle - Math.PI / 4) * branchLen,
-          branchY + Math.sin(angle - Math.PI / 4) * branchLen,
+          branchY + Math.sin(angle - Math.PI / 4) * branchLen
         );
         ctx.stroke();
       }
@@ -197,7 +197,7 @@ export function WeatherEffects({
 
       ctx.restore();
     },
-    [],
+    []
   );
 
   // Draw realistic raindrop with reflection
@@ -211,7 +211,7 @@ export function WeatherEffects({
         p.x,
         p.y,
         p.x + windFactor * 0.3,
-        p.y + dropLength,
+        p.y + dropLength
       );
       gradient.addColorStop(0, `rgba(200, 220, 255, ${p.opacity * 0.3})`);
       gradient.addColorStop(0.3, `rgba(180, 200, 240, ${p.opacity * 0.7})`);
@@ -235,7 +235,7 @@ export function WeatherEffects({
         ctx.stroke();
       }
     },
-    [],
+    []
   );
 
   // Draw splash effect
@@ -270,7 +270,7 @@ export function WeatherEffects({
         }
       }
     },
-    [],
+    []
   );
 
   // Draw fog layer
@@ -279,7 +279,7 @@ export function WeatherEffects({
       ctx: CanvasRenderingContext2D,
       p: Particle,
       canvasWidth: number,
-      canvasHeight: number,
+      canvasHeight: number
     ) => {
       const layer = p.layer || 0;
       const baseOpacity =
@@ -297,7 +297,7 @@ export function WeatherEffects({
       ctx.ellipse(p.x, p.y, p.size * 2, p.size * 0.8, 0, 0, Math.PI * 2);
       ctx.fill();
     },
-    [],
+    []
   );
 
   // Draw atmospheric cloud layer - wide horizontal bands instead of bubbles
@@ -306,7 +306,7 @@ export function WeatherEffects({
       ctx: CanvasRenderingContext2D,
       p: Particle,
       isDarkCloud: boolean = false,
-      canvasWidth: number = 800,
+      canvasWidth: number = 800
     ) => {
       ctx.save();
 
@@ -320,59 +320,101 @@ export function WeatherEffects({
           layer === 0
             ? { r: 60, g: 65, b: 75 }
             : layer === 1
-              ? { r: 75, g: 80, b: 90 }
-              : { r: 90, g: 95, b: 105 };
+            ? { r: 75, g: 80, b: 90 }
+            : { r: 90, g: 95, b: 105 };
       } else {
         // Regular clouds - soft white to light gray
         baseColor =
           layer === 0
             ? { r: 220, g: 225, b: 230 }
             : layer === 1
-              ? { r: 235, g: 238, b: 242 }
-              : { r: 248, g: 250, b: 252 };
+            ? { r: 235, g: 238, b: 242 }
+            : { r: 248, g: 250, b: 252 };
       }
 
-      // Create wide, flat cloud band - more like a horizontal stripe
-      const bandWidth = canvasWidth * (0.6 + layer * 0.2);
-      const bandHeight = p.size * (0.2 + layer * 0.1);
+      // Create wide, flat cloud band for storms, or discrete puffs for cloudy weather
+      if (isDarkCloud) {
+        // Storm clouds - horizontal atmospheric bands
+        const bandWidth = canvasWidth * (0.6 + layer * 0.2);
+        const bandHeight = p.size * (0.2 + layer * 0.1);
 
-      // Use a horizontal gradient for more natural cloud look
-      const gradient = ctx.createRadialGradient(
-        p.x,
-        p.y,
-        0,
-        p.x,
-        p.y,
-        bandWidth * 0.5,
-      );
+        const gradient = ctx.createRadialGradient(
+          p.x,
+          p.y,
+          0,
+          p.x,
+          p.y,
+          bandWidth * 0.5
+        );
 
-      const opacity = p.opacity * (0.6 + layer * 0.15);
-      gradient.addColorStop(
-        0,
-        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${opacity})`,
-      );
-      gradient.addColorStop(
-        0.3,
-        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${opacity * 0.7})`,
-      );
-      gradient.addColorStop(
-        0.6,
-        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${opacity * 0.3})`,
-      );
-      gradient.addColorStop(
-        1,
-        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 0)`,
-      );
+        const opacity = p.opacity * (0.6 + layer * 0.15);
+        gradient.addColorStop(
+          0,
+          `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${opacity})`
+        );
+        gradient.addColorStop(
+          0.3,
+          `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${
+            opacity * 0.7
+          })`
+        );
+        gradient.addColorStop(
+          0.6,
+          `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${
+            opacity * 0.3
+          })`
+        );
+        gradient.addColorStop(
+          1,
+          `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 0)`
+        );
 
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      // Wide, flat ellipse - much more horizontal than circular
-      ctx.ellipse(p.x, p.y, bandWidth * 0.5, bandHeight, 0, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, bandWidth * 0.5, bandHeight, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Tiny moving clouds - nice fluffy shape composed of circles
+        const size = p.size;
+
+        ctx.fillStyle = `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${p.opacity})`;
+        ctx.beginPath();
+
+        // Center puff
+        ctx.arc(p.x, p.y, size * 0.5, 0, Math.PI * 2);
+        // Left puff
+        ctx.arc(
+          p.x - size * 0.4,
+          p.y + size * 0.1,
+          size * 0.35,
+          0,
+          Math.PI * 2
+        );
+        // Right puff
+        ctx.arc(
+          p.x + size * 0.4,
+          p.y + size * 0.1,
+          size * 0.35,
+          0,
+          Math.PI * 2
+        );
+        // Top-left puff
+        ctx.arc(p.x - size * 0.2, p.y - size * 0.2, size * 0.4, 0, Math.PI * 2);
+        // Top-right puff
+        ctx.arc(
+          p.x + size * 0.2,
+          p.y - size * 0.25,
+          size * 0.3,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+      }
 
       ctx.restore();
     },
-    [],
+    []
   );
 
   // Draw star with twinkle
@@ -413,7 +455,7 @@ export function WeatherEffects({
         ctx.stroke();
       }
     },
-    [],
+    []
   );
 
   // Draw sun with animated rays
@@ -421,7 +463,7 @@ export function WeatherEffects({
     (
       ctx: CanvasRenderingContext2D,
       canvas: HTMLCanvasElement,
-      time: number,
+      time: number
     ) => {
       const sunX = canvas.width * 0.85;
       const sunY = canvas.height * 0.15;
@@ -438,7 +480,7 @@ export function WeatherEffects({
           20,
           sunX,
           sunY,
-          radius,
+          radius
         );
         glow.addColorStop(0, `rgba(255, 250, 200, ${0.15 / i})`);
         glow.addColorStop(0.5, `rgba(255, 240, 180, ${0.08 / i})`);
@@ -484,7 +526,7 @@ export function WeatherEffects({
         0,
         sunX,
         sunY,
-        35,
+        35
       );
       innerGlow.addColorStop(0, "rgba(255, 255, 250, 0.95)");
       innerGlow.addColorStop(0.5, "rgba(255, 250, 200, 0.9)");
@@ -495,7 +537,7 @@ export function WeatherEffects({
       ctx.arc(sunX, sunY, 35, 0, Math.PI * 2);
       ctx.fill();
     },
-    [],
+    []
   );
 
   // Draw moon with details
@@ -503,7 +545,7 @@ export function WeatherEffects({
     (
       ctx: CanvasRenderingContext2D,
       canvas: HTMLCanvasElement,
-      time: number,
+      time: number
     ) => {
       const moonX = canvas.width * 0.85;
       const moonY = canvas.height * 0.2;
@@ -515,7 +557,7 @@ export function WeatherEffects({
         15,
         moonX,
         moonY,
-        70,
+        70
       );
       moonGlow.addColorStop(0, "rgba(200, 220, 255, 0.25)");
       moonGlow.addColorStop(0.3, "rgba(180, 200, 240, 0.12)");
@@ -533,7 +575,7 @@ export function WeatherEffects({
         0,
         moonX,
         moonY,
-        25,
+        25
       );
       moonGradient.addColorStop(0, "rgba(255, 255, 255, 0.98)");
       moonGradient.addColorStop(0.4, "rgba(245, 248, 255, 0.95)");
@@ -560,19 +602,19 @@ export function WeatherEffects({
           0,
           moonX + crater.x,
           moonY + crater.y,
-          crater.r,
+          crater.r
         );
         craterGradient.addColorStop(
           0,
-          `rgba(180, 190, 210, ${crater.depth * 0.5})`,
+          `rgba(180, 190, 210, ${crater.depth * 0.5})`
         );
         craterGradient.addColorStop(
           0.6,
-          `rgba(160, 170, 190, ${crater.depth})`,
+          `rgba(160, 170, 190, ${crater.depth})`
         );
         craterGradient.addColorStop(
           1,
-          `rgba(140, 150, 170, ${crater.depth * 0.3})`,
+          `rgba(140, 150, 170, ${crater.depth * 0.3})`
         );
 
         ctx.fillStyle = craterGradient;
@@ -581,7 +623,7 @@ export function WeatherEffects({
         ctx.fill();
       });
     },
-    [],
+    []
   );
 
   // Draw lightning bolt
@@ -591,7 +633,9 @@ export function WeatherEffects({
 
       // Screen flash
       if (bolt.flashIntensity > 0.7) {
-        ctx.fillStyle = `rgba(255, 255, 255, ${(bolt.flashIntensity - 0.7) * 0.3})`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${
+          (bolt.flashIntensity - 0.7) * 0.3
+        })`;
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       }
 
@@ -623,7 +667,7 @@ export function WeatherEffects({
         ctx.stroke();
       });
     },
-    [],
+    []
   );
 
   // Initialize particles based on weather type
@@ -647,8 +691,8 @@ export function WeatherEffects({
           type === "heavy_rain" || type === "thunderstorm"
             ? 2
             : type === "drizzle"
-              ? 0.5
-              : 1;
+            ? 0.5
+            : 1;
         const count = Math.floor((isMobile ? 50 : 120) * intensity);
 
         for (let i = 0; i < count; i++) {
@@ -711,14 +755,34 @@ export function WeatherEffects({
         }
       }
 
-      // Only generate dark clouds for thunderstorm (cloudy weather uses gradient only)
+      // Add clouds for cloudy weather
+      if (type === "cloudy") {
+        // More clouds, but smaller (tiny clouds)
+        const cloudCount = isMobile ? 8 : 15;
+        for (let i = 0; i < cloudCount; i++) {
+          particles.push({
+            x: Math.random() * w,
+            y: h * 0.05 + Math.random() * (h * 0.4), // Upper half
+            // Slower drift for a relaxed feel
+            speed: 0.05 + Math.random() * 0.1,
+            // Much smaller size for "tiny clouds"
+            size: (isMobile ? 20 : 30) + Math.random() * 20,
+            // Lower opacity as requested
+            opacity: 0.3 + Math.random() * 0.3,
+            type: "cloud",
+            layer: i % 3,
+          });
+        }
+      }
+
+      // Only generate dark clouds for thunderstorm
       if (type === "thunderstorm") {
         // Dark storm clouds in background - minimal, just for atmosphere
         for (let i = 0; i < (isMobile ? 2 : 3); i++) {
           particles.push({
             x: Math.random() * w,
             y: h * 0.2 + Math.random() * (h * 0.3),
-            speed: 0.01 + Math.random() * 0.01,
+            speed: 0.05 + Math.random() * 0.05,
             size: 80 + Math.random() * 40,
             opacity: 0.15 + Math.random() * 0.1,
             type: "cloud",
@@ -774,7 +838,7 @@ export function WeatherEffects({
 
       return particles;
     },
-    [type, isDay],
+    [type, isDay]
   );
 
   useEffect(() => {

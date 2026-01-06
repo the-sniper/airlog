@@ -33,6 +33,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ServiceStats {
   service: string;
@@ -491,11 +492,12 @@ export default function UsagePage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [timeFilter, setTimeFilter] = useState<"7d" | "30d" | "all">("30d");
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
-      const res = await fetch("/api/admin/usage");
+      const res = await fetch(`/api/admin/usage?timeFilter=${timeFilter}`);
       if (!res.ok) throw new Error("Failed to fetch usage data");
       const json = await res.json();
       setData(json);
@@ -509,8 +511,9 @@ export default function UsagePage() {
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, timeFilter]);
 
   const getServiceStats = (service: string): ServiceStats | undefined => {
     return data?.stats.find((s) => s.service === service);
@@ -532,30 +535,72 @@ export default function UsagePage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-            <Activity className="h-5 w-5 text-primary" />
+      {/* Header Banner */}
+      <div className="relative rounded-xl overflow-hidden border border-border/50 bg-gradient-to-br from-primary/5 via-secondary/10 to-secondary/30 mb-8">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-sm">
+              <Activity className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              {/* <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {timeFilter === "7d"
+                    ? "Last 7 days"
+                    : timeFilter === "30d"
+                    ? "Last 30 days"
+                    : "All time"}
+                </span>
+              </div> */}
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                Service Usage
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Monitor API usage and costs
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">Service Usage</h1>
-            <p className="text-muted-foreground">
-              Monitor API usage and costs • Last 30 days
-            </p>
+          <div className="flex items-center gap-3">
+            <Tabs
+              value={timeFilter}
+              onValueChange={(v) => setTimeFilter(v as typeof timeFilter)}
+              className="w-auto"
+            >
+              <TabsList className="h-9 bg-background/50 border border-border/50 backdrop-blur-sm">
+                <TabsTrigger
+                  value="7d"
+                  className="text-xs px-3 data-[state=active]:bg-background"
+                >
+                  7 days
+                </TabsTrigger>
+                <TabsTrigger
+                  value="30d"
+                  className="text-xs px-3 data-[state=active]:bg-background"
+                >
+                  30 days
+                </TabsTrigger>
+                <TabsTrigger
+                  value="all"
+                  className="text-xs px-3 data-[state=active]:bg-background"
+                >
+                  All time
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchData(true)}
+              disabled={refreshing}
+              className="shrink-0 gap-2 h-9 bg-background/50 hover:bg-background backdrop-blur-sm px-3"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+              />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => fetchData(true)}
-          disabled={refreshing}
-          className="w-full sm:w-auto"
-        >
-          <RefreshCw
-            className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-          />
-          Refresh
-        </Button>
       </div>
 
       {error && (

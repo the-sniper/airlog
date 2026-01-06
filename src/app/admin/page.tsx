@@ -202,75 +202,41 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {/* Time Filter Tabs */}
-            <Tabs
-              value={timeFilter}
-              onValueChange={(v) => setTimeFilter(v as typeof timeFilter)}
-              className="w-auto"
-            >
-              <TabsList
-                className={cn(
-                  "h-9 backdrop-blur-sm border",
-                  isLightBg
-                    ? "bg-slate-800/10 border-slate-400/30"
-                    : "bg-white/10 border-white/20"
-                )}
-              >
-                <TabsTrigger
-                  value="7d"
-                  className={cn(
-                    "text-xs px-3",
-                    isLightBg
-                      ? "text-slate-600 data-[state=active]:text-slate-800 data-[state=active]:bg-slate-800/10"
-                      : "text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20"
-                  )}
-                >
-                  7 days
-                </TabsTrigger>
-                <TabsTrigger
-                  value="30d"
-                  className={cn(
-                    "text-xs px-3",
-                    isLightBg
-                      ? "text-slate-600 data-[state=active]:text-slate-800 data-[state=active]:bg-slate-800/10"
-                      : "text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20"
-                  )}
-                >
-                  30 days
-                </TabsTrigger>
-                <TabsTrigger
-                  value="all"
-                  className={cn(
-                    "text-xs px-3",
-                    isLightBg
-                      ? "text-slate-600 data-[state=active]:text-slate-800 data-[state=active]:bg-slate-800/10"
-                      : "text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20"
-                  )}
-                >
-                  All time
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className={cn(
-                "shrink-0 gap-2 h-9 backdrop-blur-sm px-3",
-                isLightBg
-                  ? "bg-slate-800/10 text-slate-700 hover:bg-slate-800/20 hover:text-slate-900"
-                  : "bg-white/10 text-white hover:bg-white/20 hover:text-white"
-              )}
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-              />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
-          </div>
         </div>
+      </div>
+
+      {/* Filter Controls */}
+      <div className="flex justify-end gap-3">
+        {/* Time Filter Tabs */}
+        <Tabs
+          value={timeFilter}
+          onValueChange={(v) => setTimeFilter(v as typeof timeFilter)}
+          className="w-auto"
+        >
+          <TabsList className="h-9 bg-muted/50 border border-border/50">
+            <TabsTrigger value="7d" className="text-xs px-3">
+              7 days
+            </TabsTrigger>
+            <TabsTrigger value="30d" className="text-xs px-3">
+              30 days
+            </TabsTrigger>
+            <TabsTrigger value="all" className="text-xs px-3">
+              All time
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="shrink-0 gap-2 h-9 px-3 bg-muted/50 border-border/50 hover:bg-muted"
+        >
+          <RefreshCw
+            className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+          />
+          <span className="hidden sm:inline">Refresh</span>
+        </Button>
       </div>
 
       {/* Dashboard Content */}
