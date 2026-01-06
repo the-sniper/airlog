@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import {
   clearUserAuthCookie,
@@ -7,7 +7,7 @@ import {
   verifyPassword,
 } from "@/lib/user-auth";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
     if (
@@ -44,11 +44,25 @@ export async function POST(req: Request) {
       );
     }
 
-    // Update last login timestamp for analytics
+    // Update last login timestamp for analytics (quick lookup of most recent login)
     await supabase
       .from("users")
       .update({ last_login_at: new Date().toISOString() })
       .eq("id", user.id);
+
+    // Record login event for detailed analytics tracking (if table exists)
+    const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("x-real-ip");
+    const userAgent = req.headers.get("user-agent");
+    
+    try {
+      await supabase.from("user_logins").insert({
+        user_id: user.id,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+      });
+    } catch {
+      // Ignore if table doesn't exist yet - login tracking is optional
+    }
 
     const token = await createUserToken(user.id);
     await setUserAuthCookie(token);

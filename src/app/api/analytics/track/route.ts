@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
+import { createAdminClient } from "@/lib/supabase/server";
+import { verifyUserToken } from "@/lib/user-auth";
+import { verifyCompanyToken } from "@/lib/company-auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,21 +34,77 @@ export async function POST(req: NextRequest) {
       visitorId = crypto.randomUUID();
     }
 
-    const supabase = await createClient();
+    // Use admin client to insert page views (bypasses RLS)
+    const supabase = createAdminClient();
     
-    // Get current user if logged in
-    const { data: { user } } = await supabase.auth.getUser();
+    // Determine which session to check based on the path being visited
+    // This handles cases where multiple sessions exist in the same browser
+    let userId: string | null = null;
+    const isCompanyPath = path?.startsWith("/company");
+    
+    if (isCompanyPath) {
+      // For company paths, prefer company admin session
+      const companySessionToken = req.cookies.get("company_admin_session")?.value;
+      if (companySessionToken) {
+        const payload = await verifyCompanyToken(companySessionToken);
+        if (payload?.companyAdminId) {
+          const { data: companyAdmin } = await supabase
+            .from("company_admins")
+            .select("user_id")
+            .eq("id", payload.companyAdminId)
+            .single();
+          
+          if (companyAdmin?.user_id) {
+            userId = companyAdmin.user_id;
+          }
+        }
+      }
+      
+      // Fallback to user session if company session not found
+      if (!userId) {
+        const userSessionToken = req.cookies.get("user_session")?.value;
+        if (userSessionToken) {
+          const payload = await verifyUserToken(userSessionToken);
+          if (payload?.userId) {
+            userId = payload.userId;
+          }
+        }
+      }
+    } else {
+      // For non-company paths, prefer regular user session
+      const userSessionToken = req.cookies.get("user_session")?.value;
+      if (userSessionToken) {
+        const payload = await verifyUserToken(userSessionToken);
+        if (payload?.userId) {
+          userId = payload.userId;
+        }
+      }
+      
+      // Fallback to company admin session if user session not found
+      if (!userId) {
+        const companySessionToken = req.cookies.get("company_admin_session")?.value;
+        if (companySessionToken) {
+          const payload = await verifyCompanyToken(companySessionToken);
+          if (payload?.companyAdminId) {
+            const { data: companyAdmin } = await supabase
+              .from("company_admins")
+              .select("user_id")
+              .eq("id", payload.companyAdminId)
+              .single();
+            
+            if (companyAdmin?.user_id) {
+              userId = companyAdmin.user_id;
+            }
+          }
+        }
+      }
+    }
 
     // Record page view
-    // Use service role if needed? 
-    // Usually RLS allows insert for anon if we set it up.
-    // But here we use the server client which inherits the user's role (anon or authenticated).
-    // The migration added policy for public insert.
-    
     const { error } = await supabase.from("page_views").insert({
       path,
       visitor_id: visitorId,
-      user_id: user?.id || null,
+      user_id: userId,
       user_agent: userAgent,
       ip_address: ipAddress,
       domain,

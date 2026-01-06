@@ -250,6 +250,8 @@ export async function registerCompany(
 export async function loginCompanyAdmin(
   email: string,
   password: string,
+  ipAddress?: string | null,
+  userAgent?: string | null,
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = createAdminClient();
 
@@ -279,6 +281,23 @@ export async function loginCompanyAdmin(
 
   if (!companyAdmin) {
     return { success: false, error: "Not a company administrator" };
+  }
+
+  // Update last login timestamp for analytics
+  await supabase
+    .from("users")
+    .update({ last_login_at: new Date().toISOString() })
+    .eq("id", user.id);
+
+  // Record login event for detailed analytics tracking
+  const { error: loginError } = await supabase.from("user_logins").insert({
+    user_id: user.id,
+    ip_address: ipAddress || null,
+    user_agent: userAgent || null,
+  });
+  
+  if (loginError) {
+    console.error("Failed to record login event:", loginError);
   }
 
   // Create session token

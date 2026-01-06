@@ -13,7 +13,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await loginCompanyAdmin(email, password);
+    // Extract IP and user agent for analytics
+    const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip");
+    const userAgent = request.headers.get("user-agent");
+
+    const result = await loginCompanyAdmin(email, password, ipAddress, userAgent);
 
     if (!result.success) {
       return NextResponse.json(
@@ -31,3 +35,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

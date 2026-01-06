@@ -135,40 +135,98 @@ export async function GET(req: NextRequest) {
         ? userGrowth.slice(-90) // Last 90 data points for "all"
         : userGrowth.filter((d) => new Date(d.date) >= startDate);
 
-    // Login activity over time
-    const loginActivityMap = new Map<string, number>();
-    allUsers.forEach((user) => {
-      if (user.last_login_at) {
-        const date = new Date(user.last_login_at).toISOString().split("T")[0];
-        if (new Date(date) >= startDate || timeFilter === "all") {
+    // Login activity over time - fetch from user_logins table for accurate counts
+    let loginActivity: { date: string; logins: number }[] = [];
+    try {
+      const { data: loginEvents } = await supabase
+        .from("user_logins")
+        .select("created_at")
+        .gte("created_at", startDate.toISOString())
+        .order("created_at", { ascending: true });
+
+      if (loginEvents && loginEvents.length > 0) {
+        const loginActivityMap = new Map<string, number>();
+        loginEvents.forEach((event) => {
+          const date = new Date(event.created_at).toISOString().split("T")[0];
           loginActivityMap.set(date, (loginActivityMap.get(date) || 0) + 1);
-        }
+        });
+
+        loginActivity = Array.from(loginActivityMap.entries())
+          .map(([date, logins]) => ({ date, logins }))
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .slice(-30); // Last 30 days of login data
       }
-    });
+    } catch {
+      // Fallback to last_login_at if user_logins table doesn't exist yet
+      const loginActivityMap = new Map<string, number>();
+      allUsers.forEach((user) => {
+        if (user.last_login_at) {
+          const date = new Date(user.last_login_at).toISOString().split("T")[0];
+          if (new Date(date) >= startDate || timeFilter === "all") {
+            loginActivityMap.set(date, (loginActivityMap.get(date) || 0) + 1);
+          }
+        }
+      });
 
-    const loginActivity = Array.from(loginActivityMap.entries())
-      .map(([date, logins]) => ({ date, logins }))
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(-30); // Last 30 days of login data
+      loginActivity = Array.from(loginActivityMap.entries())
+        .map(([date, logins]) => ({ date, logins }))
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(-30);
+    }
 
-    // Recent logins (last 20 users who logged in)
-    const recentLogins = allUsers
-      .filter((u) => u.last_login_at)
-      .sort(
-        (a, b) =>
-          new Date(b.last_login_at!).getTime() -
-          new Date(a.last_login_at!).getTime()
-      )
-      .slice(0, 20)
-      .map((u) => ({
-        id: u.id,
-        first_name: u.first_name,
-        last_name: u.last_name,
-        email: u.email,
-        last_login_at: u.last_login_at,
-        created_at: u.created_at,
-        company: Array.isArray(u.companies) ? u.companies[0] : u.companies,
-      }));
+    // Recent logins (last 20 login events with user details)
+    let recentLogins: UserAnalytics["recentLogins"] = [];
+    try {
+      const { data: recentLoginEvents } = await supabase
+        .from("user_logins")
+        .select(`
+          id,
+          created_at,
+          user_id
+        `)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (recentLoginEvents && recentLoginEvents.length > 0) {
+        // Map user_ids to user data from allUsers (which already has company info)
+        const userMap = new Map(allUsers.map(u => [u.id, u]));
+        
+        recentLogins = recentLoginEvents
+          .map((event: any) => {
+            const user = userMap.get(event.user_id);
+            if (!user) return null;
+            return {
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              email: user.email,
+              last_login_at: event.created_at,
+              created_at: user.created_at,
+              company: Array.isArray(user.companies) ? user.companies[0] : user.companies,
+            };
+          })
+          .filter(Boolean) as UserAnalytics["recentLogins"];
+      }
+    } catch {
+      // Fallback to last_login_at if user_logins table doesn't exist yet
+      recentLogins = allUsers
+        .filter((u) => u.last_login_at)
+        .sort(
+          (a, b) =>
+            new Date(b.last_login_at!).getTime() -
+            new Date(a.last_login_at!).getTime()
+        )
+        .slice(0, 20)
+        .map((u) => ({
+          id: u.id,
+          first_name: u.first_name,
+          last_name: u.last_name,
+          email: u.email,
+          last_login_at: u.last_login_at,
+          created_at: u.created_at,
+          company: Array.isArray(u.companies) ? u.companies[0] : u.companies,
+        }));
+    }
 
     // Fetch visitor stats (safely handle if table missing)
     let totalVisits = 0;
