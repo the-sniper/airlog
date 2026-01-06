@@ -109,13 +109,13 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('airlog-theme') || 'light';
+                  var theme = localStorage.getItem('airlog-theme') || 'dark';
                   if (theme === 'system') {
                     theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                   }
                   document.documentElement.classList.add(theme);
                 } catch (e) {
-                  document.documentElement.classList.add('light');
+                  document.documentElement.classList.add('dark');
                 }
               })();
             `,
@@ -125,7 +125,7 @@ export default function RootLayout({
       <body
         className={`${jakarta.variable} ${mono.variable} font-sans antialiased`}
       >
-        <ThemeProvider defaultTheme="light" storageKey="airlog-theme">
+        <ThemeProvider defaultTheme="dark" storageKey="airlog-theme">
           <PWAProvider>
             {children}
             <InstallBanner />
