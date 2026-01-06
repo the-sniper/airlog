@@ -201,18 +201,18 @@ function LoginForm() {
                 </Button>
               </span>
               <div className="flex items-center justify-center gap-3 mt-6 text-xs text-muted-foreground/60">
-                <Link
+                {/* <Link
                   href="/admin/login"
                   className="hover:text-primary transition-colors underline underline-offset-4"
                 >
                   Admin login
                 </Link>
-                <span>•</span>
+                <span>•</span> */}
                 <Link
                   href="/company/login"
                   className="hover:text-primary transition-colors underline underline-offset-4"
                 >
-                  Company login
+                  Admin login
                 </Link>
               </div>
             </>
