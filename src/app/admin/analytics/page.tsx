@@ -329,24 +329,15 @@ function RecentLoginsTable({
               <Clock className="w-4 h-4 text-amber-500" />
               Recent Logins
             </CardTitle>
-            {logins.length > 10 ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs gap-1"
-                onClick={() => setShowAll(true)}
-              >
-                View All Logins
-                <ArrowUpRight className="w-3 h-3" />
-              </Button>
-            ) : (
-              <Link href="/admin/users">
-                <Button variant="ghost" size="sm" className="text-xs gap-1">
-                  View All Users
-                  <ArrowUpRight className="w-3 h-3" />
-                </Button>
-              </Link>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs gap-1"
+              onClick={() => setShowAll(true)}
+            >
+              View All
+              <ArrowUpRight className="w-3 h-3" />
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
