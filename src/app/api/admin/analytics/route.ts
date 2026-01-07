@@ -190,29 +190,12 @@ export async function GET(req: NextRequest) {
         .order("created_at", { ascending: false })
         .limit(20);
 
-      // Debug logging
-      console.log("[ANALYTICS DEBUG] user_logins query:", {
-        eventsCount: recentLoginEvents?.length ?? 0,
-        error: loginEventsError?.message ?? null,
-        firstEvent: recentLoginEvents?.[0] ?? null,
-      });
 
       if (recentLoginEvents && recentLoginEvents.length > 0) {
         // Map user_ids to user data from allUsers (which already has company info)
         const userMap = new Map(allUsers.map(u => [u.id, u]));
         
-        // Debug: check which user_ids are in login events vs userMap
-        const unmatchedUserIds = recentLoginEvents
-          .filter((event: any) => !userMap.has(event.user_id))
-          .map((event: any) => event.user_id);
-        
-        if (unmatchedUserIds.length > 0) {
-          console.log("[ANALYTICS DEBUG] Unmatched user_ids in login events:", {
-            unmatchedUserIds,
-            totalUsers: allUsers.length,
-            sampleUserIds: allUsers.slice(0, 3).map(u => u.id),
-          });
-        }
+
         
         recentLogins = recentLoginEvents
           .map((event: any) => {
@@ -229,11 +212,9 @@ export async function GET(req: NextRequest) {
             };
           })
           .filter(Boolean) as UserAnalytics["recentLogins"];
-          
-        console.log("[ANALYTICS DEBUG] Final recentLogins count:", recentLogins.length);
+
       }
-    } catch (e: any) {
-      console.error("[ANALYTICS DEBUG] user_logins query failed:", e.message);
+    } catch {
       // Fallback to last_login_at if user_logins table doesn't exist yet
       recentLogins = allUsers
         .filter((u) => u.last_login_at)
