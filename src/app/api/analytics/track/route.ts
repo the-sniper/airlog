@@ -22,8 +22,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if the request domain matches the allowed domain
+    // Log for debugging domain mismatch issues
     if (domain !== allowedDomain) {
-      // Skip tracking for non-matching domains
+      console.warn("[PAGE VIEW TRACKING SKIPPED]", {
+        requestDomain: domain,
+        allowedDomain: allowedDomain,
+        appUrl: appUrl,
+        path: path,
+      });
       return NextResponse.json({ success: true, skipped: true });
     }
 
@@ -113,7 +119,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
-      console.error("Track error:", error);
+      console.error("[PAGE VIEW TRACKING ERROR]", {
+        error: error.message,
+        code: error.code,
+        path: path,
+        domain: domain,
+        userId: userId,
+      });
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

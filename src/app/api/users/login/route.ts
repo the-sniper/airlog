@@ -50,18 +50,22 @@ export async function POST(req: NextRequest) {
       .update({ last_login_at: new Date().toISOString() })
       .eq("id", user.id);
 
-    // Record login event for detailed analytics tracking (if table exists)
+    // Record login event for detailed analytics tracking
     const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("x-real-ip");
     const userAgent = req.headers.get("user-agent");
     
-    try {
-      await supabase.from("user_logins").insert({
-        user_id: user.id,
-        ip_address: ipAddress,
-        user_agent: userAgent,
+    const { error: loginTrackError } = await supabase.from("user_logins").insert({
+      user_id: user.id,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+    });
+    
+    if (loginTrackError) {
+      console.error("[LOGIN TRACKING ERROR]", {
+        error: loginTrackError.message,
+        code: loginTrackError.code,
+        userId: user.id,
       });
-    } catch {
-      // Ignore if table doesn't exist yet - login tracking is optional
     }
 
     const token = await createUserToken(user.id);

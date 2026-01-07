@@ -297,7 +297,11 @@ export async function loginCompanyAdmin(
   });
   
   if (loginError) {
-    console.error("Failed to record login event:", loginError);
+    console.error("[COMPANY LOGIN TRACKING ERROR]", {
+      error: loginError.message,
+      code: loginError.code,
+      userId: user.id,
+    });
   }
 
   // Create session token
