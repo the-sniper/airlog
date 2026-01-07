@@ -424,7 +424,7 @@ function RecentPageViewsTable({
               <Eye className="w-4 h-4 text-primary" />
               Recent Page Views
             </CardTitle>
-            {views && views.length > 5 && (
+            {views && views.length > 10 && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -440,7 +440,7 @@ function RecentPageViewsTable({
         <CardContent>
           {views && views.length > 0 ? (
             <div className="space-y-4">
-              {views.slice(0, 5).map((view) => (
+              {views.slice(0, 10).map((view) => (
                 <PageViewItem
                   key={view.id}
                   view={view}

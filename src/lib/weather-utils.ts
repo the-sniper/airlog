@@ -25,7 +25,7 @@ export function getWeatherGradient(
   if (condition === "cloudy") {
     return isDay
       ? "from-slate-300 via-sky-200/40 to-slate-400"
-      : "from-slate-800 via-indigo-950 to-slate-900";
+      : "from-gray-800 via-gray-900 to-black";
   }
   if (condition === "fog" || condition === "mist") {
     return isDay

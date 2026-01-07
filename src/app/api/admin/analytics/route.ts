@@ -100,17 +100,14 @@ export async function GET(req: NextRequest) {
       (u) => new Date(u.created_at) >= startDate
     ).length;
 
-    // Retention rate: users who signed up before the period and logged in during the period
-    const existingUsers = allUsers.filter(
-      (u) => new Date(u.created_at) < startDate
-    );
-    const returningUsers = existingUsers.filter((u) => {
+    // Retention rate: % of all users who have logged in at least once during the period
+    const usersLoggedInDuringPeriod = allUsers.filter((u) => {
       if (!u.last_login_at) return false;
       return new Date(u.last_login_at) >= startDate;
     }).length;
     const retentionRate =
-      existingUsers.length > 0
-        ? Math.round((returningUsers / existingUsers.length) * 100)
+      totalUsers > 0
+        ? Math.round((usersLoggedInDuringPeriod / totalUsers) * 100)
         : 0;
 
     // User growth over time (cumulative)
@@ -268,9 +265,10 @@ export async function GET(req: NextRequest) {
           ip_address,
           domain,
           created_at,
-          user:users(email)
+          user:users!left(email)
         `)
         .eq("domain", allowedDomain)
+        .neq("path", "/admin/analytics")
         .order("created_at", { ascending: false })
         .limit(20);
 

@@ -758,7 +758,7 @@ export function WeatherEffects({
       // Add clouds for cloudy weather
       if (type === "cloudy") {
         // More clouds, but smaller (tiny clouds)
-        const cloudCount = isMobile ? 8 : 15;
+        const cloudCount = isMobile ? 4 : 8;
         for (let i = 0; i < cloudCount; i++) {
           particles.push({
             x: Math.random() * w,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyUserToken } from "@/lib/user-auth";
 import { verifyCompanyToken } from "@/lib/company-auth";
+import { verifyToken as verifyAdminToken } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
