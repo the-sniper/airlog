@@ -85,6 +85,46 @@ export async function GET(req: NextRequest) {
   } else {
     insertTestResult.success = true;
   }
+  
+  // Fetch actual recent data for debugging
+  let recentLoginData: any[] = [];
+  let recentPageViewData: any[] = [];
+  
+  try {
+    const { data: logins } = await supabase
+      .from("user_logins")
+      .select("id, user_id, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5);
+    recentLoginData = logins || [];
+  } catch {}
+  
+  try {
+    const { data: views } = await supabase
+      .from("page_views")
+      .select("id, path, user_id, visitor_id, domain, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5);
+    recentPageViewData = views || [];
+  } catch {}
+  
+  // Check if users from logins exist in users table
+  let userCheckResults: any[] = [];
+  for (const login of recentLoginData) {
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("id, email, first_name, deleted_at")
+      .eq("id", login.user_id)
+      .single();
+    
+    userCheckResults.push({
+      login_user_id: login.user_id,
+      user_found: !!user,
+      user_deleted: user?.deleted_at ? true : false,
+      user_email: user?.email || null,
+      error: error?.message || null,
+    });
+  }
 
   return NextResponse.json({
     timestamp: new Date().toISOString(),
@@ -100,6 +140,11 @@ export async function GET(req: NextRequest) {
       page_views: pageViewsStatus,
     },
     rlsTest: insertTestResult,
+    recentData: {
+      logins: recentLoginData,
+      pageViews: recentPageViewData,
+      userCheck: userCheckResults,
+    },
     recommendation: !domainMatch 
       ? `Domain mismatch! Request comes from "${requestDomain}" but NEXT_PUBLIC_APP_URL is set to "${appUrl}" (domain: "${allowedDomain}"). Update NEXT_PUBLIC_APP_URL to match your production domain.`
       : userLoginsStatus.error 

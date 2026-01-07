@@ -279,6 +279,8 @@ function RecentLoginsTable({
 }: {
   logins: UserAnalytics["recentLogins"];
 }) {
+  const [showAll, setShowAll] = useState(false);
+
   const getRelativeTime = (date: string) => {
     const now = new Date();
     const then = new Date(date);
@@ -294,65 +296,85 @@ function RecentLoginsTable({
     return formatDate(date);
   };
 
+  const LoginItem = ({ user }: { user: UserAnalytics["recentLogins"][0] }) => (
+    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+      <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
+        {user.first_name[0]}
+        {user.last_name[0]}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">
+          {user.first_name} {user.last_name}
+        </p>
+        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+      </div>
+      {user.company && (
+        <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
+          <Building2 className="w-3 h-3" />
+          <span className="truncate max-w-[100px]">{user.company.name}</span>
+        </div>
+      )}
+      <div className="text-xs text-muted-foreground whitespace-nowrap">
+        {user.last_login_at ? getRelativeTime(user.last_login_at) : "Never"}
+      </div>
+    </div>
+  );
+
   return (
-    <Card className="lg:col-span-2">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-500" />
-            Recent Logins
-          </CardTitle>
-          <Link href="/admin/users">
-            <Button variant="ghost" size="sm" className="text-xs gap-1">
-              View All Users
+    <>
+      <Card className="lg:col-span-2">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base font-medium flex items-center gap-2">
+              <Clock className="w-4 h-4 text-amber-500" />
+              Recent Logins
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs gap-1"
+              onClick={() => setShowAll(true)}
+            >
+              View All
               <ArrowUpRight className="w-3 h-3" />
             </Button>
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {logins.length === 0 ? (
-          <div className="py-8 text-center text-muted-foreground">
-            No recent logins to display
           </div>
-        ) : (
-          <div className="space-y-3">
-            {logins.slice(0, 10).map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-              >
-                <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
-                  {user.first_name[0]}
-                  {user.last_name[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {user.first_name} {user.last_name}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {user.email}
-                  </p>
-                </div>
-                {user.company && (
-                  <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
-                    <Building2 className="w-3 h-3" />
-                    <span className="truncate max-w-[100px]">
-                      {user.company.name}
-                    </span>
-                  </div>
-                )}
-                <div className="text-xs text-muted-foreground whitespace-nowrap">
-                  {user.last_login_at
-                    ? getRelativeTime(user.last_login_at)
-                    : "Never"}
-                </div>
-              </div>
+        </CardHeader>
+        <CardContent>
+          {logins.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              No recent logins to display
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {logins.slice(0, 10).map((user, index) => (
+                <LoginItem key={`${user.id}-${index}`} user={user} />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* All Logins Dialog */}
+      <Dialog open={showAll} onOpenChange={setShowAll}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-amber-500" />
+              All Recent Logins
+            </DialogTitle>
+            <DialogDescription>
+              Complete history of user login events
+            </DialogDescription>
+          </DialogHeader>
+          <div className="overflow-y-auto max-h-[60vh] pr-2 space-y-3">
+            {logins.map((user, index) => (
+              <LoginItem key={`dialog-${user.id}-${index}`} user={user} />
             ))}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

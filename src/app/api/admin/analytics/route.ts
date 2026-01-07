@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +53,17 @@ export async function GET(req: NextRequest) {
         startDate = new Date(0); // Beginning of time
     }
 
-    const supabase = createAdminClient();
+    // Create client directly (bypassing createAdminClient which has issues)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
 
     // Get allowed domain from NEXT_PUBLIC_APP_URL for filtering page views
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -174,19 +184,18 @@ export async function GET(req: NextRequest) {
     // Recent logins (last 20 login events with user details)
     let recentLogins: UserAnalytics["recentLogins"] = [];
     try {
-      const { data: recentLoginEvents } = await supabase
+      const { data: recentLoginEvents, error: loginEventsError } = await supabase
         .from("user_logins")
-        .select(`
-          id,
-          created_at,
-          user_id
-        `)
+        .select("id, created_at, user_id")
         .order("created_at", { ascending: false })
         .limit(20);
+
 
       if (recentLoginEvents && recentLoginEvents.length > 0) {
         // Map user_ids to user data from allUsers (which already has company info)
         const userMap = new Map(allUsers.map(u => [u.id, u]));
+        
+
         
         recentLogins = recentLoginEvents
           .map((event: any) => {
@@ -203,6 +212,7 @@ export async function GET(req: NextRequest) {
             };
           })
           .filter(Boolean) as UserAnalytics["recentLogins"];
+
       }
     } catch {
       // Fallback to last_login_at if user_logins table doesn't exist yet
