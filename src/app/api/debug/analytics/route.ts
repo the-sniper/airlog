@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
 // Debug endpoint to see exactly what the analytics API would return
 export async function GET(req: NextRequest) {
-  const supabase = createAdminClient();
+  // Create client directly (same as raw-query which works)
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  );
   
   // Fetch users like the analytics API does
   const { data: users, error: usersError } = await supabase
