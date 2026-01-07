@@ -23,12 +23,25 @@ export async function GET(req: NextRequest) {
     .is("deleted_at", null)
     .order("created_at", { ascending: true });
   
-  // Fetch login events
-  const { data: recentLoginEvents, error: loginError } = await supabase
+  // Fetch login events - using EXACT same query as debug/tracking which works
+  let recentLoginEvents: any[] = [];
+  let loginError: any = null;
+  try {
+    const { data, error } = await supabase
+      .from("user_logins")
+      .select("id, user_id, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5);
+    recentLoginEvents = data || [];
+    loginError = error;
+  } catch (e: any) {
+    loginError = { message: e.message };
+  }
+  
+  // Also try a simple count query to verify table access
+  const { count: loginCount, error: countError } = await supabase
     .from("user_logins")
-    .select("id, created_at, user_id")
-    .order("created_at", { ascending: false })
-    .limit(20);
+    .select("*", { count: "exact", head: true });
   
   // Check if the user_ids from logins match users
   const allUsers = users || [];
@@ -73,6 +86,10 @@ export async function GET(req: NextRequest) {
       count: recentLoginEvents?.length || 0,
       error: loginError?.message || null,
       events: recentLoginEvents?.slice(0, 5) || [],
+    },
+    loginCountQuery: {
+      count: loginCount || 0,
+      error: countError?.message || null,
     },
     loginAnalysis,
     finalRecentLogins: {
