@@ -176,11 +176,7 @@ export async function GET(req: NextRequest) {
     try {
       const { data: recentLoginEvents, error: loginEventsError } = await supabase
         .from("user_logins")
-        .select(`
-          id,
-          created_at,
-          user_id
-        `)
+        .select("id, created_at, user_id")
         .order("created_at", { ascending: false })
         .limit(20);
 
